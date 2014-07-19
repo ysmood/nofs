@@ -4,7 +4,7 @@
   "description": "A better fs with graceful-fs, fs-extra, promise Q, and some other helpers.",
   "main": "lib/main.js",
   "scripts": {
-    "test": "npm test"
+    "test": "mocha test/basic.js"
   },
   "repository": {
     "type": "git",
@@ -22,9 +22,11 @@
   },
   "homepage": "https://github.com/ysmood/fs-more",
   "dependencies": {
-    "fs-extra": "^0.10.0",
-    "graceful-fs": "^3.0.2",
-    "q": "^1.0.1"
+    "fs-extra": "*",
+    "graceful-fs": "*",
+    "q": "*"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "mocha": "^1.20.1"
+  }
 }
