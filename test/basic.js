@@ -24,6 +24,20 @@ describe('Basic:', function () {
 		});
 	});
 
+	it('should work', function () {
+		assert.equal(
+			fs.dirExistsSync('lib'),
+			true
+		)
+	});
+
+	it('should work', function () {
+		assert.equal(
+			fs.fileExistsSync('readme.md'),
+			true
+		)
+	});
+
 	it('should work', function (tdone) {
 		fs.dirExistsQ('readme.md').done(function (ret) {
 			try {
