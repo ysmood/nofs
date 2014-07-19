@@ -1,4 +1,4 @@
-require('../lib/main');
+fs = require('../lib/main');
 var assert = require('assert');
 
 describe('Basic:', function () {
