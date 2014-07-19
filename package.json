@@ -1,0 +1,24 @@
+{
+  "name": "fs-x",
+  "version": "0.0.1",
+  "description": "A better fs with graceful-fs, fs-extra, promise Q, and some other helpers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ysmood/fs-x.git"
+  },
+  "keywords": [
+    "fs",
+    "tool",
+    "helpers"
+  ],
+  "author": "http://ysmood.org",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/ysmood/fs-x/issues"
+  },
+  "homepage": "https://github.com/ysmood/fs-x"
+}
