@@ -81,4 +81,10 @@ describe('Basic:', function () {
 			}
 		});
 	});
+
+	it('should work', function (tdone) {
+		fs.outputFileQ('test/sample.txt', 'test').done(function () {
+			tdone();
+		});
+	});
 });
