@@ -14,6 +14,14 @@ describe('Basic:', function () {
 	});
 
 	it('should work', function (tdone) {
+		fs.moveQ('test/move.txt', 'test/a.txt')
+		.then(function () {
+			assert.equal(fs.existsSync('test/a.txt'), true)
+			return fs.moveQ('test/a.txt', 'test/move.txt')
+		}).then(tdone)['catch'](tdone);
+	});
+
+	it('should work', function (tdone) {
 		fs.dirExistsQ('lib').done(function (ret) {
 			try {
 				assert.equal(ret, true);
