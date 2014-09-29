@@ -22,9 +22,9 @@
   },
   "homepage": "https://github.com/ysmood/fs-more",
   "dependencies": {
+    "bluebird": "2.3.4",
     "fs-extra": "*",
-    "graceful-fs": "*",
-    "q": "*"
+    "graceful-fs": "*"
   },
   "devDependencies": {
     "mocha": "~1.20.1"

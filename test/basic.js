@@ -3,7 +3,7 @@ var assert = require('assert');
 
 describe('Basic:', function () {
 	it('should work', function (tdone) {
-		fs.existsQ('readme.md').done(function (ret) {
+		fs.existsP('readme.md').done(function (ret) {
 			try {
 				assert.equal(ret, true);
 				tdone();
@@ -14,15 +14,15 @@ describe('Basic:', function () {
 	});
 
 	it('should work', function (tdone) {
-		fs.moveQ('test/move.txt', 'test/a.txt')
+		fs.moveP('test/move.txt', 'test/a.txt')
 		.then(function () {
 			assert.equal(fs.existsSync('test/a.txt'), true)
-			return fs.moveQ('test/a.txt', 'test/move.txt')
+			return fs.moveP('test/a.txt', 'test/move.txt')
 		}).then(tdone)['catch'](tdone);
 	});
 
 	it('should work', function (tdone) {
-		fs.dirExistsQ('lib').done(function (ret) {
+		fs.dirExistsP('lib').done(function (ret) {
 			try {
 				assert.equal(ret, true);
 				tdone();
@@ -47,7 +47,7 @@ describe('Basic:', function () {
 	});
 
 	it('should work', function (tdone) {
-		fs.dirExistsQ('readme.md').done(function (ret) {
+		fs.dirExistsP('readme.md').done(function (ret) {
 			try {
 				assert.equal(ret, false);
 				tdone();
@@ -58,7 +58,7 @@ describe('Basic:', function () {
 	});
 
 	it('should work', function (tdone) {
-		fs.fileExistsQ('readme.md').done(function (ret) {
+		fs.fileExistsP('readme.md').done(function (ret) {
 			try {
 				assert.equal(ret, true);
 				tdone();
@@ -69,7 +69,7 @@ describe('Basic:', function () {
 	});
 
 	it('should work', function (tdone) {
-		fs.fileExistsQ('lib').done(function (ret) {
+		fs.fileExistsP('lib').done(function (ret) {
 			try {
 				assert.equal(ret, false);
 				tdone();
@@ -80,7 +80,7 @@ describe('Basic:', function () {
 	});
 
 	it('should work', function (tdone) {
-		fs.readFileQ('test/sample.txt', 'utf8').done(function (ret) {
+		fs.readFileP('test/sample.txt', 'utf8').done(function (ret) {
 			try {
 				assert.equal(ret, 'test');
 				tdone();
@@ -91,7 +91,7 @@ describe('Basic:', function () {
 	});
 
 	it('should work', function (tdone) {
-		fs.outputFileQ('test/sample.txt', 'test').done(function () {
+		fs.outputFileP('test/sample.txt', 'test').done(function () {
 			tdone();
 		});
 	});
