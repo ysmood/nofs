@@ -1,6 +1,6 @@
 {
   "name": "fs-more",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A better fs with graceful-fs, fs-extra, promise Q, and some other helpers.",
   "main": "lib/main.js",
   "scripts": {
@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/ysmood/fs-more",
   "dependencies": {
-    "bluebird": "2.3.10",
+    "bluebird": "2.3.11",
     "fs-extra": "0.12.0",
     "graceful-fs": "3.0.4"
   },
