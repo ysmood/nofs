@@ -5,6 +5,8 @@ for example `fs.readFile`, `fs.readFileSync`, `fs.readFileP`.
 
 For normal api see [fs-extra][0].
 
+[Offline Documentation](?gotoDoc=fs-extra/README.md)
+
 ## Extra helpers
 
 * fs.fileExists(path)
