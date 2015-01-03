@@ -22,10 +22,6 @@
     "url": "https://github.com/ysmood/fs-more/issues"
   },
   "homepage": "https://github.com/ysmood/fs-more",
-  "dependencies": {
-    "bluebird": "2.5.2",
-    "graceful-fs": "3.0.5"
-  },
   "devDependencies": {
     "coffee-script": "*",
     "mocha": "*",

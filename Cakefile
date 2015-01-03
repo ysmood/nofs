@@ -17,6 +17,10 @@ task 'build', 'Build project.', build = ->
 			'-cb', 'lib'
 		]
 
+	copyThirdLib = ->
+		kit.copy 'lib/graceful-fs', 'dist/graceful-fs'
+		kit.copy 'lib/es6-promise.js', 'dist/es6-promise.js'
+
 	createDoc = ->
 		kit.compose([
 			kit.readFile 'lib/main.coffee', 'utf8'
@@ -65,6 +69,7 @@ task 'build', 'Build project.', build = ->
 
 	start = kit.compose [
 		compileCoffee
+		copyThirdLib
 		createDoc
 	]
 

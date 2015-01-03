@@ -4,10 +4,12 @@
 ###
 Overview = 'fs-more'
 
-Promise = require 'bluebird'
+{ Promise } = require './es6-promise'
 npath = require 'path'
 fs = require 'fs'
-gfs = require 'graceful-fs'
+
+# Evil of Node.
+gfs = require './graceful-fs/graceful-fs'
 
 promisify = (fn, self) ->
 	(args...) ->
@@ -61,7 +63,7 @@ fsMore = {
 		else
 			false
 
-	# Feel sorry for Node again.
+	# Feel pity for Node again.
 	# The `fs.exists` api doesn't fulfil the node callback standard.
 	existsP: (path) ->
 		new Promise (resolve) ->
