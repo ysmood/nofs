@@ -97,7 +97,7 @@ nofs = {
 	 * @param  {String} mode Defauls: `0o777 & (~process.umask())`
 	 * @return {Promise}
 	###
-	mkdirsP: (path, mode = 0o777 & (~process.umask())) ->
+	mkdirsP: (path, mode = 0o777 & ~process.umask()) ->
 		# Find out how many directory need to be created.
 		findList = (path, list = []) ->
 			nofs.dirExistsP(path).then (exists) ->
@@ -122,7 +122,7 @@ nofs = {
 	 * @return {Promise} Resolves an path array. Every directory path will ends
 	 * with `/` (Unix) or `\` (Windows).
 	###
-	readdirsP: (root, filter = -> true, list = []) ->
+	readdirsP: (root, filter, list = []) ->
 		fs.readdirP(root).then (paths) ->
 			if filter
 				paths = paths.filter filter
@@ -173,12 +173,9 @@ nofs = {
 		fs.statP(root).then (stats) ->
 			if stats.isDirectory()
 				nofs.readdirsP(root, filter).then (paths) ->
-					# This is a fast algorithm to keep a subpath
-					# being ordered after its parent.
-					paths.sort (a, b) ->
-						if a.indexOf(b) == 0 then -1 else 1
-
-					Promise.all paths.map (path) ->
+					# Reverse to Keep a subpath being ordered
+					# after its parent.
+					Promise.all paths.reverse().map (path) ->
 						if path.slice(-1) == npath.sep
 							fs.rmdirP path
 						else
