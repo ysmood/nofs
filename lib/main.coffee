@@ -69,7 +69,7 @@ fsMore = {
 
 	###*
 	 * Read directory recursively.
-	 * @param  {String} path
+	 * @param {String} path
 	 * @param {Function} filter To filter paths. Defaults:
 	 * ```coffee
 	 * (path) -> true
@@ -117,6 +117,38 @@ fsMore = {
 				list.push p
 
 		list
+
+	###*
+	 * Remove a file or directory peacefully, same with the `rm -rf`.
+	 * @param  {String} root
+	 * @return {Promise}
+	###
+	removeP: (root) ->
+		fs.statP(root).then (stats) ->
+			if stats.isDirectory()
+				fsMore.readdirsP(root).then (paths) ->
+					# This is a fast algorithm to keep a subpath
+					# is ordered after its parent.
+					paths.sort (a, b) ->
+						if a.indexOf(b) == 0 then -1 else 1
+
+					Promise.all paths.map (path) ->
+						if path.slice(-1) == npath.sep
+							fs.rmdirP path
+						else
+							fs.unlinkP path
+				.then ->
+					fs.rmdirP root
+			else
+				fs.unlinkP root
+		.catch (err) ->
+			if err.code != 'ENOENT' or err.path != root
+				Promise.reject err
+
+	outputFileSync: (path, data, encoding) ->
+		dir = npath.dirname path
+		if fs.existsSync path
+			fs.writeFileSync.apply null, arguments
 }
 
 # Add fs-more functions
