@@ -17,6 +17,11 @@ describe 'Basic:', ->
 	# 	.then tdone
 	# 	.catch tdone
 
+	it 'dirExists', (tdone) ->
+		fs.dirExists 'lib', (err, ret) ->
+			assert.equal ret, true
+			tdone()
+
 	it 'dirExistsP', (tdone) ->
 		fs.dirExistsP('lib').then (ret) ->
 			assert.equal ret, true
@@ -29,7 +34,7 @@ describe 'Basic:', ->
 		assert.equal fs.fileExistsSync('readme.md'), true
 
 	it 'dirExistsP', (tdone) ->
-		fs.dirExistsP('readme.md').then (ret) ->
+		fs.dirExistsP('asdlkfjf').then (ret) ->
 			assert.equal ret, false
 			tdone()
 
