@@ -40,27 +40,49 @@ for k of fs
 
 fsMore = {
 
-	dirExistsP: (path, cb) ->
+	###*
+	 * Check if a path exists, and if it is a directory.
+	 * @param  {String}  path
+	 * @return {Promise} Resolves a boolean value.
+	###
+	dirExistsP: (path) ->
 		fs.statP(path).then (stats) ->
 			stats.isDirectory()
 		.catch -> false
 
+	###*
+	 * Check if a path exists, and if it is a directory.
+	 * @param  {String}  path
+	 * @return {boolean}
+	###
 	dirExistsSync: (path) ->
 		if fs.existsSync(path)
 			fs.statSync(path).isDirectory()
 		else
 			false
 
+	# Feel sorry for Node again.
+	# The `fs.exists` api doesn't fulfil the node callback standard.
 	existsP: (path) ->
 		new Promise (resolve) ->
 			fs.exists path, (exists) ->
 				resolve exists
 
+	###*
+	 * Check if a path exists, and if it is a file.
+	 * @param  {String}  path
+	 * @return {Promise} Resolves a boolean value.
+	###
 	fileExistsP: (path) ->
 		fs.statP(path).then (stats) ->
 			stats.isFile()
 		.catch -> false
 
+	###*
+	 * Check if a path exists, and if it is a file.
+	 * @param  {String}  path
+	 * @return {boolean}
+	###
 	fileExistsSync: (path) ->
 		if fs.existsSync path
 			fs.statSync(path).isFile()
