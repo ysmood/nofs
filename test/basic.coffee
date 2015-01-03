@@ -9,13 +9,13 @@ describe 'Basic:', ->
 			tdone()
 		.catch tdone
 
-	it 'moveP', (tdone) ->
-		fs.moveP 'test/fixtures/move.txt', 'test/fixtures/a.txt'
-		.then ->
-			assert.equal fs.existsSync('test/fixtures/a.txt'), true
-			fs.moveP('test/fixtures/a.txt', 'test/fixtures/move.txt')
-		.then tdone
-		.catch tdone
+	# it 'moveP', (tdone) ->
+	# 	fs.moveP 'test/fixtures/move.txt', 'test/fixtures/a.txt'
+	# 	.then ->
+	# 		assert.equal fs.existsSync('test/fixtures/a.txt'), true
+	# 		fs.moveP('test/fixtures/a.txt', 'test/fixtures/move.txt')
+	# 	.then tdone
+	# 	.catch tdone
 
 	it 'dirExistsP', (tdone) ->
 		fs.dirExistsP('lib').then (ret) ->
@@ -49,12 +49,12 @@ describe 'Basic:', ->
 			assert.equal(ret, 'test')
 			tdone()
 
-	it 'outputFileP', (tdone) ->
-		fs.outputFileP('test/fixtures/sample.txt', 'test')
-		.then ->
-			tdone()
-		.catch tdone
+	# it 'outputFileP', (tdone) ->
+	# 	fs.outputFileP('test/fixtures/sample.txt', 'test')
+	# 	.then ->
+	# 		tdone()
+	# 	.catch tdone
 
-	it 'outputFileSync', (tdone) ->
-		fs.outputFileSync('test/fixtures/sample.txt', 'test')
-		tdone()
+	# it 'outputFileSync', (tdone) ->
+	# 	fs.outputFileSync('test/fixtures/sample.txt', 'test')
+	# 	tdone()
