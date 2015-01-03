@@ -2,7 +2,7 @@
  * I hate to reinvent the wheel. But to purely use promise, I don't
  * have many choices.
 ###
-Overview = 'fs-more'
+Overview = 'nofs'
 
 Promise = require './bluebird/js/main/bluebird'
 npath = require 'path'
@@ -40,7 +40,7 @@ for k of fs
 		continue if fs[pname]
 		fs[pname] = promisify fs[name]
 
-fsMore = {
+nofs = {
 
 	###*
 	 * Check if a path exists, and if it is a directory.
@@ -100,7 +100,7 @@ fsMore = {
 	mkdirsP: (path, mode = 0o777 & (~process.umask())) ->
 		# Find out how many directory need to be created.
 		findList = (path, list = []) ->
-			fsMore.dirExistsP(path).then (exists) ->
+			nofs.dirExistsP(path).then (exists) ->
 				if exists
 					Promise.resolve list
 				else
@@ -133,7 +133,7 @@ fsMore = {
 				fs.statP(p).then (stats) ->
 					if stats.isDirectory()
 						list.push p + npath.sep
-						fsMore.readdirsP p, filter, list
+						nofs.readdirsP p, filter, list
 					else
 						list.push p
 		.then -> list
@@ -157,7 +157,7 @@ fsMore = {
 			p = npath.join root, path
 			if fs.statSync(p).isDirectory()
 				list.push p + npath.sep
-				fsMore.readdirsSync p, filter, list
+				nofs.readdirsSync p, filter, list
 			else
 				list.push p
 
@@ -172,7 +172,7 @@ fsMore = {
 	removeP: (root, filter) ->
 		fs.statP(root).then (stats) ->
 			if stats.isDirectory()
-				fsMore.readdirsP(root, filter).then (paths) ->
+				nofs.readdirsP(root, filter).then (paths) ->
 					# This is a fast algorithm to keep a subpath
 					# being ordered after its parent.
 					paths.sort (a, b) ->
@@ -211,9 +211,9 @@ fsMore = {
 					fs.writeFileP.apply null, args
 }
 
-# Add fs-more functions
-for k of fsMore
-	fs[k] = fsMore[k]
+# Add nofs functions
+for k of nofs
+	fs[k] = nofs[k]
 
 for k of fs
 	if k.slice(-1) == 'P'
