@@ -70,18 +70,25 @@ fsMore = {
 	###*
 	 * Read directory recursively.
 	 * @param  {String} path
+	 * @param {Function} filter To filter paths. Defaults:
+	 * ```coffee
+	 * (path) -> true
+	 * ```
 	 * @return {Promise} Resolves an path array. Every directory path will ends
 	 * with `/` (Unix) or `\` (Windows).
 	###
-	readdirsP: (root, list = []) ->
+	readdirsP: (root, filter, list = []) ->
 		fs.readdirP(root).then (paths) ->
+			if filter
+				paths = paths.filter filter
+
 			Promise.all paths.map (path) ->
 				p = npath.join root, path
 
 				fs.statP(p).then (stats) ->
 					if stats.isDirectory()
 						list.push p + npath.sep
-						fsMore.readdirsP p, list
+						fsMore.readdirsP p, filter, list
 					else
 						list.push p
 		.then -> list
@@ -89,17 +96,23 @@ fsMore = {
 	###*
 	 * Read directory recursively.
 	 * @param  {String} path
+	 * @param {Function} filter To filter paths. Defaults:
+	 * ```coffee
+	 * (path) -> true
+	 * ```
 	 * @return {Array} Every directory path will ends
 	 * with `/` (Unix) or `\` (Windows).
 	###
-	readdirsSync: (root, list = []) ->
+	readdirsSync: (root, filter, list = []) ->
 		paths = fs.readdirSync root
+		if filter
+			paths = paths.filter filter
 
 		for path in paths
 			p = npath.join root, path
 			if fs.statSync(p).isDirectory()
 				list.push p + npath.sep
-				fsMore.readdirsSync p, list
+				fsMore.readdirsSync p, filter, list
 			else
 				list.push p
 
