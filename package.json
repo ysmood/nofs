@@ -2,9 +2,10 @@
   "name": "fs-more",
   "version": "0.1.2",
   "description": "A better fs with graceful-fs, fs-extra, promise Q, and some other helpers.",
-  "main": "lib/main.js",
+  "main": "dist/main.js",
   "scripts": {
-    "test": "mocha test/basic.js"
+    "test": "cake test",
+    "prepublish": "cake build"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,8 @@
     "graceful-fs": "3.0.5"
   },
   "devDependencies": {
-    "mocha": "2.1.0"
+    "coffee-script": "*",
+    "mocha": "*",
+    "nokit": "^0.2.4"
   }
 }

@@ -11,9 +11,7 @@ Goto [changelog](doc/changelog.md)
 
 # API
 
-### kit
-
-
+<%= api %>
 
 # Lisence
 
