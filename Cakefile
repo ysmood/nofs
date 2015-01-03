@@ -19,7 +19,7 @@ task 'build', 'Build project.', build = ->
 
 	copyThirdLib = ->
 		kit.copy 'lib/graceful-fs', 'dist/graceful-fs'
-		kit.copy 'lib/es6-promise.js', 'dist/es6-promise.js'
+		kit.copy 'lib/bluebird', 'dist/bluebird'
 
 	createDoc = ->
 		kit.compose([

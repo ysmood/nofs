@@ -4,7 +4,7 @@
 ###
 Overview = 'fs-more'
 
-{ Promise } = require './es6-promise'
+Promise = require './bluebird/js/main/bluebird'
 npath = require 'path'
 fs = require 'fs'
 
