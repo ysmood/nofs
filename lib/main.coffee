@@ -190,10 +190,24 @@ fsMore = {
 			if err.code != 'ENOENT' or err.path != root
 				Promise.reject err
 
-	outputFileSync: (path, data, encoding) ->
-		dir = npath.dirname path
-		if fs.existsSync path
-			fs.writeFileSync.apply null, arguments
+	###*
+	 * Almost the same as `writeFile`, except that if its parent
+	 * directory does not exist, it will be created.
+	 * @param  {String} path
+	 * @param  {String | Buffer} data
+	 * @param  {String | Object} opts Same with the `fs.writeFile`.
+	 * > Remark: For Node v0.8 the `opts` can only be a string.
+	 * @return {Promise}
+	###
+	outputFileP: (path, data, opts) ->
+		args = arguments
+		fs.fileExistsP(path).then (exists) ->
+			if exists
+				fs.writeFileP.apply null, args
+			else
+				dir = npath.dirname path
+				fs.mkdirsP(dir, opts.mode).then ->
+					fs.writeFileP.apply null, args
 }
 
 # Add fs-more functions
