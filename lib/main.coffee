@@ -1,5 +1,11 @@
-Promise = require 'bluebird'
+###*
+ * I hate to reinvent the wheel. But to purely use promise, I don't
+ * have many choices.
+###
+Overview = 'fs-more'
 
+Promise = require 'bluebird'
+npath = require 'path'
 fs = require 'fs'
 gfs = require 'graceful-fs'
 
@@ -60,6 +66,44 @@ fsMore = {
 			fs.statSync(path).isDirectory()
 		else
 			false
+
+	###*
+	 * Read directory recursively.
+	 * @param  {String} path
+	 * @return {Promise} Resolves an path array. Every directory path will ends
+	 * with `/` (Unix) or `\` (Windows).
+	###
+	readdirsP: (root, list = []) ->
+		fs.readdirP(root).then (paths) ->
+			Promise.all paths.map (path) ->
+				p = npath.join root, path
+
+				fs.statP(p).then (stats) ->
+					if stats.isDirectory()
+						list.push p + npath.sep
+						fsMore.readdirsP p, list
+					else
+						list.push p
+		.then -> list
+
+	###*
+	 * Read directory recursively.
+	 * @param  {String} path
+	 * @return {Array} Every directory path will ends
+	 * with `/` (Unix) or `\` (Windows).
+	###
+	readdirsSync: (root, list = []) ->
+		paths = fs.readdirSync root
+
+		for path in paths
+			p = npath.join root, path
+			if fs.statSync(p).isDirectory()
+				list.push p + npath.sep
+				fsMore.readdirsSync p, list
+			else
+				list.push p
+
+		list
 }
 
 # Add fs-more functions

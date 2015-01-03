@@ -9,14 +9,6 @@ describe 'Basic:', ->
 			tdone()
 		.catch tdone
 
-	# it 'moveP', (tdone) ->
-	# 	fs.moveP 'test/fixtures/move.txt', 'test/fixtures/a.txt'
-	# 	.then ->
-	# 		assert.equal fs.existsSync('test/fixtures/a.txt'), true
-	# 		fs.moveP('test/fixtures/a.txt', 'test/fixtures/move.txt')
-	# 	.then tdone
-	# 	.catch tdone
-
 	it 'dirExists', (tdone) ->
 		fs.dirExists 'lib', (err, ret) ->
 			assert.equal ret, true
@@ -53,6 +45,37 @@ describe 'Basic:', ->
 		.then (ret) ->
 			assert.equal(ret, 'test')
 			tdone()
+
+	it 'readdirsSync', ->
+		ls = fs.readdirsSync 'test/fixtures/template'
+		assert.deepEqual ls, [
+			'test/fixtures/template/a'
+			'test/fixtures/template/test/'
+			'test/fixtures/template/test/b'
+		]
+
+	it 'readdirsP', ->
+		fs.readdirsP 'test/fixtures/template'
+		.then (ls) ->
+			assert.deepEqual ls, [
+				'test/fixtures/template/a'
+				'test/fixtures/template/test/'
+				'test/fixtures/template/test/b'
+			]
+
+	# it 'removeSync', ->
+	# 	fs.removeSync 'test/fixtures/removeTemp'
+
+	# it 'mkdirsSync', (tdone) ->
+	# 	fs.mkdirsSync 'test/fixtures/mk/dirs'
+
+	# it 'moveP', (tdone) ->
+	# 	fs.moveP 'test/fixtures/move.txt', 'test/fixtures/a.txt'
+	# 	.then ->
+	# 		assert.equal fs.existsSync('test/fixtures/a.txt'), true
+	# 		fs.moveP('test/fixtures/a.txt', 'test/fixtures/move.txt')
+	# 	.then tdone
+	# 	.catch tdone
 
 	# it 'outputFileP', (tdone) ->
 	# 	fs.outputFileP('test/fixtures/sample.txt', 'test')
