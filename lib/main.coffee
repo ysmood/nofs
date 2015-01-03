@@ -92,6 +92,27 @@ fsMore = {
 			false
 
 	###*
+	 * Recursively mkdir, like `mkdir -p`.
+	 * @param  {String} path
+	 * @param  {String} mode Defauls: `0o777 & (~process.umask())`
+	 * @return {Promise}
+	###
+	mkdirsP: (path, mode = 0o777 & (~process.umask())) ->
+		# Find out how many directory need to be created.
+		findList = (path, list = []) ->
+			fsMore.dirExistsP(path).then (exists) ->
+				if exists
+					Promise.resolve list
+				else
+					list.push path
+					findList npath.dirname(path), list
+
+		findList(path).then (list) ->
+			list.reverse().reduce (p, path) ->
+				p.then -> fs.mkdirP path, mode
+			, Promise.resolve()
+
+	###*
 	 * Read directory recursively.
 	 * @param {String} path
 	 * @param {Function} filter To filter paths. Defaults:
