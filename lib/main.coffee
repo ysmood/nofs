@@ -122,7 +122,7 @@ fsMore = {
 	 * @return {Promise} Resolves an path array. Every directory path will ends
 	 * with `/` (Unix) or `\` (Windows).
 	###
-	readdirsP: (root, filter, list = []) ->
+	readdirsP: (root, filter = -> true, list = []) ->
 		fs.readdirP(root).then (paths) ->
 			if filter
 				paths = paths.filter filter
@@ -166,12 +166,13 @@ fsMore = {
 	###*
 	 * Remove a file or directory peacefully, same with the `rm -rf`.
 	 * @param  {String} root
+	 * @param {Function} filter Same with the `readdirs`'s.
 	 * @return {Promise}
 	###
-	removeP: (root) ->
+	removeP: (root, filter) ->
 		fs.statP(root).then (stats) ->
 			if stats.isDirectory()
-				fsMore.readdirsP(root).then (paths) ->
+				fsMore.readdirsP(root, filter).then (paths) ->
 					# This is a fast algorithm to keep a subpath
 					# being ordered after its parent.
 					paths.sort (a, b) ->
