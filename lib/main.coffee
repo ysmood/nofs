@@ -40,6 +40,17 @@ for k of fs
 
 fsMore = {
 
+	dirExistsP: (path, cb) ->
+		fs.statP(path).then (stats) ->
+			stats.isDirectory()
+		.catch -> false
+
+	dirExistsSync: (path) ->
+		if fs.existsSync(path)
+			fs.statSync(path).isDirectory()
+		else
+			false
+
 	existsP: (path) ->
 		new Promise (resolve) ->
 			fs.exists path, (exists) ->
@@ -53,17 +64,6 @@ fsMore = {
 	fileExistsSync: (path) ->
 		if fs.existsSync path
 			fs.statSync(path).isFile()
-		else
-			false
-
-	dirExistsP: (path, cb) ->
-		fs.statP(path).then (stats) ->
-			stats.isDirectory()
-		.catch -> false
-
-	dirExistsSync: (path) ->
-		if fs.existsSync(path)
-			fs.statSync(path).isDirectory()
 		else
 			false
 
