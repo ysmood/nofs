@@ -128,7 +128,7 @@ fsMore = {
 			if stats.isDirectory()
 				fsMore.readdirsP(root).then (paths) ->
 					# This is a fast algorithm to keep a subpath
-					# is ordered after its parent.
+					# being ordered after its parent.
 					paths.sort (a, b) ->
 						if a.indexOf(b) == 0 then -1 else 1
 
