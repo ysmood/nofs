@@ -23,28 +23,43 @@ for k of fs
 nofs =
 
 	###*
-	 * Like `cp -rf`
-	 * @param  {[type]} from   [description]
-	 * @param  {[type]} to     [description]
-	 * @param  {[type]} filter [description]
-	 * @param  {[type]} opts [description]
-	 * @return {[type]}        [description]
+	 * Like `cp -rf`.
+	 * @param  {String} from Source path.
+	 * @param  {String} to Destination path.
+	 * @param  {Object} opts Defaults:
+	 * ```coffee
+	 * {
+	 * 	# Overwrite file if exists.
+	 * 	force: true
+	 *
+	 * 	# Same with the `readdirs`'s
+	 * 	filter: (path) -> true
+	 * }
+	 * ```
+	 * @return {Promise}
 	###
-	copyP: (from, to, filter, opts = {}) ->
+	copyP: (from, to, opts = {}) ->
+		utils.defaults opts, {
+			force: true
+			filter: undefined
+		}
+
+		flags = if opts.force then 'w' else 'wx'
+
 		nofs.mkdirsP(to).then ->
-			nofs.readdirsP from, filter, true
+			nofs.readdirsP from, { filter: opts.filter, cache: true }
 		.then (paths) ->
 			Promise.all paths.map (src) ->
 				dest = npath.join to, npath.relative(from, src)
 				# Whether it is a folder or not.
 				mode = paths.statCache[src].mode
 				if src.slice(-1) == npath.sep
-					fs.mkdirP dest, mode
+					fs.mkdirsP dest, mode
 				else
 					new Promise (resolve, reject) ->
 						try
 							sSrc = fs.createReadStream src
-							sDest = fs.createWriteStream dest, { mode }
+							sDest = fs.createWriteStream dest, { mode, flags }
 						catch err
 							reject err
 						sSrc.on 'error', reject
@@ -125,11 +140,15 @@ nofs =
 	###*
 	 * Read directory recursively.
 	 * @param {String} path
-	 * @param {Function} filter To filter paths. Defaults:
+	 * @param {Object} opts Defaults:
 	 * ```coffee
-	 * (path) -> true
+	 * {
+	 * 	# To filter paths.
+	 * 	filter: (path) -> true
+	 * 	cache: false
+	 * }
 	 * ```
-	 * @param {Boolean} cache Default is false. If it is true, the return list array
+	 * If `cache` is set true, the return list array
 	 * will have an extra property `statCache`, it is something like:
 	 * ```coffee
 	 * {
@@ -144,70 +163,94 @@ nofs =
 	 * @return {Promise} Resolves an path array. Every directory path will ends
 	 * with `/` (Unix) or `\` (Windows).
 	###
-	readdirsP: (root, filter, cache = false, list) ->
-		if not list?
-			list = []
-			if cache
-				statCache = {}
-				Object.defineProperty list, 'statCache', {
-					value: statCache
-					enumerable: false
-				}
+	readdirsP: (root, opts = {}) ->
+		utils.defaults opts, {
+			filter: undefined
+			cache: false
+		}
 
-		fs.readdirP(root).then (paths) ->
-			if filter
-				paths = paths.filter filter
+		list = []
+		if opts.cache
+			statCache = {}
+			Object.defineProperty list, 'statCache', {
+				value: statCache
+				enumerable: false
+			}
 
-			Promise.all paths.map (path) ->
-				p = npath.join root, path
+		readdirs = (root) ->
+			fs.readdirP(root).then (paths) ->
+				if opts.filter
+					paths = paths.filter opts.filter
 
-				fs.statP(p).then (stats) ->
-					ret = if stats.isDirectory()
-						p = p + npath.sep
-						list.push p
-						nofs.readdirsP p, filter, cache, list
-					else
-						list.push p
-					list.statCache[p] = stats if cache
+				Promise.all paths.map (path) ->
+					p = npath.join root, path
 
-					ret
-		.then -> list
+					fs.statP(p).then (stats) ->
+						ret = if stats.isDirectory()
+							p = p + npath.sep
+							list.push p
+							readdirs p
+						else
+							list.push p
+
+						list.statCache[p] = stats if opts.cache
+						ret
+
+		readdirs(root).then -> list
 
 	###*
-	 * Read directory recursively.
-	 * @param  {String} path
-	 * @param {Function} filter To filter paths. Defaults:
-	 * ```coffee
-	 * (path) -> true
-	 * ```
-	 * @return {Array} Every directory path will ends
-	 * with `/` (Unix) or `\` (Windows).
+	 * See `readdirsP`.
+	 * @return {Array} Path strings.
 	###
-	readdirsSync: (root, filter, list = []) ->
-		paths = fs.readdirSync root
-		if filter
-			paths = paths.filter filter
+	readdirsSync: (root, opts = {}) ->
+		utils.defaults opts, {
+			filter: undefined
+			cache: false
+		}
 
-		for path in paths
-			p = npath.join root, path
-			if fs.statSync(p).isDirectory()
-				list.push p + npath.sep
-				nofs.readdirsSync p, filter, list
-			else
-				list.push p
+		list = []
+		if opts.cache
+			statCache = {}
+			Object.defineProperty list, 'statCache', {
+				value: statCache
+				enumerable: false
+			}
 
-		list
+		readdirs = (root) ->
+			paths = fs.readdirSync root
+			if opts.filter
+				paths = paths.filter opts.filter
+
+			for path in paths
+				p = npath.join root, path
+				if fs.statSync(p).isDirectory()
+					p = p + npath.sep
+					list.push p
+					readdirs p
+				else
+					list.push p
+
+				list.statCache[p] = stats if opts.cache
+			list
+
+		readdirs root
 
 	###*
 	 * Remove a file or directory peacefully, same with the `rm -rf`.
 	 * @param  {String} root
-	 * @param {Function} filter Same with the `readdirs`'s.
+	 * @param {Object} opts Defaults:
+	 * ```coffee
+	 * {
+	 * 	# Same with the `readdirs`'s.
+	 * 	filter: (path) -> true
+	 * }
+	 * ```
 	 * @return {Promise}
 	###
-	removeP: (root, filter) ->
+	removeP: (root, opts = {}) ->
 		fs.statP(root).then (stats) ->
 			if stats.isDirectory()
-				nofs.readdirsP(root, filter).then (paths) ->
+				nofs.readdirsP(root, opts).then (paths) ->
 					# Reverse to Keep a subpath being ordered
 					# after its parent.
 					Promise.all paths.reverse().map (path) ->
