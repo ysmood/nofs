@@ -10,10 +10,7 @@ fs = require 'fs'
 utils = require './utils'
 
 # Evil of Node.
-gfs = require './graceful-fs/graceful-fs'
-
-# Overwrite fs with graceful-fs
-utils.extend fs, gfs
+utils.extend fs, require('./graceful-fs/graceful-fs')
 
 # Promisify fs.
 for k of fs
@@ -102,7 +99,7 @@ nofs =
 	 * ```coffee
 	 * (path) -> true
 	 * ```
-	 * @param {Boolean} cache If it is true, the return list array
+	 * @param {Boolean} cache Default is false. If it is true, the return list array
 	 * will have an extra property `statCache`, it is something like:
 	 * ```coffee
 	 * {
@@ -117,7 +114,7 @@ nofs =
 	 * @return {Promise} Resolves an path array. Every directory path will ends
 	 * with `/` (Unix) or `\` (Windows).
 	###
-	readdirsP: (root, filter, cache = true, list) ->
+	readdirsP: (root, filter, cache = false, list) ->
 		if not list?
 			list = []
 			if cache
@@ -135,12 +132,15 @@ nofs =
 				p = npath.join root, path
 
 				fs.statP(p).then (stats) ->
-					list.statCache[p] = stats if cache
-					if stats.isDirectory()
-						list.push p + npath.sep
+					ret = if stats.isDirectory()
+						p = p + npath.sep
+						list.push p
 						nofs.readdirsP p, filter, cache, list
 					else
 						list.push p
+					list.statCache[p] = stats if cache
+
+					ret
 		.then -> list
 
 	###*
@@ -177,7 +177,7 @@ nofs =
 	removeP: (root, filter) ->
 		fs.statP(root).then (stats) ->
 			if stats.isDirectory()
-				nofs.readdirsP(root, filter, false).then (paths) ->
+				nofs.readdirsP(root, filter).then (paths) ->
 					# Reverse to Keep a subpath being ordered
 					# after its parent.
 					Promise.all paths.reverse().map (path) ->
