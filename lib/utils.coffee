@@ -1,3 +1,5 @@
+Promise = require './bluebird/js/main/bluebird'
+
 module.exports =
 
 	promisify: (fn, self) ->

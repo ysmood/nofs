@@ -25,6 +25,6 @@
   "devDependencies": {
     "coffee-script": "*",
     "mocha": "*",
-    "nokit": "^0.2.4"
+    "nokit": "*"
   }
 }
