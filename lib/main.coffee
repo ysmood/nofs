@@ -119,10 +119,31 @@ nofs = {
 	 * ```coffee
 	 * (path) -> true
 	 * ```
+	 * @param {Boolean} cache If it is true, the return list array
+	 * will have an extra property `statCache`, it is something like:
+	 * ```coffee
+	 * {
+	 * 	'path/to/entity': {
+	 * 		dev: 16777220
+	 * 		mode: 33188
+	 * 		...
+	 * 	}
+	 * }
+	 * ```
+	 * The key is the entity path, the value is the `fs.Stats` object.
 	 * @return {Promise} Resolves an path array. Every directory path will ends
 	 * with `/` (Unix) or `\` (Windows).
 	###
-	readdirsP: (root, filter, list = []) ->
+	readdirsP: (root, filter, cache = true, list) ->
+		if not list?
+			list = []
+			if cache
+				statCache = {}
+				Object.defineProperty list, 'statCache', {
+					value: statCache
+					enumerable: false
+				}
+
 		fs.readdirP(root).then (paths) ->
 			if filter
 				paths = paths.filter filter
@@ -131,9 +152,10 @@ nofs = {
 				p = npath.join root, path
 
 				fs.statP(p).then (stats) ->
+					list.statCache[p] = stats if cache
 					if stats.isDirectory()
 						list.push p + npath.sep
-						nofs.readdirsP p, filter, list
+						nofs.readdirsP p, filter, cache, list
 					else
 						list.push p
 		.then -> list
@@ -172,7 +194,7 @@ nofs = {
 	removeP: (root, filter) ->
 		fs.statP(root).then (stats) ->
 			if stats.isDirectory()
-				nofs.readdirsP(root, filter).then (paths) ->
+				nofs.readdirsP(root, filter, false).then (paths) ->
 					# Reverse to Keep a subpath being ordered
 					# after its parent.
 					Promise.all paths.reverse().map (path) ->
