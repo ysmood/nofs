@@ -119,10 +119,10 @@ nofs =
 	###*
 	 * Recursively mkdir, like `mkdir -p`.
 	 * @param  {String} path
-	 * @param  {String} mode Defauls: `0o777 & (~process.umask())`
+	 * @param  {String} mode Defauls: `0o666`
 	 * @return {Promise}
 	###
-	mkdirsP: (path, mode = 0o777 & ~process.umask()) ->
+	mkdirsP: (path, mode = 0o666) ->
 		# Find out how many directory need to be created.
 		findList = (path, list = []) ->
 			nofs.dirExistsP(path).then (exists) ->
@@ -136,6 +136,39 @@ nofs =
 			list.reverse().reduce (p, path) ->
 				p.then -> fs.mkdirP path, mode
 			, Promise.resolve()
+
+	###*
+	 * Moves a file or directory. Also works between partitions.
+	 * @param  {String} from Source path.
+	 * @param  {String} to   Destination path.
+	 * @param  {Object} opts Defaults:
+	 * ```coffee
+	 * {
+	 * 	force: true
+	 * }
+	 * ```
+	 * @return {Promise}
+	###
+	moveP: (from, to, opts) ->
+
+	###*
+	 * Almost the same as `writeFile`, except that if its parent
+	 * directory does not exist, it will be created.
+	 * @param  {String} path
+	 * @param  {String | Buffer} data
+	 * @param  {String | Object} opts Same with the `fs.writeFile`.
+	 * > Remark: For `<= Node v0.8` the `opts` can also be an object.
+	 * @return {Promise}
+	###
+	outputFileP: (path, data, opts = {}) ->
+		args = arguments
+		fs.fileExistsP(path).then (exists) ->
+			if exists
+				nofs.writeFileP.apply null, args
+			else
+				dir = npath.dirname path
+				fs.mkdirsP(dir, opts.mode).then ->
+					nofs.writeFileP.apply null, args
 
 	###*
 	 * Read directory recursively.
@@ -267,23 +300,31 @@ nofs =
 				Promise.reject err
 
 	###*
-	 * Almost the same as `writeFile`, except that if its parent
-	 * directory does not exist, it will be created.
+	 * Change file access and modification times.
+	 * If the file does not exist, it is created.
 	 * @param  {String} path
-	 * @param  {String | Buffer} data
-	 * @param  {String | Object} opts Same with the `fs.writeFile`.
-	 * > Remark: For `<= Node v0.8` the `opts` can also be an object.
+	 * @param  {Object} opts Default:
+	 * ```coffee
+	 * {
+	 * 	atime: Date.now()
+	 * 	mtime: Date.now()
+	 * 	mode: undefined
+	 * }
+	 * ```
 	 * @return {Promise}
 	###
-	outputFileP: (path, data, opts = {}) ->
-		args = arguments
-		fs.fileExistsP(path).then (exists) ->
+	touchP: (path, opts = {}) ->
+		now = new Date
+		utils.defaults opts, {
+			atime: now
+			mtime: now
+		}
+
+		nofs.fileExistsP(path).then (exists) ->
 			if exists
-				nofs.writeFileP.apply null, args
+				fs.utimesP path, opts.atime, opts.mtime
 			else
-				dir = npath.dirname path
-				fs.mkdirsP(dir, opts.mode).then ->
-					nofs.writeFileP.apply null, args
+				nofs.outputFileP path, new Buffer(0), opts
 
 	###*
 	 * A `writeFile` shim for `<= Node v0.8`.
@@ -302,7 +343,7 @@ nofs =
 				throw new TypeError('Bad arguments')
 
 		flag ?= 'w'
-		mode ?= 0o777 & ~process.umask()
+		mode ?= 0o666
 
 		fs.openP(path, flag, mode).then (fd) ->
 			buf = if data.constructor.name == 'Buffer'
