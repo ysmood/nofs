@@ -194,18 +194,18 @@ nofs = {
 	 * @param  {String} path
 	 * @param  {String | Buffer} data
 	 * @param  {String | Object} opts Same with the `fs.writeFile`.
-	 * > Remark: For Node v0.8 the `opts` can only be a string.
+	 * > Remark: For `<= Node v0.8` the `opts` can also be an object.
 	 * @return {Promise}
 	###
-	outputFileP: (path, data, opts) ->
+	outputFileP: (path, data, opts = {}) ->
 		args = arguments
 		fs.fileExistsP(path).then (exists) ->
 			if exists
-				fs.writeFileP.apply null, args
+				nofs.writeFileP.apply null, args
 			else
 				dir = npath.dirname path
 				fs.mkdirsP(dir, opts.mode).then ->
-					fs.writeFileP.apply null, args
+					nofs.writeFileP.apply null, args
 
 	###*
 	 * A `writeFile` shim for `<= Node v0.8`.
