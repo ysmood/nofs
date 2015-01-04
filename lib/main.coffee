@@ -23,6 +23,36 @@ for k of fs
 nofs =
 
 	###*
+	 * Like `cp -rf`
+	 * @param  {[type]} from   [description]
+	 * @param  {[type]} to     [description]
+	 * @param  {[type]} filter [description]
+	 * @param  {[type]} opts [description]
+	 * @return {[type]}        [description]
+	###
+	copyP: (from, to, filter, opts = {}) ->
+		nofs.mkdirsP(to).then ->
+			nofs.readdirsP from, filter, true
+		.then (paths) ->
+			Promise.all paths.map (src) ->
+				dest = npath.join to, npath.relative(from, src)
+				# Whether it is a folder or not.
+				mode = paths.statCache[src].mode
+				if src.slice(-1) == npath.sep
+					fs.mkdirP dest, mode
+				else
+					new Promise (resolve, reject) ->
+						try
+							sSrc = fs.createReadStream src
+							sDest = fs.createWriteStream dest, { mode }
+						catch err
+							reject err
+						sSrc.on 'error', reject
+						sDest.on 'error', reject
+						sDest.on 'close', resolve
+						sSrc.pipe sDest
+
+	###*
 	 * Check if a path exists, and if it is a directory.
 	 * @param  {String}  path
 	 * @return {Promise} Resolves a boolean value.
