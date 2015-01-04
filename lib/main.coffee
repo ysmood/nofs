@@ -7,30 +7,13 @@ Overview = 'nofs'
 Promise = require './bluebird/js/main/bluebird'
 npath = require 'path'
 fs = require 'fs'
+utils = require './utils'
 
 # Evil of Node.
 gfs = require './graceful-fs/graceful-fs'
 
-promisify = (fn, self) ->
-	(args...) ->
-		new Promise (resolve, reject) ->
-			args.push ->
-				if arguments[0]?
-					reject arguments[0]
-				else
-					resolve arguments[1]
-			fn.apply self, args
-
-callbackify = (fn, self) ->
-	(args..., cb) ->
-		fn.apply self, args
-		.then (val) ->
-			cb null, val
-		.catch cb
-
 # Overwrite fs with graceful-fs
-for k of gfs
-	fs[k] = gfs[k]
+utils.extend fs, gfs
 
 # Promisify fs.
 for k of fs
@@ -38,9 +21,9 @@ for k of fs
 		name = k[0...-4]
 		pname = name + 'P'
 		continue if fs[pname]
-		fs[pname] = promisify fs[name]
+		fs[pname] = utils.promisify fs[name]
 
-nofs = {
+nofs =
 
 	###*
 	 * Check if a path exists, and if it is a directory.
@@ -256,16 +239,13 @@ nofs = {
 			pos = if flag.indexOf('a') > -1 then null else 0
 			fs.writeP fd, buf, 0, buf.length, pos
 
-}
-
 # Add nofs functions
-for k of nofs
-	fs[k] = nofs[k]
+utils.extend fs, nofs
 
 for k of fs
 	if k.slice(-1) == 'P'
 		name = k[0...-1]
 		continue if fs[name]
-		fs[name] = callbackify fs[k]
+		fs[name] = utils.callbackify fs[k]
 
 module.exports = fs
