@@ -206,6 +206,34 @@ nofs = {
 				dir = npath.dirname path
 				fs.mkdirsP(dir, opts.mode).then ->
 					fs.writeFileP.apply null, args
+
+	###*
+	 * A `writeFile` shim for `<= Node v0.8`.
+	 * @param  {String} path
+	 * @param  {String | Buffer} data
+	 * @param  {String | Object} opts
+	 * @return {Promise}
+	###
+	writeFileP: (path, data, opts = {}) ->
+		switch typeof opts
+			when 'string'
+				encoding = opts
+			when 'object'
+				{ encoding, flag, mode } = opts
+			else
+				throw new TypeError('Bad arguments')
+
+		flag ?= 'w'
+		mode ?= 0o777 & ~process.umask()
+
+		fs.openP(path, flag, mode).then (fd) ->
+			buf = if data.constructor.name == 'Buffer'
+				data
+			else
+				new Buffer('' + data, encoding)
+			pos = if flag.indexOf('a') > -1 then null else 0
+			fs.writeP fd, buf, 0, buf.length, pos
+
 }
 
 # Add nofs functions
