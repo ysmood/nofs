@@ -30,10 +30,10 @@ nofs =
 	 * ```coffee
 	 * {
 	 * 	# Overwrite file if exists.
-	 * 	force: false
+	 * 	isForce: false
 	 *
 	 * 	# Same with the `readdirs`'s
-	 * 	filter: (path) -> true
+	 * 	filter: undefined
 	 *
 	 * 	isDelete: false
 	 * }
@@ -42,60 +42,64 @@ nofs =
 	###
 	copyP: (from, to, opts = {}) ->
 		utils.defaults opts, {
-			force: false
+			isForce: false
 			filter: undefined
 			isDelete: false
 		}
 
-		flags = if opts.force then 'w' else 'wx'
+		flags = if opts.isForce then 'w' else 'wx'
 
-		nofs.dirExistsP to
-		.then (exists) ->
-			if exists
-				to = npath.join to, npath.basename(from)
-				nofs.mkdirsP to
+		walkOpts = {
+			filter: opts.filter
+			isCacheStats: true
+			cwd: from
+		}
+
+		copyFile = (src, dest, mode) ->
+			new Promise (resolve, reject) ->
+				try
+					sDest = fs.createWriteStream dest, { mode }
+					sSrc = fs.createReadStream src
+				catch err
+					reject err
+				sSrc.on 'error', reject
+				sDest.on 'error', reject
+				sDest.on 'close', resolve
+				sSrc.pipe sDest
+
+		copyDir = (src, dest, { mode }) ->
+			isDir = src.slice(-1) == npath.sep
+			promise = if isDir
+				fs.mkdirP dest, mode
 			else
-				nofs.mkdirsP to
-		.then ->
-			nofs.readdirsP from, {
-				filter: opts.filter
-				isCacheStats: true
-				cwd: from
-			}
-		.then (paths) ->
-			Promise.all paths.map (path) ->
-				dest = npath.join to, path
-				src = npath.join from, path
-				mode = paths.statsCache[path].mode
-				isDir = src.slice(-1) == npath.sep
-				promise = if isDir
-					fs.mkdirP dest, mode
+				if opts.isForce
+					fs.unlinkP(dest).then ->
+						copyFile src, dest, mode
 				else
-					copy = ->
-						new Promise (resolve, reject) ->
-							try
-								sSrc = fs.createReadStream src
-								sDest = fs.createWriteStream dest, { mode }
-							catch err
-								reject err
-							sSrc.on 'error', reject
-							sDest.on 'error', reject
-							sDest.on 'close', resolve
-							sSrc.pipe sDest
+					copyFile src, dest, mode
 
-					if opts.force
-						fs.unlinkP(dest).catch(->).then copy
+			if opts.isDelete
+				promise.then ->
+					if isDir
+						fs.rmdirP src
 					else
-						copy()
+						fs.unlinkP src
+			else
+				promise
 
-				if opts.isDelete
-					promise.then ->
-						if isDir
-							fs.rmdirP src
-						else
-							fs.unlinkP src
+		nofs.statP(from).then (stats) ->
+			if stats.isDirectory()
+				nofs.dirExistsP(to).then (exists) ->
+					if exists
+						to = npath.join to, npath.basename(from)
+					nofs.mkdirsP to, stats.mode
+				.then ->
+					nofs.walkdirs from, walkOpts, copyDir
+			else
+				if opts.isForce
+					fs.unlinkP(dest).then ->
+						copyFile from, to, stats.mode
 				else
-					promise
 
 	###*
 	 * Check if a path exists, and if it is a directory.
@@ -165,17 +169,65 @@ nofs =
 
 	###*
 	 * Moves a file or directory. Also works between partitions.
+	 * Behaves like the Unix `mv`.
 	 * @param  {String} from Source path.
 	 * @param  {String} to   Destination path.
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
 	 * {
-	 * 	force: true
+	 * 	isForce: false
+	 * 	filter: undefined
 	 * }
 	 * ```
-	 * @return {Promise}
+	 * @return {Promise} It will resolve a boolean value which indicates
+	 * whether this action is taken between two partitions.
 	###
-	moveP: (from, to, opts) ->
+	moveP: (from, to, opts = {}) ->
+		utils.defaults opts, {
+			isForce: false
+		}
+
+		walkOpts = {
+			filter: opts.filter
+			cwd: from
+		}
+
+		nofs.statP(from).then (stats) ->
+			if stats.isDirectory()
+				nofs.dirExistsP to
+				.then (exists) ->
+					if exists
+						to = npath.join to, npath.basename(from)
+					nofs.mkdirsP to, stats.mode
+				.then ->
+					fs.linkP(from, to).then ->
+						fs.unlinkP from
+					.catch (err) ->
+						if opts.isForce
+							switch err.code
+								when 'ENOTEMPTY'
+									nofs.walkdirs(
+										from
+										walkOpts
+										(src, dest) ->
+											fs.renameP src, dest
+									)
+								when 'EXDEV'
+									nofs.copyP from, to, {
+										isForce: true
+										filter: opts.filter
+										isDelete: true
+									}
+								else
+									Promise.reject err
+						else
+							Promise.reject err
+			else
+				if opts.isForce
+					fs.renameP from, to
+				else
+					fs.linkP(from, to).then ->
+						fs.unlinkP from
 
 	###*
 	 * Almost the same as `writeFile`, except that if its parent
@@ -203,7 +255,7 @@ nofs =
 	 * ```coffee
 	 * {
 	 * 	# To filter paths.
-	 * 	filter: (path) -> true
+	 * 	filter: undefined
 	 * 	isCacheStats: false
 	 * 	cwd: '.'
 	 * }
@@ -269,7 +321,7 @@ nofs =
 	 * ```coffee
 	 * {
 	 * 	# Same with the `readdirs`'s.
-	 * 	filter: (path) -> true
+	 * 	filter: undefined
 	 * }
 	 * ```
 	 * @return {Promise}
@@ -319,6 +371,34 @@ nofs =
 				fs.utimesP path, opts.atime, opts.mtime
 			else
 				nofs.outputFileP path, new Buffer(0), opts
+
+	###*
+	 * Walk through directories recursively with a
+	 * callback.
+	 * @param  {String}   root
+	 * @param  {Object}   opts Same with the `readdirs`.
+	 * @param  {Function} fn The callback will be called
+	 * with each path. The callback can return a `Promise` to
+	 * keep the async sequence go on. All the callbacks are
+	 * wrap into a `Promise.all`.
+	 * @return {Promise}
+	 * @example
+	 * ```coffee
+	 * nofs.walkdirs(
+	 * 	'dir'
+	 * 	{ isCacheStats: true }
+	 * 	(src, dest, stats) ->
+	 * 		console.log src, dest, stats.mode
+	 * )
+	 * ```
+	###
+	walkdirs: (root, opts = {}, fn) ->
+		nofs.readdirsP root, opts
+		.then (paths) ->
+			Promise.all paths.map (path) ->
+				src = npath.join root, path
+				dest = npath.join to, path
+				fn src, dest, paths[path]
 
 	###*
 	 * A `writeFile` shim for `<= Node v0.8`.
