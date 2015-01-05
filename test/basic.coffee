@@ -46,21 +46,13 @@ describe 'Basic:', ->
 			assert.equal(ret, 'test')
 			tdone()
 
-	it 'readdirsSync', ->
-		ls = fs.readdirsSync 'test/fixtures/template'
-		assert.deepEqual ls, [
-			'test/fixtures/template/a'
-			'test/fixtures/template/test/'
-			'test/fixtures/template/test/b'
-		]
-
 	it 'readdirsP', ->
-		fs.readdirsP 'test/fixtures/template'
+		fs.readdirsP 'test/fixtures/dir'
 		.then (ls) ->
 			assert.deepEqual ls, [
-				'test/fixtures/template/a'
-				'test/fixtures/template/test/'
-				'test/fixtures/template/test/b'
+				'test/fixtures/dir/a'
+				'test/fixtures/dir/test/'
+				'test/fixtures/dir/test/b'
 			]
 
 	# it 'removeSync', ->
