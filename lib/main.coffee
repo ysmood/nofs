@@ -70,7 +70,7 @@ nofs =
 		copyDir = (src, dest, { mode }) ->
 			isDir = src.slice(-1) == npath.sep
 			promise = if isDir
-				fs.mkdirP dest, mode
+				fs.mkdirsP dest, mode
 			else
 				if opts.isForce
 					fs.unlinkP(dest).then ->
@@ -87,14 +87,14 @@ nofs =
 			else
 				promise
 
-		nofs.statP(from).then (stats) ->
+		fs.statP(from).then (stats) ->
 			if stats.isDirectory()
 				nofs.dirExistsP(to).then (exists) ->
 					if exists
 						to = npath.join to, npath.basename(from)
 					nofs.mkdirsP to, stats.mode
 				.then ->
-					nofs.walkdirsP from, walkOpts, copyDir
+					nofs.mapdir from, to, walkOpts, copyDir
 			else
 				if opts.isForce
 					fs.unlinkP(dest).then ->
@@ -151,7 +151,7 @@ nofs =
 			false
 
 	###*
-	 * Recursively mkdir, like `mkdir -p`.
+	 * Recursively create directory path, like `mkdir -p`.
 	 * @param  {String} path
 	 * @param  {String} mode Defauls: `0o777`
 	 * @return {Promise}
@@ -192,7 +192,7 @@ nofs =
 			cwd: from
 		}
 
-		nofs.statP(from).then (stats) ->
+		fs.statP(from).then (stats) ->
 			if stats.isDirectory()
 				nofs.dirExistsP to
 				.then (exists) ->
@@ -206,12 +206,9 @@ nofs =
 						if opts.isForce
 							switch err.code
 								when 'ENOTEMPTY'
-									nofs.walkdirsP(
-										from
-										walkOpts
-										(src, dest) ->
+									nofs.mapdir from, to, walkOpts
+									, (src, dest) ->
 											fs.renameP src, dest
-									)
 								when 'EXDEV'
 									nofs.copyP from, to, {
 										isForce: true
@@ -373,9 +370,10 @@ nofs =
 				nofs.outputFileP path, new Buffer(0), opts
 
 	###*
-	 * Walk through directories recursively with a
+	 * Map file from a directory to another recursively with a
 	 * callback.
-	 * @param  {String}   root
+	 * @param  {String}   from The root directory to start with.
+	 * @param  {String}   to This directory can be a non-exists path.
 	 * @param  {Object}   opts Same with the `readdirs`.
 	 * @param  {Function} fn The callback will be called
 	 * with each path. The callback can return a `Promise` to
@@ -384,21 +382,25 @@ nofs =
 	 * @return {Promise}
 	 * @example
 	 * ```coffee
-	 * nofs.walkdirsP(
-	 * 	'dir'
+	 * nofs.mapdir(
+	 * 	'from'
+	 * 	'to'
 	 * 	{ isCacheStats: true }
 	 * 	(src, dest, stats) ->
-	 * 		console.log src, dest, stats.mode
+	 * 		console.log stats.mode
+	 * 		buf = nofs.readFileP src
+	 * 		buf += 'some contents'
+	 * 		nofs.writeFile dest, buf
 	 * )
 	 * ```
 	###
-	walkdirsP: (root, opts = {}, fn) ->
-		nofs.readdirsP root, opts
+	mapdir: (from, to, opts = {}, fn) ->
+		nofs.readdirsP from, opts
 		.then (paths) ->
 			Promise.all paths.map (path) ->
-				src = npath.join root, path
+				src = npath.join from, path
 				dest = npath.join to, path
-				fn src, dest, paths[path]
+				fn src, dest, paths.statsCache[path]
 
 	###*
 	 * A `writeFile` shim for `<= Node v0.8`.
