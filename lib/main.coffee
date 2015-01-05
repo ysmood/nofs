@@ -34,6 +34,8 @@ nofs =
 	 *
 	 * 	# Same with the `readdirs`'s
 	 * 	filter: (path) -> true
+	 *
+	 * 	isDelete: false
 	 * }
 	 * ```
 	 * @return {Promise}
@@ -42,6 +44,7 @@ nofs =
 		utils.defaults opts, {
 			force: false
 			filter: undefined
+			isDelete: false
 		}
 
 		flags = if opts.force then 'w' else 'wx'
@@ -54,13 +57,19 @@ nofs =
 			else
 				nofs.mkdirsP to
 		.then ->
-			nofs.readdirsP from, { filter: opts.filter, cache: true }
+			nofs.readdirsP from, {
+				filter: opts.filter
+				isCacheStats: true
+				cwd: from
+			}
 		.then (paths) ->
-			Promise.all paths.map (src) ->
-				dest = npath.join to, npath.relative(from, src)
-				# Whether it is a folder or not.
-				mode = paths.statCache[src].mode
-				if src.slice(-1) == npath.sep
+			Promise.all paths.map (path) ->
+				dest = npath.join to, path
+				src = npath.join from, path
+				mode = paths.statsCache[path].mode
+				console.log dest
+				isDir = src.slice(-1) == npath.sep
+				promise = if isDir
 					fs.mkdirP dest, mode
 				else
 					copy = ->
@@ -79,6 +88,15 @@ nofs =
 						fs.unlinkP(dest).catch(->).then copy
 					else
 						copy()
+
+				if opts.isDelete
+					promise.then ->
+						if isDir
+							fs.rmdirP src
+						else
+							fs.unlinkP src
+				else
+					promise
 
 	###*
 	 * Check if a path exists, and if it is a directory.
@@ -187,12 +205,12 @@ nofs =
 	 * {
 	 * 	# To filter paths.
 	 * 	filter: (path) -> true
-	 * 	cache: false
+	 * 	isCacheStats: false
 	 * 	cwd: '.'
 	 * }
 	 * ```
-	 * If `cache` is set true, the return list array
-	 * will have an extra property `statCache`, it is something like:
+	 * If `isCacheStats` is set true, the return list array
+	 * will have an extra property `statsCache`, it is something like:
 	 * ```coffee
 	 * {
 	 * 	'path/to/entity': {
@@ -209,15 +227,15 @@ nofs =
 	readdirsP: (root, opts = {}) ->
 		utils.defaults opts, {
 			filter: undefined
-			cache: false
+			isCacheStats: false
 			cwd: '.'
 		}
 
 		list = []
-		if opts.cache
-			statCache = {}
-			Object.defineProperty list, 'statCache', {
-				value: statCache
+		if opts.isCacheStats
+			statsCache = {}
+			Object.defineProperty list, 'statsCache', {
+				value: statsCache
 				enumerable: false
 			}
 
@@ -233,52 +251,17 @@ nofs =
 					fs.statP(nextPath).then (stats) ->
 						currPath = npath.join cwd, path
 						ret = if stats.isDirectory()
-							list.push currPath + npath.sep
+							currPath = currPath + npath.sep
+							list.push currPath
 							readdirs nextPath
 						else
 							list.push currPath
 
-						list.statCache[p] = stats if opts.cache
+						if opts.isCacheStats
+							list.statsCache[currPath] = stats
 						ret
 
 		readdirs(root).then -> list
-
-	###*
-	 * See `readdirsP`.
-	 * @return {Array} Path strings.
-	###
-	readdirsSync: (root, opts = {}) ->
-		utils.defaults opts, {
-			filter: undefined
-			cache: false
-		}
-
-		list = []
-		if opts.cache
-			statCache = {}
-			Object.defineProperty list, 'statCache', {
-				value: statCache
-				enumerable: false
-			}
-
-		readdirs = (root) ->
-			paths = fs.readdirSync root
-			if opts.filter
-				paths = paths.filter opts.filter
-
-			for path in paths
-				p = npath.join root, path
-				if fs.statSync(p).isDirectory()
-					p = p + npath.sep
-					list.push p
-					readdirs p
-				else
-					list.push p
-
-				list.statCache[p] = stats if opts.cache
-			list
-
-		readdirs root
 
 	###*
 	 * Remove a file or directory peacefully, same with the `rm -rf`.
