@@ -188,6 +188,7 @@ nofs =
 	 * 	# To filter paths.
 	 * 	filter: (path) -> true
 	 * 	cache: false
+	 * 	cwd: '.'
 	 * }
 	 * ```
 	 * If `cache` is set true, the return list array
@@ -209,6 +210,7 @@ nofs =
 		utils.defaults opts, {
 			filter: undefined
 			cache: false
+			cwd: '.'
 		}
 
 		list = []
@@ -220,20 +222,21 @@ nofs =
 			}
 
 		readdirs = (root) ->
+			cwd = npath.relative opts.cwd, root
 			fs.readdirP(root).then (paths) ->
 				if opts.filter
 					paths = paths.filter opts.filter
 
 				Promise.all paths.map (path) ->
-					p = npath.join root, path
+					nextPath = npath.join root, path
 
-					fs.statP(p).then (stats) ->
+					fs.statP(nextPath).then (stats) ->
+						currPath = npath.join cwd, path
 						ret = if stats.isDirectory()
-							p = p + npath.sep
-							list.push p
-							readdirs p
+							list.push currPath + npath.sep
+							readdirs nextPath
 						else
-							list.push p
+							list.push currPath
 
 						list.statCache[p] = stats if opts.cache
 						ret
