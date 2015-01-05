@@ -23,14 +23,14 @@ for k of fs
 nofs =
 
 	###*
-	 * Like `cp -rf`.
+	 * Like `cp -r`.
 	 * @param  {String} from Source path.
 	 * @param  {String} to Destination path.
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
 	 * {
 	 * 	# Overwrite file if exists.
-	 * 	force: true
+	 * 	force: false
 	 *
 	 * 	# Same with the `readdirs`'s
 	 * 	filter: (path) -> true
@@ -40,13 +40,20 @@ nofs =
 	###
 	copyP: (from, to, opts = {}) ->
 		utils.defaults opts, {
-			force: true
+			force: false
 			filter: undefined
 		}
 
 		flags = if opts.force then 'w' else 'wx'
 
-		nofs.mkdirsP(to).then ->
+		nofs.dirExistsP to
+		.then (exists) ->
+			if exists
+				to = npath.join to, npath.basename(from)
+				nofs.mkdirsP to
+			else
+				nofs.mkdirsP to
+		.then ->
 			nofs.readdirsP from, { filter: opts.filter, cache: true }
 		.then (paths) ->
 			Promise.all paths.map (src) ->
@@ -54,18 +61,24 @@ nofs =
 				# Whether it is a folder or not.
 				mode = paths.statCache[src].mode
 				if src.slice(-1) == npath.sep
-					fs.mkdirsP dest, mode
+					fs.mkdirP dest, mode
 				else
+					copy = ->
 					new Promise (resolve, reject) ->
 						try
 							sSrc = fs.createReadStream src
-							sDest = fs.createWriteStream dest, { mode, flags }
+								sDest = fs.createWriteStream dest, { mode }
 						catch err
 							reject err
 						sSrc.on 'error', reject
 						sDest.on 'error', reject
 						sDest.on 'close', resolve
 						sSrc.pipe sDest
+
+					if opts.force
+						fs.unlinkP(dest).catch(->).then copy
+					else
+						copy()
 
 	###*
 	 * Check if a path exists, and if it is a directory.
@@ -119,23 +132,19 @@ nofs =
 	###*
 	 * Recursively mkdir, like `mkdir -p`.
 	 * @param  {String} path
-	 * @param  {String} mode Defauls: `0o666`
+	 * @param  {String} mode Defauls: `0o777`
 	 * @return {Promise}
 	###
-	mkdirsP: (path, mode = 0o666) ->
-		# Find out how many directory need to be created.
-		findList = (path, list = []) ->
+	mkdirsP: (path, mode = 0o777) ->
+		makedir = (path) ->
 			nofs.dirExistsP(path).then (exists) ->
 				if exists
-					Promise.resolve list
+					Promise.resolve()
 				else
-					list.push path
-					findList npath.dirname(path), list
-
-		findList(path).then (list) ->
-			list.reverse().reduce (p, path) ->
-				p.then -> fs.mkdirP path, mode
-			, Promise.resolve()
+					parentPath = npath.dirname path
+					makedir(parentPath).then ->
+						fs.mkdirP path, mode
+		makedir path
 
 	###*
 	 * Moves a file or directory. Also works between partitions.
