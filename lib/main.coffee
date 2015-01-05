@@ -94,7 +94,7 @@ nofs =
 						to = npath.join to, npath.basename(from)
 					nofs.mkdirsP to, stats.mode
 				.then ->
-					nofs.walkdirs from, walkOpts, copyDir
+					nofs.walkdirsP from, walkOpts, copyDir
 			else
 				if opts.isForce
 					fs.unlinkP(dest).then ->
@@ -206,7 +206,7 @@ nofs =
 						if opts.isForce
 							switch err.code
 								when 'ENOTEMPTY'
-									nofs.walkdirs(
+									nofs.walkdirsP(
 										from
 										walkOpts
 										(src, dest) ->
@@ -384,7 +384,7 @@ nofs =
 	 * @return {Promise}
 	 * @example
 	 * ```coffee
-	 * nofs.walkdirs(
+	 * nofs.walkdirsP(
 	 * 	'dir'
 	 * 	{ isCacheStats: true }
 	 * 	(src, dest, stats) ->
@@ -392,7 +392,7 @@ nofs =
 	 * )
 	 * ```
 	###
-	walkdirs: (root, opts = {}, fn) ->
+	walkdirsP: (root, opts = {}, fn) ->
 		nofs.readdirsP root, opts
 		.then (paths) ->
 			Promise.all paths.map (path) ->
