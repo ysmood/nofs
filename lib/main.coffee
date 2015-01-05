@@ -33,7 +33,7 @@ nofs =
 	 * 	isForce: false
 	 *
 	 * 	# Same with the `readdirs`'s
-	 * 	filter: undefined
+	 * 	filter: (path) -> true
 	 * }
 	 * ```
 	 * @return {Promise}
@@ -41,7 +41,6 @@ nofs =
 	copyP: (from, to, opts = {}) ->
 		utils.defaults opts, {
 			isForce: false
-			filter: undefined
 		}
 
 		flags = if opts.isForce then 'w' else 'wx'
@@ -160,7 +159,7 @@ nofs =
 	 * ```coffee
 	 * {
 	 * 	isForce: false
-	 * 	filter: undefined
+	 * 	filter: (path) -> true
 	 * }
 	 * ```
 	 * @return {Promise} It will resolve a boolean value which indicates
@@ -245,7 +244,7 @@ nofs =
 	 * ```coffee
 	 * {
 	 * 	# To filter paths.
-	 * 	filter: undefined
+	 * 	filter: (path) -> true
 	 * 	isCacheStats: false
 	 * 	cwd: '.'
 	 * }
@@ -267,7 +266,6 @@ nofs =
 	###
 	readdirsP: (root, opts = {}) ->
 		utils.defaults opts, {
-			filter: undefined
 			isCacheStats: false
 			cwd: '.'
 		}
@@ -310,7 +308,7 @@ nofs =
 	 * ```coffee
 	 * {
 	 * 	# Same with the `readdirs`'s.
-	 * 	filter: undefined
+	 * 	filter: (path) -> true
 	 * }
 	 * ```
 	 * @return {Promise}
