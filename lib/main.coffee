@@ -34,8 +34,6 @@ nofs =
 	 *
 	 * 	# Same with the `readdirs`'s
 	 * 	filter: undefined
-	 *
-	 * 	isDelete: false
 	 * }
 	 * ```
 	 * @return {Promise}
@@ -44,7 +42,6 @@ nofs =
 		utils.defaults opts, {
 			isForce: false
 			filter: undefined
-			isDelete: false
 		}
 
 		flags = if opts.isForce then 'w' else 'wx'
@@ -67,25 +64,15 @@ nofs =
 				sDest.on 'close', resolve
 				sSrc.pipe sDest
 
-		copyDir = (src, dest, { mode }) ->
-			isDir = src.slice(-1) == npath.sep
-			promise = if isDir
-				fs.mkdirsP dest, mode
+		copy = (src, dest, stats) ->
+			if stats.isDirectory()
+				fs.mkdirsP dest, stats.mode
 			else
 				if opts.isForce
-					fs.unlinkP(dest).then ->
-						copyFile src, dest, mode
+					fs.unlinkP(dest).catch(->).then ->
+						copyFile src, dest, stats.mode
 				else
-					copyFile src, dest, mode
-
-			if opts.isDelete
-				promise.then ->
-					if isDir
-						fs.rmdirP src
-					else
-						fs.unlinkP src
-			else
-				promise
+					copyFile src, dest, stats.mode
 
 		fs.statP(from).then (stats) ->
 			if stats.isDirectory()
@@ -94,12 +81,9 @@ nofs =
 						to = npath.join to, npath.basename(from)
 					nofs.mkdirsP to, stats.mode
 				.then ->
-					nofs.mapdir from, to, walkOpts, copyDir
+					nofs.mapdirP from, to, walkOpts, copy
 			else
-				if opts.isForce
-					fs.unlinkP(dest).then ->
-						copyFile from, to, stats.mode
-				else
+				copy from, to, stats
 
 	###*
 	 * Check if a path exists, and if it is a directory.
@@ -194,31 +178,40 @@ nofs =
 
 		fs.statP(from).then (stats) ->
 			if stats.isDirectory()
-				nofs.dirExistsP to
-				.then (exists) ->
+				nofs.dirExistsP(to).then (exists) ->
 					if exists
 						to = npath.join to, npath.basename(from)
-					nofs.mkdirsP to, stats.mode
-				.then ->
+
 					fs.linkP(from, to).then ->
 						fs.unlinkP from
 					.catch (err) ->
-						if opts.isForce
-							switch err.code
-								when 'ENOTEMPTY'
-									nofs.mapdir from, to, walkOpts
-									, (src, dest) ->
-											fs.renameP src, dest
-								when 'EXDEV'
-									nofs.copyP from, to, {
-										isForce: true
-										filter: opts.filter
-										isDelete: true
-									}
-								else
-									Promise.reject err
-						else
-							Promise.reject err
+						switch err.code
+							when 'EEXIST'
+								if not opts.isForce
+									return Promise.reject err
+
+								nofs.mapdirP from, to, walkOpts
+								, (src, dest) ->
+									fs.renameP src, dest
+								.catch (err) ->
+									if err.code == 'EXDEV'
+										nofs.copyP from, to, {
+											isForce: opts.isForce
+											filter: opts.filter
+										}
+										.then ->
+											nofs.removeP from
+									else
+										Promise.reject err
+							when 'EXDEV'
+								nofs.copyP from, to, {
+									isForce: opts.isForce
+									filter: opts.filter
+								}
+								.then ->
+									nofs.removeP from
+							else
+								Promise.reject err
 			else
 				if opts.isForce
 					fs.renameP from, to
@@ -280,12 +273,11 @@ nofs =
 		}
 
 		list = []
-		if opts.isCacheStats
-			statsCache = {}
-			Object.defineProperty list, 'statsCache', {
-				value: statsCache
-				enumerable: false
-			}
+		statsCache = {}
+		Object.defineProperty list, 'statsCache', {
+			value: statsCache
+			enumerable: false
+		}
 
 		readdirs = (root) ->
 			cwd = npath.relative opts.cwd, root
@@ -377,12 +369,11 @@ nofs =
 	 * @param  {Object}   opts Same with the `readdirs`.
 	 * @param  {Function} fn The callback will be called
 	 * with each path. The callback can return a `Promise` to
-	 * keep the async sequence go on. All the callbacks are
-	 * wrap into a `Promise.all`.
+	 * keep the async sequence go on.
 	 * @return {Promise}
 	 * @example
 	 * ```coffee
-	 * nofs.mapdir(
+	 * nofs.mapdirP(
 	 * 	'from'
 	 * 	'to'
 	 * 	{ isCacheStats: true }
@@ -394,13 +385,15 @@ nofs =
 	 * )
 	 * ```
 	###
-	mapdir: (from, to, opts = {}, fn) ->
+	mapdirP: (from, to, opts = {}, fn) ->
 		nofs.readdirsP from, opts
 		.then (paths) ->
-			Promise.all paths.map (path) ->
-				src = npath.join from, path
-				dest = npath.join to, path
-				fn src, dest, paths.statsCache[path]
+			paths.reduce (promise, path) ->
+				promise.then ->
+					src = npath.join from, path
+					dest = npath.join to, path
+					fn src, dest, paths.statsCache[path]
+			, Promise.resolve()
 
 	###*
 	 * A `writeFile` shim for `<= Node v0.8`.
