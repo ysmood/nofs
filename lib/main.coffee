@@ -67,22 +67,21 @@ nofs =
 				dest = npath.join to, path
 				src = npath.join from, path
 				mode = paths.statsCache[path].mode
-				console.log dest
 				isDir = src.slice(-1) == npath.sep
 				promise = if isDir
 					fs.mkdirP dest, mode
 				else
 					copy = ->
-					new Promise (resolve, reject) ->
-						try
-							sSrc = fs.createReadStream src
+						new Promise (resolve, reject) ->
+							try
+								sSrc = fs.createReadStream src
 								sDest = fs.createWriteStream dest, { mode }
-						catch err
-							reject err
-						sSrc.on 'error', reject
-						sDest.on 'error', reject
-						sDest.on 'close', resolve
-						sSrc.pipe sDest
+							catch err
+								reject err
+							sSrc.on 'error', reject
+							sDest.on 'error', reject
+							sDest.on 'close', resolve
+							sSrc.pipe sDest
 
 					if opts.force
 						fs.unlinkP(dest).catch(->).then copy
