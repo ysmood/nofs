@@ -1,5 +1,5 @@
 # Changelog
 
-- v0.1.2
+- v0.2.0
 
-  - Update bluebird.
+  - Add all basic Promise functions.
