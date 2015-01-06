@@ -72,20 +72,13 @@ describe 'Basic:', ->
 				'test/fixtures/dir/test/test/d'
 			]
 
-	it 'readdirsP cwd', ->
-		fs.readdirsP 'dir', {
-			cwd: 'test/fixtures'
+	it 'readdirsP cwd filter', ->
+		fs.readdirsP '', {
+			cwd: 'test/fixtures/dir'
+			filter: /d/
 		}
 		.then (ls) ->
-			shouldDeepEqual ls, [
-				'dir/a'
-				'dir/test/'
-				'dir/test2/'
-				'dir/test/b'
-				'dir/test/test/'
-				'dir/test2/r'
-				'dir/test/test/d'
-			]
+			shouldDeepEqual ls, ['test/test/d']
 
 	it 'removeP copyP moveP', ->
 		after ->

@@ -354,7 +354,7 @@ nofs =
 	 * ```coffee
 	 * {
 	 * 	# To filter paths.
-	 * 	filter: (path) -> true
+	 * 	filter: (path, stats) -> true
 	 *
 	 * 	isCacheStats: false
 	 *
@@ -399,8 +399,8 @@ nofs =
 	 *
 	 * # Custom handler
 	 * nofs.readdirsP 'dir/path', {
-	 * 	filter: (path) ->
-	 * 		path.indexOf('a') > -1
+	 * 	filter: (path, stats) ->
+	 * 		path.indexOf('a') > -1 and stats.isFile()
 	 * }
 	 * .then (paths) -> console.log paths
 	 * ```
@@ -409,6 +409,7 @@ nofs =
 		utils.defaults opts, {
 			isCacheStats: false
 			cwd: ''
+			filter: -> true
 		}
 
 		if opts.filter instanceof RegExp
@@ -424,29 +425,26 @@ nofs =
 
 		resolve = (path) -> npath.join opts.cwd, path
 
-		nextDir = (nextPath) ->
-			fs.statP(resolve nextPath).then (stats) ->
-				ret = if stats.isDirectory()
-					nextPath = nextPath + npath.sep
-					list.push nextPath
-					readdir nextPath
+		nextEntity = (path) ->
+			fs.statP(resolve path).then (stats) ->
+				if stats.isDirectory()
+					path = path + npath.sep
+					addPath path, stats
+					readdir path
 				else
-					list.push nextPath
+					addPath path, stats
+
+		addPath = (path, stats) ->
+			if opts.filter path, stats
+				list.push path
 
 				if opts.isCacheStats
-					list.statsCache[nextPath] = stats
-				ret
+					list.statsCache[path] = stats
 
 		readdir = (root) ->
 			fs.readdirP(resolve root).then (paths) ->
-				Promise.all(for path in paths
-					nextPath = npath.join root, path
-
-					if opts.filter and not opts.filter(nextPath)
-						continue
-
-					nextDir nextPath
-				)
+				Promise.all paths.map (path) ->
+					nextEntity npath.join(root, path)
 
 		readdir(root).then -> list
 
