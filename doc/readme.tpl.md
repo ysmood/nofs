@@ -19,15 +19,24 @@ npm install nofs
 ```coffee
 fs = require 'nofs'
 
+# Callback
+fs.outputFile 'x.txt', 'test', (err) ->
+    console.log 'done'
+
+# Sync
+fs.outputFileSync 'x.txt', 'test'
+
+# Promise
 fs.mkdirsP 'deep/dir/path'
 .then ->
     fs.outputFileP 'a.txt', 'hello world'
 .then ->
     fs.moveP 'a.txt', 'b.txt'
 .then ->
-    fs.copyP 'b.txt', 'c.txt'
+    fs.copyP 'b.txt', 'c.js'
 .then ->
-    fs.readdirsP 'deep', { filter: /\.txt$/ }
+    # Get all folders.
+    fs.readdirsP 'deep', { filter: /\/$/ }
 .then (list) ->
     console.log list
 .then ->

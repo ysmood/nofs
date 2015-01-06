@@ -1,5 +1,6 @@
 fs = require '../lib/main'
 { Promise } = require '../lib/utils'
+npath = require 'path'
 
 assert = require 'assert'
 
@@ -75,10 +76,10 @@ describe 'Basic:', ->
 	it 'readdirsP cwd filter', ->
 		fs.readdirsP '', {
 			cwd: 'test/fixtures/dir'
-			filter: /d/
+			filter: new RegExp("[^#{npath.sep}]$")
 		}
 		.then (ls) ->
-			shouldDeepEqual ls, ['test/test/d']
+			shouldDeepEqual ls, ["a","test/b","test2/r","test/test/d"]
 
 	it 'removeP copyP moveP', ->
 		after ->
