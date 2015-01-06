@@ -1,7 +1,6 @@
 dist
 node_modules
 *.sublime-*
-.nobone
 
 test
 .*

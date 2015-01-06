@@ -1,3 +1,5 @@
+# Alpha: Now Only Promise APIs are Avaiable
+
 # [nofs](https://github.com/ysmood/nofs)
 
 ## Overview
@@ -218,7 +220,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>param</u>**: `mode` { _String_ }
 
-    Defauls: `0o777 & ~process.umask()`
+    Defaults: `0o777 & ~process.umask()`
 
   - **<u>return</u>**:  { _Promise_ }
 

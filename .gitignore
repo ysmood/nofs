@@ -2,3 +2,4 @@ dist
 node_modules
 *.sublime-*
 .nobone
+.cake_task_cache

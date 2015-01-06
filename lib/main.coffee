@@ -247,7 +247,7 @@ nofs =
 	###*
 	 * Recursively create directory path, like `mkdir -p`.
 	 * @param  {String} path
-	 * @param  {String} mode Defauls: `0o777 & ~process.umask()`
+	 * @param  {String} mode Defaults: `0o777 & ~process.umask()`
 	 * @return {Promise}
 	###
 	mkdirsP: (path, mode = 0o777 & ~process.umask()) ->

@@ -1,3 +1,5 @@
+# Alpha: Now Only Promise APIs are Avaiable
+
 # [nofs](https://github.com/ysmood/nofs)
 
 ## Overview
