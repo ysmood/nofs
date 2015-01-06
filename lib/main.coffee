@@ -5,7 +5,6 @@
 Overview = 'nofs'
 
 npath = require 'path'
-fs = require 'fs'
 utils = require './utils'
 
 ###*
@@ -13,6 +12,9 @@ utils = require './utils'
  * No APIs other than ES6 spec will be used.
 ###
 Promise = utils.Promise
+
+# nofs won't pollute the native fs.
+fs = utils.extend {}, require 'fs'
 
 # Evil of Node.
 utils.extend fs, require('./graceful-fs/graceful-fs')
@@ -84,7 +86,7 @@ nofs =
 						to = npath.join to, npath.basename(from)
 					nofs.mkdirsP to, stats.mode
 				.then ->
-					nofs.mapdirP from, to, walkOpts, copy
+					nofs.mapDirP from, to, walkOpts, copy
 			else
 				copy from, to, stats
 
@@ -108,6 +110,38 @@ nofs =
 			fs.statSync(path).isDirectory()
 		else
 			false
+
+	###*
+	 * Walk through directory recursively with a callback.
+	 * @param  {String}   root
+	 * @param  {Object}   opts It extend the options of `readdirs`,
+	 * with some extra options:
+	 * ```coffee
+	 * {
+	 * 	# Walk children files first.
+	 * 	isReverse: false
+	 * }
+	 * ```
+	 * @param  {Function} fn `(path, stats) -> Promise`
+	 * @return {Promise} Final resolved value.
+	 * @example
+	 * ```coffee
+	 * # Print path name list.
+	 * nofs.eachDirP 'dir/path', (path) ->
+	 * 	console.log path
+	 *
+	 * # Print path name list.
+	 * nofs.eachDirP 'dir/path', { isCacheStats: true }, (path, stats) ->
+	 * 	console.log path, stats.isFile()
+	 * ```
+	###
+	eachDirP: (root, opts = {}, fn) ->
+		if opts instanceof Function
+			fn = opts
+			opts = {}
+
+		nofs.reduceDirP root, opts, (nil, path, stats) ->
+			fn path, stats
 
 	# Feel pity for Node again.
 	# The `fs.exists` api doesn't fulfil the node callback standard.
@@ -192,7 +226,7 @@ nofs =
 								if not opts.isForce
 									return Promise.reject err
 
-								nofs.mapdirP from, to, walkOpts
+								nofs.mapDirP from, to, walkOpts
 								, (src, dest) ->
 									fs.renameP src, dest
 								.catch (err) ->
@@ -356,16 +390,15 @@ nofs =
 	 * @return {Promise}
 	###
 	removeP: (root, opts = {}) ->
+		opts.isReverse = true
+
 		fs.statP(root).then (stats) ->
 			if stats.isDirectory()
-				nofs.readdirsP(root, opts).then (paths) ->
-					# Reverse to Keep a subpath being ordered
-					# after its parent.
-					Promise.all paths.reverse().map (path) ->
-						if path.slice(-1) == npath.sep
-							fs.rmdirP path
-						else
-							fs.unlinkP path
+				nofs.eachDirP(root, opts).then (path, stats) ->
+					if stats.isDirectory()
+						fs.rmdirP path
+					else
+						fs.unlinkP path
 				.then ->
 					fs.rmdirP root
 			else
@@ -414,7 +447,7 @@ nofs =
 	 * @return {Promise}
 	 * @example
 	 * ```coffee
-	 * nofs.mapdirP(
+	 * nofs.mapDirP(
 	 * 	'from'
 	 * 	'to'
 	 * 	{ isCacheStats: true }
@@ -426,17 +459,65 @@ nofs =
 	 * )
 	 * ```
 	###
-	mapdirP: (from, to, opts = {}, fn) ->
+	mapDirP: (from, to, opts = {}, fn) ->
+		if opts instanceof Function
+			fn = opts
+			opts = {}
+
 		opts.cwd = from
 
-		nofs.readdirsP '.', opts
+		nofs.eachDirP '', opts
+		.then (nil, path, stats) ->
+			src = npath.join from, path
+			dest = npath.join to, path
+			fn src, dest, stats
+
+	###*
+	 * Walk through directory recursively with a callback.
+	 * @param  {String}   root
+	 * @param  {Object}   opts It extend the options of `readdirs`,
+	 * with some extra options:
+	 * ```coffee
+	 * {
+	 * 	# Walk children files first.
+	 * 	isReverse: false
+	 *
+	 * 	# The init value of the walk.
+	 * 	init: undefined
+	 * }
+	 * ```
+	 * @param  {Function} fn `(preVal, path, stats) -> Promise`
+	 * @return {Promise} Final resolved value.
+	 * @example
+	 * ```coffee
+	 * # Print path name list.
+	 * nofs.reduceDirP 'dir/path', { init: '' }, (val, path) ->
+	 * 	val += path + '\n'
+	 * .then (ret) ->
+	 * 	console.log ret
+	 * ```
+	###
+	reduceDirP: (root, opts = {}, fn) ->
+		if opts instanceof Function
+			fn = opts
+			opts = {}
+
+		utils.defaults opts, {
+			isReverse: false
+		}
+
+		nofs.readdirsP root, opts
 		.then (paths) ->
+			paths.reverse() if opts.isReverse
 			paths.reduce (promise, path) ->
-				promise.then ->
-					src = npath.join from, path
-					dest = npath.join to, path
-					fn src, dest, paths.statsCache[path]
-			, Promise.resolve()
+				if promise.then
+					promise.then (val) ->
+						fn val, path, paths.statsCache[path]
+				else
+					Promise.resolve(
+						fn val, path, paths.statsCache[path]
+					)
+			, Promise.resolve(opts.init)
 
 	###*
 	 * A `writeFile` shim for `<= Node v0.8`.
