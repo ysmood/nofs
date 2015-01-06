@@ -53,7 +53,6 @@ nofs =
 		walkOpts = {
 			filter: opts.filter
 			isCacheStats: true
-			cwd: from
 		}
 
 		copyFile = (src, dest, mode) ->
@@ -177,7 +176,6 @@ nofs =
 
 		walkOpts = {
 			filter: opts.filter
-			cwd: from
 		}
 
 		fs.statP(from).then (stats) ->
@@ -244,14 +242,17 @@ nofs =
 
 	###*
 	 * Read directory recursively.
-	 * @param {String} path
+	 * @param {String} root
 	 * @param {Object} opts Defaults:
 	 * ```coffee
 	 * {
 	 * 	# To filter paths.
 	 * 	filter: (path) -> true
+	 *
 	 * 	isCacheStats: false
-	 * 	cwd: '.'
+	 *
+	 * 	# The current working directory to search.
+	 * 	cwd: ''
 	 * }
 	 * ```
 	 * If `isCacheStats` is set true, the return list array
@@ -270,6 +271,21 @@ nofs =
 	 * with `/` (Unix) or `\` (Windows).
 	 * @example
 	 * ```coffee
+	 * # Basic
+	 * nofs.readdirsP 'dir/path'
+	 * .then (paths) ->
+	 * 	console.log paths # output => ['dir/path/a', 'dir/path/b/c']
+	 *
+	 * # Same with the above, but cwd is changed.
+	 * nofs.readdirsP 'path', { cwd: 'dir' }
+	 * .then (paths) ->
+	 * 	console.log paths # output => ['path/a', 'path/b/c']
+	 *
+	 * # CacheStats
+	 * nofs.readdirsP 'dir/path', { isCacheStats: true }
+	 * .then (paths) ->
+	 * 	console.log paths.statsCache['path/a']
+	 *
 	 * # Find all js files.
 	 * nofs.readdirsP 'dir/path', { filter: /.+\.js$/ }
 	 * .then (paths) -> console.log paths
@@ -285,7 +301,7 @@ nofs =
 	readdirsP: (root, opts = {}) ->
 		utils.defaults opts, {
 			isCacheStats: false
-			cwd: '.'
+			cwd: ''
 		}
 
 		if opts.filter instanceof RegExp
@@ -299,29 +315,33 @@ nofs =
 			enumerable: false
 		}
 
-		readdirs = (root) ->
-			cwd = npath.relative opts.cwd, root
-			fs.readdirP(root).then (paths) ->
-				if opts.filter
-					paths = paths.filter opts.filter
+		resolve = (path) -> npath.join opts.cwd, path
 
-				Promise.all paths.map (path) ->
+		nextDir = (nextPath) ->
+			fs.statP(resolve nextPath).then (stats) ->
+				ret = if stats.isDirectory()
+					nextPath = nextPath + npath.sep
+					list.push nextPath
+					readdir nextPath
+				else
+					list.push nextPath
+
+				if opts.isCacheStats
+					list.statsCache[nextPath] = stats
+				ret
+
+		readdir = (root) ->
+			fs.readdirP(resolve root).then (paths) ->
+				Promise.all(for path in paths
 					nextPath = npath.join root, path
 
-					fs.statP(nextPath).then (stats) ->
-						currPath = npath.join cwd, path
-						ret = if stats.isDirectory()
-							currPath = currPath + npath.sep
-							list.push currPath
-							readdirs nextPath
-						else
-							list.push currPath
+					if opts.filter and not opts.filter(nextPath)
+						continue
 
-						if opts.isCacheStats
-							list.statsCache[currPath] = stats
-						ret
+					nextDir nextPath
+				)
 
-		readdirs(root).then -> list
+		readdir(root).then -> list
 
 	###*
 	 * Remove a file or directory peacefully, same with the `rm -rf`.
@@ -386,7 +406,8 @@ nofs =
 	 * callback.
 	 * @param  {String}   from The root directory to start with.
 	 * @param  {String}   to This directory can be a non-exists path.
-	 * @param  {Object}   opts Same with the `readdirs`.
+	 * @param  {Object}   opts Same with the `readdirs`. But `cwd` is
+	 * fixed with the same as the `from` parameter.
 	 * @param  {Function} fn The callback will be called
 	 * with each path. The callback can return a `Promise` to
 	 * keep the async sequence go on.
@@ -406,7 +427,9 @@ nofs =
 	 * ```
 	###
 	mapdirP: (from, to, opts = {}, fn) ->
-		nofs.readdirsP from, opts
+		opts.cwd = from
+
+		nofs.readdirsP '.', opts
 		.then (paths) ->
 			paths.reduce (promise, path) ->
 				promise.then ->
