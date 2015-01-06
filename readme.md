@@ -1,12 +1,20 @@
-# nofs
+# [nofs](https://github.com/ysmood/nofs)
 
 ## Overview
+
+`nofs` extends Node's native `fs` module with some useful methods.
 
 Any function that has a `Sync` version will has a promise version that ends with `P`,
 for example `fs.readFileSync` will have a `fs.readFileP`.
 
 [![NPM version](https://badge.fury.io/js/nofs.svg)](http://badge.fury.io/js/nofs) [![Build Status](https://travis-ci.org/ysmood/nofs.svg)](https://travis-ci.org/ysmood/nofs) [![Build status](https://ci.appveyor.com/api/projects/status/11ddy1j4wofdhal7?svg=true)](https://ci.appveyor.com/project/ysmood/nofs)
  [![Deps Up to Date](https://david-dm.org/ysmood/nofs.svg?style=flat)](https://david-dm.org/ysmood/nofs)
+
+ ## Features
+
+ - Super light weight, no dependency.
+ - **Promise** by default.
+ - Unified API. Support **Promise**, **Sync** and **Callback** paradigms.
 
 ## Install
 
@@ -24,7 +32,8 @@ fs.outputFile 'x.txt', 'test', (err) ->
     console.log 'done'
 
 # Sync
-fs.outputFileSync 'x.txt', 'test'
+fs.readFileSync 'x.txt'
+fs.copySync 'dir/a', 'dir/b'
 
 # Promise
 fs.mkdirsP 'deep/dir/path'
@@ -36,7 +45,7 @@ fs.mkdirsP 'deep/dir/path'
     fs.copyP 'b.txt', 'c.js'
 .then ->
     # Get all folders.
-    fs.readdirsP 'deep', { filter: /\/$/ }
+    fs.readDirsP 'deep', { filter: /\/$/ }
 .then (list) ->
     console.log list
 .then ->
@@ -56,12 +65,14 @@ Goto [changelog](doc/changelog.md)
   I hate to reinvent the wheel. But to purely use promise, I don't
   have many choices.
 
-- #### <a href="lib/main.coffee?source#L14" target="_blank"><b>Promise</b></a>
+- #### <a href="lib/main.coffee?source#L16" target="_blank"><b>Promise</b></a>
 
-  Here I use Bluebird only as an ES6 shim for Promise.
-  No APIs other than ES6 spec will be used.
+  Here I use [Bluebird][Bluebird] only as an ES6 shim for Promise.
+  No APIs other than ES6 spec will be used. In the
+  future it will be removed.
+  [Bluebird]: https://github.com/petkaantonov/bluebird
 
-- #### <a href="lib/main.coffee?source#L45" target="_blank"><b>copyDirP</b></a>
+- #### <a href="lib/main.coffee?source#L47" target="_blank"><b>copyDirP</b></a>
 
   Copy a directory.
 
@@ -80,7 +91,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="lib/main.coffee?source#L80" target="_blank"><b>copyFileP</b></a>
+- #### <a href="lib/main.coffee?source#L82" target="_blank"><b>copyFileP</b></a>
 
   Copy a file.
 
@@ -99,7 +110,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="lib/main.coffee?source#L131" target="_blank"><b>copyP</b></a>
+- #### <a href="lib/main.coffee?source#L133" target="_blank"><b>copyP</b></a>
 
   Like `cp -r`.
 
@@ -119,14 +130,14 @@ Goto [changelog](doc/changelog.md)
     	# Overwrite file if exists.
     	isForce: false
     
-    	# Same with the `readdirs`'s
+    	# Same with the `readDirs`'s
     	filter: (path) -> true
     }
     ```
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="lib/main.coffee?source#L169" target="_blank"><b>dirExistsP</b></a>
+- #### <a href="lib/main.coffee?source#L171" target="_blank"><b>dirExistsP</b></a>
 
   Check if a path exists, and if it is a directory.
 
@@ -136,7 +147,7 @@ Goto [changelog](doc/changelog.md)
 
     Resolves a boolean value.
 
-- #### <a href="lib/main.coffee?source#L179" target="_blank"><b>dirExistsSync</b></a>
+- #### <a href="lib/main.coffee?source#L181" target="_blank"><b>dirExistsSync</b></a>
 
   Check if a path exists, and if it is a directory.
 
@@ -144,7 +155,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _boolean_ }
 
-- #### <a href="lib/main.coffee?source#L209" target="_blank"><b>eachDirP</b></a>
+- #### <a href="lib/main.coffee?source#L211" target="_blank"><b>eachDirP</b></a>
 
   Walk through directory recursively with a callback.
 
@@ -152,7 +163,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>param</u>**: `opts` { _Object_ }
 
-    It extend the options of `readdirs`,
+    It extend the options of `readDirs`,
     with some extra options:
     ```coffee
     {
@@ -181,7 +192,7 @@ Goto [changelog](doc/changelog.md)
     	console.log path, stats.isFile()
     ```
 
-- #### <a href="lib/main.coffee?source#L229" target="_blank"><b>fileExistsP</b></a>
+- #### <a href="lib/main.coffee?source#L231" target="_blank"><b>fileExistsP</b></a>
 
   Check if a path exists, and if it is a file.
 
@@ -191,7 +202,7 @@ Goto [changelog](doc/changelog.md)
 
     Resolves a boolean value.
 
-- #### <a href="lib/main.coffee?source#L239" target="_blank"><b>fileExistsSync</b></a>
+- #### <a href="lib/main.coffee?source#L241" target="_blank"><b>fileExistsSync</b></a>
 
   Check if a path exists, and if it is a file.
 
@@ -199,7 +210,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _boolean_ }
 
-- #### <a href="lib/main.coffee?source#L251" target="_blank"><b>mkdirsP</b></a>
+- #### <a href="lib/main.coffee?source#L253" target="_blank"><b>mkdirsP</b></a>
 
   Recursively create directory path, like `mkdir -p`.
 
@@ -211,7 +222,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="lib/main.coffee?source#L277" target="_blank"><b>moveP</b></a>
+- #### <a href="lib/main.coffee?source#L279" target="_blank"><b>moveP</b></a>
 
   Moves a file or directory. Also works between partitions.
   Behaves like the Unix `mv`.
@@ -239,7 +250,7 @@ Goto [changelog](doc/changelog.md)
     It will resolve a boolean value which indicates
     whether this action is taken between two partitions.
 
-- #### <a href="lib/main.coffee?source#L340" target="_blank"><b>outputFileP</b></a>
+- #### <a href="lib/main.coffee?source#L341" target="_blank"><b>outputFileP</b></a>
 
   Almost the same as `writeFile`, except that if its parent
   directories do not exist, they will be created.
@@ -251,11 +262,10 @@ Goto [changelog](doc/changelog.md)
   - **<u>param</u>**: `opts` { _String | Object_ }
 
     Same with the `fs.writeFile`.
-    > Remark: For `<= Node v0.8` the `opts` can also be an object.
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="lib/main.coffee?source#L408" target="_blank"><b>readdirsP</b></a>
+- #### <a href="lib/main.coffee?source#L409" target="_blank"><b>readDirsP</b></a>
 
   Read directory recursively.
 
@@ -297,33 +307,33 @@ Goto [changelog](doc/changelog.md)
 
     ```coffee
     # Basic
-    nofs.readdirsP 'dir/path'
+    nofs.readDirsP 'dir/path'
     .then (paths) ->
     	console.log paths # output => ['dir/path/a', 'dir/path/b/c']
     
     # Same with the above, but cwd is changed.
-    nofs.readdirsP 'path', { cwd: 'dir' }
+    nofs.readDirsP 'path', { cwd: 'dir' }
     .then (paths) ->
     	console.log paths # output => ['path/a', 'path/b/c']
     
     # CacheStats
-    nofs.readdirsP 'dir/path', { isCacheStats: true }
+    nofs.readDirsP 'dir/path', { isCacheStats: true }
     .then (paths) ->
     	console.log paths.statsCache['path/a']
     
     # Find all js files.
-    nofs.readdirsP 'dir/path', { filter: /.+\.js$/ }
+    nofs.readDirsP 'dir/path', { filter: /.+\.js$/ }
     .then (paths) -> console.log paths
     
     # Custom handler
-    nofs.readdirsP 'dir/path', {
+    nofs.readDirsP 'dir/path', {
     	filter: (path, stats) ->
     		path.indexOf('a') > -1 and stats.isFile()
     }
     .then (paths) -> console.log paths
     ```
 
-- #### <a href="lib/main.coffee?source#L463" target="_blank"><b>removeP</b></a>
+- #### <a href="lib/main.coffee?source#L464" target="_blank"><b>removeP</b></a>
 
   Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -334,14 +344,14 @@ Goto [changelog](doc/changelog.md)
     Defaults:
     ```coffee
     {
-    	# Same with the `readdirs`'s.
+    	# Same with the `readDirs`'s.
     	filter: (path) -> true
     }
     ```
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="lib/main.coffee?source#L495" target="_blank"><b>touchP</b></a>
+- #### <a href="lib/main.coffee?source#L496" target="_blank"><b>touchP</b></a>
 
   Change file access and modification times.
   If the file does not exist, it is created.
@@ -361,7 +371,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="lib/main.coffee?source#L533" target="_blank"><b>mapDirP</b></a>
+- #### <a href="lib/main.coffee?source#L534" target="_blank"><b>mapDirP</b></a>
 
   Map file from a directory to another recursively with a
   callback.
@@ -376,7 +386,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>param</u>**: `opts` { _Object_ }
 
-    Same with the `readdirs`. But `cwd` is
+    Same with the `readDirs`. But `cwd` is
     fixed with the same as the `from` parameter.
 
   - **<u>param</u>**: `fn` { _Function_ }
@@ -402,7 +412,7 @@ Goto [changelog](doc/changelog.md)
     )
     ```
 
-- #### <a href="lib/main.coffee?source#L570" target="_blank"><b>reduceDirP</b></a>
+- #### <a href="lib/main.coffee?source#L571" target="_blank"><b>reduceDirP</b></a>
 
   Walk through directory recursively with a callback.
 
@@ -410,7 +420,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>param</u>**: `opts` { _Object_ }
 
-    It extend the options of `readdirs`,
+    It extend the options of `readDirs`,
     with some extra options:
     ```coffee
     {
@@ -440,9 +450,9 @@ Goto [changelog](doc/changelog.md)
     	console.log ret
     ```
 
-- #### <a href="lib/main.coffee?source#L599" target="_blank"><b>writeFileP</b></a>
+- #### <a href="lib/main.coffee?source#L600" target="_blank"><b>writeFileP</b></a>
 
-  A `writeFile` shim for `<= Node v0.8`.
+  A `writeFile` shim for `< Node v0.10`.
 
   - **<u>param</u>**: `path` { _String_ }
 

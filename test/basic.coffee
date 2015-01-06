@@ -60,8 +60,8 @@ describe 'Basic:', ->
 		.then (v) ->
 			shouldEqual v, 'drba'
 
-	it 'readdirsP', ->
-		fs.readdirsP 'test/fixtures/dir'
+	it 'readDirsP', ->
+		fs.readDirsP 'test/fixtures/dir'
 		.then (ls) ->
 			shouldDeepEqual ls, [
 				'test/fixtures/dir/a'
@@ -73,8 +73,8 @@ describe 'Basic:', ->
 				'test/fixtures/dir/test/test/d'
 			]
 
-	it 'readdirsP cwd filter', ->
-		fs.readdirsP '', {
+	it 'readDirsP cwd filter', ->
+		fs.readDirsP '', {
 			cwd: 'test/fixtures/dir'
 			filter: new RegExp("[^#{npath.sep}]$")
 		}
@@ -91,7 +91,7 @@ describe 'Basic:', ->
 		.then ->
 			fs.moveP 'test/fixtures/dirCP', 'test/fixtures/dirMV'
 		.then ->
-			fs.readdirsP '', {
+			fs.readDirsP '', {
 				cwd: 'test/fixtures/dirMV'
 			}
 			.then (ls) ->

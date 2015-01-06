@@ -8,8 +8,10 @@ npath = require 'path'
 utils = require './utils'
 
 ###*
- * Here I use Bluebird only as an ES6 shim for Promise.
- * No APIs other than ES6 spec will be used.
+ * Here I use [Bluebird][Bluebird] only as an ES6 shim for Promise.
+ * No APIs other than ES6 spec will be used. In the
+ * future it will be removed.
+ * [Bluebird]: https://github.com/petkaantonov/bluebird
 ###
 Promise = utils.Promise
 
@@ -122,7 +124,7 @@ nofs =
 	 * 	# Overwrite file if exists.
 	 * 	isForce: false
 	 *
-	 * 	# Same with the `readdirs`'s
+	 * 	# Same with the `readDirs`'s
 	 * 	filter: (path) -> true
 	 * }
 	 * ```
@@ -185,7 +187,7 @@ nofs =
 	###*
 	 * Walk through directory recursively with a callback.
 	 * @param  {String}   root
-	 * @param  {Object}   opts It extend the options of `readdirs`,
+	 * @param  {Object}   opts It extend the options of `readDirs`,
 	 * with some extra options:
 	 * ```coffee
 	 * {
@@ -334,7 +336,6 @@ nofs =
 	 * @param  {String} path
 	 * @param  {String | Buffer} data
 	 * @param  {String | Object} opts Same with the `fs.writeFile`.
-	 * > Remark: For `<= Node v0.8` the `opts` can also be an object.
 	 * @return {Promise}
 	###
 	outputFileP: (path, data, opts = {}) ->
@@ -379,33 +380,33 @@ nofs =
 	 * @example
 	 * ```coffee
 	 * # Basic
-	 * nofs.readdirsP 'dir/path'
+	 * nofs.readDirsP 'dir/path'
 	 * .then (paths) ->
 	 * 	console.log paths # output => ['dir/path/a', 'dir/path/b/c']
 	 *
 	 * # Same with the above, but cwd is changed.
-	 * nofs.readdirsP 'path', { cwd: 'dir' }
+	 * nofs.readDirsP 'path', { cwd: 'dir' }
 	 * .then (paths) ->
 	 * 	console.log paths # output => ['path/a', 'path/b/c']
 	 *
 	 * # CacheStats
-	 * nofs.readdirsP 'dir/path', { isCacheStats: true }
+	 * nofs.readDirsP 'dir/path', { isCacheStats: true }
 	 * .then (paths) ->
 	 * 	console.log paths.statsCache['path/a']
 	 *
 	 * # Find all js files.
-	 * nofs.readdirsP 'dir/path', { filter: /.+\.js$/ }
+	 * nofs.readDirsP 'dir/path', { filter: /.+\.js$/ }
 	 * .then (paths) -> console.log paths
 	 *
 	 * # Custom handler
-	 * nofs.readdirsP 'dir/path', {
+	 * nofs.readDirsP 'dir/path', {
 	 * 	filter: (path, stats) ->
 	 * 		path.indexOf('a') > -1 and stats.isFile()
 	 * }
 	 * .then (paths) -> console.log paths
 	 * ```
 	###
-	readdirsP: (root, opts = {}) ->
+	readDirsP: (root, opts = {}) ->
 		utils.defaults opts, {
 			isCacheStats: false
 			cwd: ''
@@ -454,7 +455,7 @@ nofs =
 	 * @param {Object} opts Defaults:
 	 * ```coffee
 	 * {
-	 * 	# Same with the `readdirs`'s.
+	 * 	# Same with the `readDirs`'s.
 	 * 	filter: (path) -> true
 	 * }
 	 * ```
@@ -510,7 +511,7 @@ nofs =
 	 * callback.
 	 * @param  {String}   from The root directory to start with.
 	 * @param  {String}   to This directory can be a non-exists path.
-	 * @param  {Object}   opts Same with the `readdirs`. But `cwd` is
+	 * @param  {Object}   opts Same with the `readDirs`. But `cwd` is
 	 * fixed with the same as the `from` parameter.
 	 * @param  {Function} fn The callback will be called
 	 * with each path. The callback can return a `Promise` to
@@ -545,7 +546,7 @@ nofs =
 	###*
 	 * Walk through directory recursively with a callback.
 	 * @param  {String}   root
-	 * @param  {Object}   opts It extend the options of `readdirs`,
+	 * @param  {Object}   opts It extend the options of `readDirs`,
 	 * with some extra options:
 	 * ```coffee
 	 * {
@@ -576,7 +577,7 @@ nofs =
 			isReverse: false
 		}
 
-		nofs.readdirsP root, opts
+		nofs.readDirsP root, opts
 		.then (paths) ->
 			paths.reverse() if opts.isReverse
 			paths.reduce (promise, path) ->
@@ -590,7 +591,7 @@ nofs =
 			, Promise.resolve(opts.init)
 
 	###*
-	 * A `writeFile` shim for `<= Node v0.8`.
+	 * A `writeFile` shim for `< Node v0.10`.
 	 * @param  {String} path
 	 * @param  {String | Buffer} data
 	 * @param  {String | Object} opts
