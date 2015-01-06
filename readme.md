@@ -62,19 +62,19 @@ Goto [changelog](doc/changelog.md)
 
 ### nofs
 
-- #### <a href="lib/main.coffee?source#L5" target="_blank"><b>Overview</b></a>
+- #### <a href="src/main.coffee?source#L5" target="_blank"><b>Overview</b></a>
 
   I hate to reinvent the wheel. But to purely use promise, I don't
   have many choices.
 
-- #### <a href="lib/main.coffee?source#L16" target="_blank"><b>Promise</b></a>
+- #### <a href="src/main.coffee?source#L16" target="_blank"><b>Promise</b></a>
 
   Here I use [Bluebird][Bluebird] only as an ES6 shim for Promise.
   No APIs other than ES6 spec will be used. In the
   future it will be removed.
   [Bluebird]: https://github.com/petkaantonov/bluebird
 
-- #### <a href="lib/main.coffee?source#L47" target="_blank"><b>copyDirP</b></a>
+- #### <a href="src/main.coffee?source#L47" target="_blank"><b>copyDirP</b></a>
 
   Copy a directory.
 
@@ -93,7 +93,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="lib/main.coffee?source#L82" target="_blank"><b>copyFileP</b></a>
+- #### <a href="src/main.coffee?source#L82" target="_blank"><b>copyFileP</b></a>
 
   Copy a file.
 
@@ -112,7 +112,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="lib/main.coffee?source#L133" target="_blank"><b>copyP</b></a>
+- #### <a href="src/main.coffee?source#L133" target="_blank"><b>copyP</b></a>
 
   Like `cp -r`.
 
@@ -139,7 +139,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="lib/main.coffee?source#L171" target="_blank"><b>dirExistsP</b></a>
+- #### <a href="src/main.coffee?source#L171" target="_blank"><b>dirExistsP</b></a>
 
   Check if a path exists, and if it is a directory.
 
@@ -149,7 +149,7 @@ Goto [changelog](doc/changelog.md)
 
     Resolves a boolean value.
 
-- #### <a href="lib/main.coffee?source#L181" target="_blank"><b>dirExistsSync</b></a>
+- #### <a href="src/main.coffee?source#L181" target="_blank"><b>dirExistsSync</b></a>
 
   Check if a path exists, and if it is a directory.
 
@@ -157,7 +157,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _boolean_ }
 
-- #### <a href="lib/main.coffee?source#L211" target="_blank"><b>eachDirP</b></a>
+- #### <a href="src/main.coffee?source#L211" target="_blank"><b>eachDirP</b></a>
 
   Walk through directory recursively with a callback.
 
@@ -194,7 +194,7 @@ Goto [changelog](doc/changelog.md)
     	console.log path, stats.isFile()
     ```
 
-- #### <a href="lib/main.coffee?source#L231" target="_blank"><b>fileExistsP</b></a>
+- #### <a href="src/main.coffee?source#L231" target="_blank"><b>fileExistsP</b></a>
 
   Check if a path exists, and if it is a file.
 
@@ -204,7 +204,7 @@ Goto [changelog](doc/changelog.md)
 
     Resolves a boolean value.
 
-- #### <a href="lib/main.coffee?source#L241" target="_blank"><b>fileExistsSync</b></a>
+- #### <a href="src/main.coffee?source#L241" target="_blank"><b>fileExistsSync</b></a>
 
   Check if a path exists, and if it is a file.
 
@@ -212,7 +212,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _boolean_ }
 
-- #### <a href="lib/main.coffee?source#L253" target="_blank"><b>mkdirsP</b></a>
+- #### <a href="src/main.coffee?source#L253" target="_blank"><b>mkdirsP</b></a>
 
   Recursively create directory path, like `mkdir -p`.
 
@@ -224,7 +224,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="lib/main.coffee?source#L279" target="_blank"><b>moveP</b></a>
+- #### <a href="src/main.coffee?source#L279" target="_blank"><b>moveP</b></a>
 
   Moves a file or directory. Also works between partitions.
   Behaves like the Unix `mv`.
@@ -252,7 +252,7 @@ Goto [changelog](doc/changelog.md)
     It will resolve a boolean value which indicates
     whether this action is taken between two partitions.
 
-- #### <a href="lib/main.coffee?source#L341" target="_blank"><b>outputFileP</b></a>
+- #### <a href="src/main.coffee?source#L341" target="_blank"><b>outputFileP</b></a>
 
   Almost the same as `writeFile`, except that if its parent
   directories do not exist, they will be created.
@@ -267,7 +267,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="lib/main.coffee?source#L409" target="_blank"><b>readDirsP</b></a>
+- #### <a href="src/main.coffee?source#L409" target="_blank"><b>readDirsP</b></a>
 
   Read directory recursively.
 
@@ -335,7 +335,7 @@ Goto [changelog](doc/changelog.md)
     .then (paths) -> console.log paths
     ```
 
-- #### <a href="lib/main.coffee?source#L464" target="_blank"><b>removeP</b></a>
+- #### <a href="src/main.coffee?source#L464" target="_blank"><b>removeP</b></a>
 
   Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -353,7 +353,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="lib/main.coffee?source#L496" target="_blank"><b>touchP</b></a>
+- #### <a href="src/main.coffee?source#L496" target="_blank"><b>touchP</b></a>
 
   Change file access and modification times.
   If the file does not exist, it is created.
@@ -373,7 +373,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="lib/main.coffee?source#L534" target="_blank"><b>mapDirP</b></a>
+- #### <a href="src/main.coffee?source#L534" target="_blank"><b>mapDirP</b></a>
 
   Map file from a directory to another recursively with a
   callback.
@@ -414,7 +414,7 @@ Goto [changelog](doc/changelog.md)
     )
     ```
 
-- #### <a href="lib/main.coffee?source#L571" target="_blank"><b>reduceDirP</b></a>
+- #### <a href="src/main.coffee?source#L571" target="_blank"><b>reduceDirP</b></a>
 
   Walk through directory recursively with a callback.
 
@@ -452,7 +452,7 @@ Goto [changelog](doc/changelog.md)
     	console.log ret
     ```
 
-- #### <a href="lib/main.coffee?source#L600" target="_blank"><b>writeFileP</b></a>
+- #### <a href="src/main.coffee?source#L600" target="_blank"><b>writeFileP</b></a>
 
   A `writeFile` shim for `< Node v0.10`.
 

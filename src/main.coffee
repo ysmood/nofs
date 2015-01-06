@@ -19,7 +19,7 @@ Promise = utils.Promise
 fs = utils.extend {}, require 'fs'
 
 # Evil of Node.
-utils.extend fs, require('./graceful-fs/graceful-fs')
+utils.extend fs, require('../lib/graceful-fs/graceful-fs')
 
 # Promisify fs.
 for k of fs

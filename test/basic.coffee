@@ -1,5 +1,5 @@
-fs = require '../lib/main'
-{ Promise } = require '../lib/utils'
+fs = require '../src/main'
+{ Promise } = require '../src/utils'
 npath = require 'path'
 
 assert = require 'assert'
@@ -23,7 +23,7 @@ describe 'Basic:', ->
 			shouldEqual ret, true
 
 	it 'dirExistsP exists', ->
-		fs.dirExistsP('lib').then (ret) ->
+		fs.dirExistsP('src').then (ret) ->
 			shouldEqual ret, true
 
 	it 'dirExistsP non-exists', ->
@@ -31,7 +31,7 @@ describe 'Basic:', ->
 			shouldEqual ret, false
 
 	it 'dirExistsSync', ->
-		assert.equal fs.dirExistsSync('lib'), true
+		assert.equal fs.dirExistsSync('src'), true
 
 	it 'fileExistsSync', ->
 		assert.equal fs.fileExistsSync('readme.md'), true
@@ -41,7 +41,7 @@ describe 'Basic:', ->
 			shouldEqual ret, true
 
 	it 'fileExistsP non-exists', ->
-		fs.fileExistsP('lib').then (ret) ->
+		fs.fileExistsP('src').then (ret) ->
 			shouldEqual ret, false
 
 	it 'readFileP', ->

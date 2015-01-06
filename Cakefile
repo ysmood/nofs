@@ -14,18 +14,14 @@ task 'build', 'Build project.', build = ->
 	compileCoffee = ->
 		kit.spawn 'coffee', [
 			'-o', 'dist'
-			'-cb', 'lib'
+			'-cb', 'src'
 		]
-
-	copyThirdLib = ->
-		kit.copy 'lib/graceful-fs', 'dist/graceful-fs'
-		kit.copy 'lib/bluebird', 'dist/bluebird'
 
 	createDoc = ->
 		kit.compose([
-			kit.readFile 'lib/main.coffee', 'utf8'
+			kit.readFile 'src/main.coffee', 'utf8'
 			(code) ->
-				kit.parseComment 'fs-more', code, 'lib/main.coffee'
+				kit.parseComment 'fs-more', code, 'src/main.coffee'
 			(nofsModule) ->
 				indent = (str, num = 0) ->
 					s = _.range(num).reduce ((s) -> s + ' '), ''
@@ -68,8 +64,8 @@ task 'build', 'Build project.', build = ->
 		])()
 
 	start = kit.compose [
+		-> kit.remove 'dist'
 		compileCoffee
-		copyThirdLib
 		createDoc
 	]
 
