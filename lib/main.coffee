@@ -394,8 +394,8 @@ nofs =
 
 		fs.statP(root).then (stats) ->
 			if stats.isDirectory()
-				nofs.eachDirP(root, opts).then (path, stats) ->
-					if stats.isDirectory()
+				nofs.eachDirP root, opts, (path) ->
+					if path.slice(-1) == npath.sep
 						fs.rmdirP path
 					else
 						fs.unlinkP path
@@ -466,8 +466,7 @@ nofs =
 
 		opts.cwd = from
 
-		nofs.eachDirP '', opts
-		.then (nil, path, stats) ->
+		nofs.eachDirP '', opts, (path, stats) ->
 			src = npath.join from, path
 			dest = npath.join to, path
 			fn src, dest, stats
