@@ -21,15 +21,11 @@ describe 'Basic:', ->
 		.then (ret) ->
 			shouldEqual ret, true
 
-	it 'dirExists', ->
-		fs.dirExists 'lib', (err, ret) ->
-			shouldEqual ret, true
-
-	it 'dirExistsP', ->
+	it 'dirExistsP exists', ->
 		fs.dirExistsP('lib').then (ret) ->
 			shouldEqual ret, true
 
-	it 'dirExistsP', ->
+	it 'dirExistsP non-exists', ->
 		fs.dirExistsP('asdlkfjf').then (ret) ->
 			shouldEqual ret, false
 
@@ -39,11 +35,11 @@ describe 'Basic:', ->
 	it 'fileExistsSync', ->
 		assert.equal fs.fileExistsSync('readme.md'), true
 
-	it 'fileExistsP', ->
+	it 'fileExistsP exists', ->
 		fs.fileExistsP('readme.md').then (ret) ->
 			shouldEqual ret, true
 
-	it 'fileExistsP', ->
+	it 'fileExistsP non-exists', ->
 		fs.fileExistsP('lib').then (ret) ->
 			shouldEqual ret, false
 
@@ -52,35 +48,99 @@ describe 'Basic:', ->
 		.then (ret) ->
 			shouldEqual ret, 'test'
 
+	it 'reduceDirP', ->
+		fs.reduceDirP 'test/fixtures/dir', {
+			init: '', isReverse: true, isCacheStats: true
+		}, (sum, p, s) ->
+			if s.isFile()
+				sum += p.slice -1
+			else
+				sum
+		.then (v) ->
+			shouldEqual v, 'drba'
+
 	it 'readdirsP', ->
 		fs.readdirsP 'test/fixtures/dir'
 		.then (ls) ->
 			shouldDeepEqual ls, [
 				'test/fixtures/dir/a'
 				'test/fixtures/dir/test/'
+				'test/fixtures/dir/test2/'
 				'test/fixtures/dir/test/b'
+				'test/fixtures/dir/test/test/'
+				'test/fixtures/dir/test2/r'
+				'test/fixtures/dir/test/test/d'
 			]
 
-	# it 'removeSync', ->
-	# 	fs.removeSync 'test/fixtures/removeTemp'
+	it 'readdirsP cwd', ->
+		fs.readdirsP 'dir', {
+			cwd: 'test/fixtures'
+		}
+		.then (ls) ->
+			shouldDeepEqual ls, [
+				'dir/a'
+				'dir/test/'
+				'dir/test2/'
+				'dir/test/b'
+				'dir/test/test/'
+				'dir/test2/r'
+				'dir/test/test/d'
+			]
 
-	# it 'mkdirsSync', (tdone) ->
-	# 	fs.mkdirsSync 'test/fixtures/mk/dirs'
+	it 'removeP copyP moveP', ->
+		after ->
+			fs.removeP 'test/fixtures/dirMV'
 
-	# it 'moveP', (tdone) ->
-	# 	fs.moveP 'test/fixtures/move.txt', 'test/fixtures/a.txt'
-	# 	.then ->
-	# 		assert.equal fs.existsSync('test/fixtures/a.txt'), true
-	# 		fs.moveP('test/fixtures/a.txt', 'test/fixtures/move.txt')
-	# 	.then tdone
-	# 	.catch tdone
+		fs.removeP 'test/fixtures/dirCP'
+		.then ->
+			fs.copyP 'test/fixtures/dir', 'test/fixtures/dirCP'
+		.then ->
+			fs.moveP 'test/fixtures/dirCP', 'test/fixtures/dirMV'
+		.then ->
+			fs.readdirsP '', {
+				cwd: 'test/fixtures/dirMV'
+			}
+			.then (ls) ->
+				shouldDeepEqual ls, [
+					'a', 'test/', 'test2/', 'test/b', 'test/test/', 'test2/r', 'test/test/d'
+				]
 
-	# it 'outputFileP', (tdone) ->
-	# 	fs.outputFileP('test/fixtures/sample.txt', 'test')
-	# 	.then ->
-	# 		tdone()
-	# 	.catch tdone
+	it 'touchP time', ->
+		t = Date.now() // 1000
+		fs.touchP 'test/fixtures/sample.txt', {
+			mtime: t
+		}
+		.then ->
+			fs.statP 'test/fixtures/sample.txt'
+			.then (stats) ->
+				shouldEqual stats.mtime.getTime() // 1000, t
 
-	# it 'outputFileSync', (tdone) ->
-	# 	fs.outputFileSync('test/fixtures/sample.txt', 'test')
-	# 	tdone()
+	it 'touchP create', ->
+		after ->
+			fs.removeP 'test/fixtures/touchCreate'
+
+		fs.touchP 'test/fixtures/touchCreate'
+		.then ->
+			fs.fileExistsP 'test/fixtures/touchCreate'
+		.then (exists) ->
+			shouldEqual exists, true
+
+	it 'outputFileP', ->
+		after ->
+			fs.removeP 'test/fixtures/out'
+
+		fs.outputFileP 'test/fixtures/out/put/file', 'ok'
+		.then ->
+			fs.readFileP 'test/fixtures/out/put/file', 'utf8'
+		.then (str) ->
+			shouldEqual str, 'ok'
+
+	it 'mkdirsP', ->
+		after ->
+			fs.removeP 'test/fixtures/make'
+
+		fs.mkdirsP 'test/fixtures/make/dir/s'
+		.then ->
+			fs.dirExistsP 'test/fixtures/make/dir/s'
+		.then (exists) ->
+			shouldEqual exists, true
