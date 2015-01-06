@@ -133,7 +133,7 @@ Goto [changelog](doc/changelog.md)
     	isForce: false
     
     	# Same with the `readDirs`'s
-    	filter: (path) -> true
+    	filter: -> true
     }
     ```
 
@@ -243,7 +243,7 @@ Goto [changelog](doc/changelog.md)
     ```coffee
     {
     	isForce: false
-    	filter: (path) -> true
+    	filter: -> true
     }
     ```
 
@@ -347,7 +347,7 @@ Goto [changelog](doc/changelog.md)
     ```coffee
     {
     	# Same with the `readDirs`'s.
-    	filter: (path) -> true
+    	filter: -> true
     }
     ```
 

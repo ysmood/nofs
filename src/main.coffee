@@ -125,7 +125,7 @@ nofs =
 	 * 	isForce: false
 	 *
 	 * 	# Same with the `readDirs`'s
-	 * 	filter: (path) -> true
+	 * 	filter: -> true
 	 * }
 	 * ```
 	 * @return {Promise}
@@ -270,7 +270,7 @@ nofs =
 	 * ```coffee
 	 * {
 	 * 	isForce: false
-	 * 	filter: (path) -> true
+	 * 	filter: -> true
 	 * }
 	 * ```
 	 * @return {Promise} It will resolve a boolean value which indicates
@@ -456,7 +456,7 @@ nofs =
 	 * ```coffee
 	 * {
 	 * 	# Same with the `readDirs`'s.
-	 * 	filter: (path) -> true
+	 * 	filter: -> true
 	 * }
 	 * ```
 	 * @return {Promise}
