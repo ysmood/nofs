@@ -2,6 +2,8 @@ Promise = require './bluebird/js/main/bluebird'
 
 module.exports =
 
+	Promise: Promise
+
 	promisify: (fn, self) ->
 		(args...) ->
 			new Promise (resolve, reject) ->

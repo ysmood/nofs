@@ -1,23 +1,37 @@
 fs = require '../lib/main'
+{ Promise } = require '../lib/utils'
+
 assert = require 'assert'
 
+shouldEqual = (args...) ->
+	try
+		assert.strictEqual.apply assert, args
+	catch err
+		Promise.reject err
+
+shouldDeepEqual = (args...) ->
+	try
+		assert.deepEqual.apply assert, args
+	catch err
+		Promise.reject err
+
 describe 'Basic:', ->
-	it 'existsP', (tdone) ->
+	it 'existsP', ->
 		fs.existsP('readme.md')
 		.then (ret) ->
-			assert.equal ret, true
-			tdone()
-		.catch tdone
+			shouldEqual ret, true
 
-	it 'dirExists', (tdone) ->
+	it 'dirExists', ->
 		fs.dirExists 'lib', (err, ret) ->
-			assert.equal ret, true
-			tdone()
+			shouldEqual ret, true
 
-	it 'dirExistsP', (tdone) ->
+	it 'dirExistsP', ->
 		fs.dirExistsP('lib').then (ret) ->
-			assert.equal ret, true
-			tdone()
+			shouldEqual ret, true
+
+	it 'dirExistsP', ->
+		fs.dirExistsP('asdlkfjf').then (ret) ->
+			shouldEqual ret, false
 
 	it 'dirExistsSync', ->
 		assert.equal fs.dirExistsSync('lib'), true
@@ -25,31 +39,23 @@ describe 'Basic:', ->
 	it 'fileExistsSync', ->
 		assert.equal fs.fileExistsSync('readme.md'), true
 
-	it 'dirExistsP', (tdone) ->
-		fs.dirExistsP('asdlkfjf').then (ret) ->
-			assert.equal ret, false
-			tdone()
-
-	it 'fileExistsP', (tdone) ->
+	it 'fileExistsP', ->
 		fs.fileExistsP('readme.md').then (ret) ->
-			assert.equal(ret, true)
-			tdone()
+			shouldEqual ret, true
 
-	it 'fileExistsP', (tdone) ->
+	it 'fileExistsP', ->
 		fs.fileExistsP('lib').then (ret) ->
-			assert.equal(ret, false)
-			tdone()
+			shouldEqual ret, false
 
-	it 'readFileP', (tdone) ->
+	it 'readFileP', ->
 		fs.readFileP 'test/fixtures/sample.txt', 'utf8'
 		.then (ret) ->
-			assert.equal(ret, 'test')
-			tdone()
+			shouldEqual ret, 'test'
 
 	it 'readdirsP', ->
 		fs.readdirsP 'test/fixtures/dir'
 		.then (ls) ->
-			assert.deepEqual ls, [
+			shouldDeepEqual ls, [
 				'test/fixtures/dir/a'
 				'test/fixtures/dir/test/'
 				'test/fixtures/dir/test/b'

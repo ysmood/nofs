@@ -4,15 +4,15 @@
 ###
 Overview = 'nofs'
 
+npath = require 'path'
+fs = require 'fs'
+utils = require './utils'
+
 ###*
  * Here I use Bluebird only as an ES6 shim for Promise.
  * No APIs other than ES6 spec will be used.
 ###
-Promise = require './bluebird/js/main/bluebird'
-
-npath = require 'path'
-fs = require 'fs'
-utils = require './utils'
+Promise = utils.Promise
 
 # Evil of Node.
 utils.extend fs, require('./graceful-fs/graceful-fs')
