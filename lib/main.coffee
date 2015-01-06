@@ -245,10 +245,10 @@ nofs =
 	###*
 	 * Recursively create directory path, like `mkdir -p`.
 	 * @param  {String} path
-	 * @param  {String} mode Defauls: `0o777`
+	 * @param  {String} mode Defauls: `0o777 & ~process.umask()`
 	 * @return {Promise}
 	###
-	mkdirsP: (path, mode = 0o777) ->
+	mkdirsP: (path, mode = 0o777 & ~process.umask()) ->
 		makedir = (path) ->
 			nofs.dirExistsP(path).then (exists) ->
 				if exists
