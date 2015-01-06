@@ -1,7 +1,7 @@
 dist
 node_modules
 *.sublime-*
-
+Cakefile
 test
 .*
 appveyor.yml
