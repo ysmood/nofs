@@ -26,14 +26,14 @@ task 'build', 'Build project.', build = ->
 			kit.readFile 'lib/main.coffee', 'utf8'
 			(code) ->
 				kit.parseComment 'fs-more', code, 'lib/main.coffee'
-			(kitModule) ->
+			(nofsModule) ->
 				indent = (str, num = 0) ->
 					s = _.range(num).reduce ((s) -> s + ' '), ''
 					s + str.trim().replace(/\n/g, '\n' + s)
 
 				modsApi = ''
 
-				for modName, mod of { kit: kitModule }
+				for modName, mod of { nofs: nofsModule }
 					modsApi += """### #{modName}\n\n"""
 					for method in mod
 						method.name = method.name.replace 'self.', ''
