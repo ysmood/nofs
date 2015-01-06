@@ -1,4 +1,8 @@
-test
+dist
+node_modules
 *.sublime-*
+.nobone
+
+test
 .*
 appveyor.yml

@@ -4,7 +4,12 @@
 ###
 Overview = 'nofs'
 
+###*
+ * Here I use Bluebird only as an ES6 shim for Promise.
+ * No APIs other than ES6 spec will be used.
+###
 Promise = require './bluebird/js/main/bluebird'
+
 npath = require 'path'
 fs = require 'fs'
 utils = require './utils'
@@ -220,7 +225,7 @@ nofs =
 
 	###*
 	 * Almost the same as `writeFile`, except that if its parent
-	 * directory does not exist, it will be created.
+	 * directories do not exist, they will be created.
 	 * @param  {String} path
 	 * @param  {String | Buffer} data
 	 * @param  {String | Object} opts Same with the `fs.writeFile`.
@@ -263,12 +268,29 @@ nofs =
 	 * The key is the entity path, the value is the `fs.Stats` object.
 	 * @return {Promise} Resolves an path array. Every directory path will ends
 	 * with `/` (Unix) or `\` (Windows).
+	 * @example
+	 * ```coffee
+	 * # Find all js files.
+	 * nofs.readdirsP 'dir/path', { filter: /.+\.js$/ }
+	 * .then (paths) -> console.log paths
+	 *
+	 * # Custom handler
+	 * nofs.readdirsP 'dir/path', {
+	 * 	filter: (path) ->
+	 * 		path.indexOf('a') > -1
+	 * }
+	 * .then (paths) -> console.log paths
+	 * ```
 	###
 	readdirsP: (root, opts = {}) ->
 		utils.defaults opts, {
 			isCacheStats: false
 			cwd: '.'
 		}
+
+		if opts.filter instanceof RegExp
+			reg = opts.filter
+			opts.filter = (path) -> reg.test path
 
 		list = []
 		statsCache = {}
@@ -376,10 +398,10 @@ nofs =
 	 * 	'to'
 	 * 	{ isCacheStats: true }
 	 * 	(src, dest, stats) ->
-	 * 		console.log stats.mode
+	 * 		return if stats.isDirectory()
 	 * 		buf = nofs.readFileP src
 	 * 		buf += 'some contents'
-	 * 		nofs.writeFile dest, buf
+	 * 		nofs.writeFileP dest, buf
 	 * )
 	 * ```
 	###
