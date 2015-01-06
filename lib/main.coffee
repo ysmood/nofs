@@ -30,6 +30,89 @@ for k of fs
 nofs =
 
 	###*
+	 * Copy a directory.
+	 * @param  {String} src
+	 * @param  {String} dest
+	 * @param  {Object} opts
+	 * ```coffee
+	 * {
+	 * 	isForce: false
+	 * 	mode: auto
+	 * }
+	 * ```
+	 * @return {Promise}
+	###
+	copyDirP: (src, dest, opts) ->
+		utils.defaults opts, {
+			isForce: false
+		}
+
+		copy = ->
+			if opts.isForce
+				fs.rmdirP(dest).catch (err) ->
+					if err.code != 'ENOENT'
+						Promise.reject err
+				.then ->
+					fs.mkdirP dest, opts.mode
+			else
+				fs.mkdirP dest, opts.mode
+
+		if opts.mode
+			copy()
+		else
+			fs.statP(src).then ({ mode }) ->
+				opts.mode = mode
+				copy()
+
+	###*
+	 * Copy a file.
+	 * @param  {String} src
+	 * @param  {String} dest
+	 * @param  {Object} opts
+	 * ```coffee
+	 * {
+	 * 	isForce: false
+	 * 	mode: auto
+	 * }
+	 * ```
+	 * @return {Promise}
+	###
+	copyFileP: (src, dest, opts) ->
+		utils.defaults opts, {
+			isForce: false
+		}
+
+		copyFile = ->
+			new Promise (resolve, reject) ->
+				try
+					sDest = fs.createWriteStream dest, opts
+					sSrc = fs.createReadStream src
+				catch err
+					reject err
+				sSrc.on 'error', reject
+				sDest.on 'error', reject
+				sDest.on 'close', resolve
+				sSrc.pipe sDest
+
+		copy = ->
+			if opts.isForce
+				fs.unlinkP(dest).catch (err) ->
+					if err.code != 'ENOENT'
+						Promise.reject err
+				.then ->
+					copyFile src, dest, opts.mode
+			else
+				copyFile src, dest, opts.mode
+
+
+		if opts.mode
+			copy()
+		else
+			fs.statP(src).then ({ mode }) ->
+				opts.mode = mode
+				copy()
+
+	###*
 	 * Like `cp -r`.
 	 * @param  {String} from Source path.
 	 * @param  {String} to Destination path.
@@ -57,38 +140,26 @@ nofs =
 			isCacheStats: true
 		}
 
-		copyFile = (src, dest, mode) ->
-			new Promise (resolve, reject) ->
-				try
-					sDest = fs.createWriteStream dest, { mode }
-					sSrc = fs.createReadStream src
-				catch err
-					reject err
-				sSrc.on 'error', reject
-				sDest.on 'error', reject
-				sDest.on 'close', resolve
-				sSrc.pipe sDest
-
 		copy = (src, dest, stats) ->
-			if stats.isDirectory()
-				fs.mkdirsP dest, stats.mode
+			opts = {
+				isForce: opts.isForce
+				mode: stats.mode
+			}
+			if stats.isFile()
+				nofs.copyFileP src, dest, opts
 			else
-				if opts.isForce
-					fs.unlinkP(dest).catch(->).then ->
-						copyFile src, dest, stats.mode
-				else
-					copyFile src, dest, stats.mode
+				nofs.copyDirP src, dest, opts
 
 		fs.statP(from).then (stats) ->
-			if stats.isDirectory()
+			if stats.isFile()
+				copy from, to, stats
+			else
 				nofs.dirExistsP(to).then (exists) ->
 					if exists
 						to = npath.join to, npath.basename(from)
 					nofs.mkdirsP to, stats.mode
 				.then ->
 					nofs.mapDirP from, to, walkOpts, copy
-			else
-				copy from, to, stats
 
 	###*
 	 * Check if a path exists, and if it is a directory.
@@ -210,50 +281,52 @@ nofs =
 
 		walkOpts = {
 			filter: opts.filter
+			isCacheStats: true
 		}
 
+		moveFile = (src, dest) ->
+			if opts.isForce
+				fs.renameP src, dest
+			else
+				fs.linkP(src, dest).then ->
+					fs.unlinkP src
+
+		moveDir = (src, dest, { mode }) ->
+			nofs.copyDirP src, dest, {
+				isForce: opts.isForce
+				mode
+			}
+
+		move = (src, dest, stats) ->
+			isFile = stats.isFile()
+			action = if isFile then moveFile else moveDir
+
+			action src, dest, stats
+			.catch (err) ->
+				if err.code == 'EXDEV'
+					action = if isFile
+						nofs.copyFileP
+					else
+						nofs.copyDirP
+					action src, dest, {
+						isForce: opts.isForce
+						mode: stats.mode
+					}
+				else
+					Promise.reject err
+
 		fs.statP(from).then (stats) ->
-			if stats.isDirectory()
+			if stats.isFile()
+				moveFile from, to
+			else
 				nofs.dirExistsP(to).then (exists) ->
 					if exists
 						to = npath.join to, npath.basename(from)
-
-					fs.linkP(from, to).then ->
-						fs.unlinkP from
-					.catch (err) ->
-						switch err.code
-							when 'EEXIST'
-								if not opts.isForce
-									return Promise.reject err
-
-								nofs.mapDirP from, to, walkOpts
-								, (src, dest) ->
-									fs.renameP src, dest
-								.catch (err) ->
-									if err.code == 'EXDEV'
-										nofs.copyP from, to, {
-											isForce: opts.isForce
-											filter: opts.filter
-										}
-										.then ->
-											nofs.removeP from
-									else
-										Promise.reject err
-							when 'EXDEV'
-								nofs.copyP from, to, {
-									isForce: opts.isForce
-									filter: opts.filter
-								}
-								.then ->
-									nofs.removeP from
-							else
-								Promise.reject err
-			else
-				if opts.isForce
-					fs.renameP from, to
-				else
-					fs.linkP(from, to).then ->
-						fs.unlinkP from
+					nofs.mkdirsP to
+				.then ->
+					nofs.mapDirP from, to, walkOpts, move
+				.then ->
+					fs.removeP from
 
 	###*
 	 * Almost the same as `writeFile`, except that if its parent
@@ -393,7 +466,9 @@ nofs =
 		opts.isReverse = true
 
 		fs.statP(root).then (stats) ->
-			if stats.isDirectory()
+			if stats.isFile()
+				fs.unlinkP root
+			else
 				nofs.eachDirP root, opts, (path) ->
 					if path.slice(-1) == npath.sep
 						fs.rmdirP path
@@ -401,8 +476,6 @@ nofs =
 						fs.unlinkP path
 				.then ->
 					fs.rmdirP root
-			else
-				fs.unlinkP root
 		.catch (err) ->
 			if err.code != 'ENOENT' or err.path != root
 				Promise.reject err
