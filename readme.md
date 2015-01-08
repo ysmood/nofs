@@ -1,10 +1,25 @@
-# Alpha: Now Only Promise APIs are Avaiable
+# Alpha: Now Only Promise and Callbak APIs are Avaiable
 
 # [nofs](https://github.com/ysmood/nofs)
 
 ## Overview
 
 `nofs` extends Node's native `fs` module with some useful methods.
+
+[![NPM version](https://badge.fury.io/js/nofs.svg)](http://badge.fury.io/js/nofs) [![Build Status](https://travis-ci.org/ysmood/nofs.svg)](https://travis-ci.org/ysmood/nofs) [![Build status](https://ci.appveyor.com/api/projects/status/11ddy1j4wofdhal7?svg=true)](https://ci.appveyor.com/project/ysmood/nofs)
+ [![Deps Up to Date](https://david-dm.org/ysmood/nofs.svg?style=flat)](https://david-dm.org/ysmood/nofs)
+
+## Features
+
+- Super light weight, no dependency.
+- **Promise** by default.
+- Unified API. Support **Promise**, **Sync** and **Callback** paradigms.
+
+## Install
+
+```shell
+npm install nofs
+```
 
 ## API Convention
 
@@ -26,23 +41,8 @@ still call `nofs.readFile` as easy as pie.
 
 ### Inheritance of Options
 
-A Function's options may inherits other function's, especially the functions it calls internally. Such as the `readDirs` extends the `eachDir`'s
-option, therefore `readDirs` also has a `filter` option.
-
-[![NPM version](https://badge.fury.io/js/nofs.svg)](http://badge.fury.io/js/nofs) [![Build Status](https://travis-ci.org/ysmood/nofs.svg)](https://travis-ci.org/ysmood/nofs) [![Build status](https://ci.appveyor.com/api/projects/status/11ddy1j4wofdhal7?svg=true)](https://ci.appveyor.com/project/ysmood/nofs)
- [![Deps Up to Date](https://david-dm.org/ysmood/nofs.svg?style=flat)](https://david-dm.org/ysmood/nofs)
-
- ## Features
-
- - Super light weight, no dependency.
- - **Promise** by default.
- - Unified API. Support **Promise**, **Sync** and **Callback** paradigms.
-
-## Install
-
-```shell
-npm install nofs
-```
+A Function's options may inherit other function's, especially the functions it calls internally. Such as the `readDirs` extends the `eachDir`'s
+option, therefore `readDirs` also has a `cwd` option.
 
 ## Quick Start
 
@@ -374,7 +374,7 @@ __No native `fs` funtion will be listed.__
     	console.log paths.statsCache['path/a']
     
     # Find all js files.
-    nofs.readDirsP 'dir/path', { filter: /.+\.js$/ }
+    nofs.readDirsP 'dir/path', { filter: /\.js$/ }
     .then (paths) -> console.log paths
     
     # Custom handler

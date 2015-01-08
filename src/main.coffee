@@ -426,7 +426,7 @@ nofs =
 	 * 	console.log paths.statsCache['path/a']
 	 *
 	 * # Find all js files.
-	 * nofs.readDirsP 'dir/path', { filter: /.+\.js$/ }
+	 * nofs.readDirsP 'dir/path', { filter: /\.js$/ }
 	 * .then (paths) -> console.log paths
 	 *
 	 * # Custom handler
