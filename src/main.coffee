@@ -153,7 +153,6 @@ nofs =
 				nofs.dirExistsP(to).then (exists) ->
 					if exists
 						to = npath.join to, npath.basename(from)
-					nofs.mkdirsP to, stats.mode
 				.then ->
 					nofs.mapDirP from, to, opts, copy
 
