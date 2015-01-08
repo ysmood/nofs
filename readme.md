@@ -6,11 +6,28 @@
 
 `nofs` extends Node's native `fs` module with some useful methods.
 
-Any function that has a `Sync` version will has a promise version that ends with `P`,
-for example `fs.readFileSync` will have a `fs.readFileP`.
+## API Convention
 
-I also did some abstraction on the directory manipulation:
-`readDirs`, `eachDir`, `mapDir`, `reduceDir`. They are the core of the other APIs.
+### Promise, Sync and Callback
+
+Any function that has a `Sync` version will has a promise version that ends with `P`.
+For example the `fs.remove` will have `fs.removeSync` for sync IO, and `fs.removeP` for Promise.
+
+### `eachDir`
+
+It is the core function for directory manipulation. Other abstract functions
+like `mapDir`, `reduceDir`, `readDirs` are built on top of it. You can play
+with it if you don't like other functions.
+
+### `nofs` vs Node Native `fs`
+
+`nofs` only extends the native module, no pollution will be found. You can
+still call `nofs.readFile` as easy as pie.
+
+### Inheritance of Options
+
+A Function's options may inherits other function's, especially the functions it calls internally. Such as the `readDirs` extends the `eachDir`'s
+option, therefore `readDirs` also has a `filter` option.
 
 [![NPM version](https://badge.fury.io/js/nofs.svg)](http://badge.fury.io/js/nofs) [![Build Status](https://travis-ci.org/ysmood/nofs.svg)](https://travis-ci.org/ysmood/nofs) [![Build status](https://ci.appveyor.com/api/projects/status/11ddy1j4wofdhal7?svg=true)](https://ci.appveyor.com/project/ysmood/nofs)
  [![Deps Up to Date](https://david-dm.org/ysmood/nofs.svg?style=flat)](https://david-dm.org/ysmood/nofs)
@@ -63,6 +80,8 @@ Goto [changelog](doc/changelog.md)
 
 ## API
 
+__No native `fs` funtion will be listed.__
+
 ### nofs
 
 - #### <a href="src/main.coffee?source#L5" target="_blank"><b>Overview</b></a>
@@ -79,7 +98,7 @@ Goto [changelog](doc/changelog.md)
 
 - #### <a href="src/main.coffee?source#L47" target="_blank"><b>copyDirP</b></a>
 
-  Copy a directory.
+  Copy an empty directory.
 
   - **<u>param</u>**: `src` { _String_ }
 
@@ -98,7 +117,7 @@ Goto [changelog](doc/changelog.md)
 
 - #### <a href="src/main.coffee?source#L82" target="_blank"><b>copyFileP</b></a>
 
-  Copy a file.
+  Copy a single file.
 
   - **<u>param</u>**: `src` { _String_ }
 
@@ -115,7 +134,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L133" target="_blank"><b>copyP</b></a>
+- #### <a href="src/main.coffee?source#L132" target="_blank"><b>copyP</b></a>
 
   Like `cp -r`.
 
@@ -129,20 +148,19 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>param</u>**: `opts` { _Object_ }
 
+    Extends the options of `eachDir`.
+    But the `isCacheStats` is fixed with `true`.
     Defaults:
     ```coffee
     {
     	# Overwrite file if exists.
     	isForce: false
-    
-    	# Same with the `readDirs`'s
-    	filter: -> true
     }
     ```
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L171" target="_blank"><b>dirExistsP</b></a>
+- #### <a href="src/main.coffee?source#L166" target="_blank"><b>dirExistsP</b></a>
 
   Check if a path exists, and if it is a directory.
 
@@ -152,7 +170,7 @@ Goto [changelog](doc/changelog.md)
 
     Resolves a boolean value.
 
-- #### <a href="src/main.coffee?source#L181" target="_blank"><b>dirExistsSync</b></a>
+- #### <a href="src/main.coffee?source#L176" target="_blank"><b>dirExistsSync</b></a>
 
   Check if a path exists, and if it is a directory.
 
@@ -160,44 +178,75 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _boolean_ }
 
-- #### <a href="src/main.coffee?source#L211" target="_blank"><b>eachDirP</b></a>
+- #### <a href="src/main.coffee?source#L235" target="_blank"><b>eachDirP</b></a>
 
-  Walk through directory recursively with a callback.
+  Walk through a path recursively with a callback. The callback
+  can return a Promise to continue the sequence. The resolving order
+  is also recursive, a directory path resolves after all its children
+  are resolved.
 
-  - **<u>param</u>**: `root` { _String_ }
+  - **<u>param</u>**: `path` { _String_ }
+
+    The path may point to a directory or a file.
 
   - **<u>param</u>**: `opts` { _Object_ }
 
-    It extend the options of `readDirs`,
-    with some extra options:
+    Optional. Defaults:
     ```coffee
     {
-    	# Walk children files first.
+    	# The current working directory to search.
+    	cwd: ''
+    
+    	# Whehter to follow symbol links or not.
+    	isFollowLink: true
+    
+    	# Iterate children first, then parent folder.
     	isReverse: false
     }
     ```
 
   - **<u>param</u>**: `fn` { _Function_ }
 
-    `(path, stats) -> Promise`
+    `(fileInfo) -> Promise | Any`.
+    The `fileInfo` object has these properties: `{ path, isDir, children, stats }`.
+    If the `fn` is `(c) -> c`, the directory object array may look like:
+    ```coffee
+    {
+    	path: 'dir/path'
+    	isDir: true
+    	children: [
+    		{ path: 'dir/path/a.txt', isDir: false, stats: { ... } }
+    		{ path: 'dir/path/b.txt', isDir: false, stats: { ... } }
+    	]
+    	stats: {
+    		size: 527
+    		atime: Mon, 10 Oct 2011 23:24:11 GMT
+    		mtime: Mon, 10 Oct 2011 23:24:11 GMT
+    		ctime: Mon, 10 Oct 2011 23:24:11 GMT
+    		...
+    	}
+    }
+    ```
+    The `stats` is a native `fs.Stats` object.
 
   - **<u>return</u>**:  { _Promise_ }
 
-    Final resolved value.
+    Resolves a directory tree object.
 
   - **<u>example</u>**:
 
     ```coffee
-    # Print path name list.
-    nofs.eachDirP 'dir/path', (path) ->
-    	console.log path
+    # Print all file and directory names, and the modification time.
+    nofs.eachDirP 'dir/path', (obj, stats) ->
+    	console.log obj.path, stats.mtime
     
     # Print path name list.
-    nofs.eachDirP 'dir/path', { isCacheStats: true }, (path, stats) ->
-    	console.log path, stats.isFile()
+    nofs.eachDirP 'dir/path', (curr) -> curr
+    .then (tree) ->
+    	console.log tree
     ```
 
-- #### <a href="src/main.coffee?source#L231" target="_blank"><b>fileExistsP</b></a>
+- #### <a href="src/main.coffee?source#L285" target="_blank"><b>fileExistsP</b></a>
 
   Check if a path exists, and if it is a file.
 
@@ -207,7 +256,7 @@ Goto [changelog](doc/changelog.md)
 
     Resolves a boolean value.
 
-- #### <a href="src/main.coffee?source#L241" target="_blank"><b>fileExistsSync</b></a>
+- #### <a href="src/main.coffee?source#L295" target="_blank"><b>fileExistsSync</b></a>
 
   Check if a path exists, and if it is a file.
 
@@ -215,7 +264,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _boolean_ }
 
-- #### <a href="src/main.coffee?source#L253" target="_blank"><b>mkdirsP</b></a>
+- #### <a href="src/main.coffee?source#L307" target="_blank"><b>mkdirsP</b></a>
 
   Recursively create directory path, like `mkdir -p`.
 
@@ -227,7 +276,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L279" target="_blank"><b>moveP</b></a>
+- #### <a href="src/main.coffee?source#L334" target="_blank"><b>moveP</b></a>
 
   Moves a file or directory. Also works between partitions.
   Behaves like the Unix `mv`.
@@ -242,11 +291,12 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>param</u>**: `opts` { _Object_ }
 
+    Extends the options of `eachDir`.
+    But the `isCacheStats` is fixed with `true`.
     Defaults:
     ```coffee
     {
     	isForce: false
-    	filter: -> true
     }
     ```
 
@@ -255,7 +305,7 @@ Goto [changelog](doc/changelog.md)
     It will resolve a boolean value which indicates
     whether this action is taken between two partitions.
 
-- #### <a href="src/main.coffee?source#L341" target="_blank"><b>outputFileP</b></a>
+- #### <a href="src/main.coffee?source#L375" target="_blank"><b>outputFileP</b></a>
 
   Almost the same as `writeFile`, except that if its parent
   directories do not exist, they will be created.
@@ -270,7 +320,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L409" target="_blank"><b>readDirsP</b></a>
+- #### <a href="src/main.coffee?source#L440" target="_blank"><b>readDirsP</b></a>
 
   Read directory recursively.
 
@@ -278,16 +328,13 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>param</u>**: `opts` { _Object_ }
 
-    Defaults:
+    Extends the options of `eachDir`. Defaults:
     ```coffee
     {
-    	# To filter paths.
-    	filter: (path, stats) -> true
+    	# To filter paths. It can also be a RegExp.
+    	filter: -> true
     
     	isCacheStats: false
-    
-    	# The current working directory to search.
-    	cwd: ''
     }
     ```
     If `isCacheStats` is set true, the return list array
@@ -332,13 +379,13 @@ Goto [changelog](doc/changelog.md)
     
     # Custom handler
     nofs.readDirsP 'dir/path', {
-    	filter: (path, stats) ->
-    		path.indexOf('a') > -1 and stats.isFile()
+    	filter: ({ path, stats }) ->
+    		path.slice(-1) != '/' and stats.size > 1000
     }
     .then (paths) -> console.log paths
     ```
 
-- #### <a href="src/main.coffee?source#L464" target="_blank"><b>removeP</b></a>
+- #### <a href="src/main.coffee?source#L477" target="_blank"><b>removeP</b></a>
 
   Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -346,17 +393,12 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>param</u>**: `opts` { _Object_ }
 
-    Defaults:
-    ```coffee
-    {
-    	# Same with the `readDirs`'s.
-    	filter: -> true
-    }
-    ```
+    Extends the options of `eachDir`. But
+    the `isReverse` is fixed with `true`.
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L496" target="_blank"><b>touchP</b></a>
+- #### <a href="src/main.coffee?source#L507" target="_blank"><b>touchP</b></a>
 
   Change file access and modification times.
   If the file does not exist, it is created.
@@ -376,7 +418,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L534" target="_blank"><b>mapDirP</b></a>
+- #### <a href="src/main.coffee?source#L547" target="_blank"><b>mapDirP</b></a>
 
   Map file from a directory to another recursively with a
   callback.
@@ -391,13 +433,13 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>param</u>**: `opts` { _Object_ }
 
-    Same with the `readDirs`. But `cwd` is
+    Extends the options of `eachDir`. But `cwd` is
     fixed with the same as the `from` parameter.
 
   - **<u>param</u>**: `fn` { _Function_ }
 
-    The callback will be called
-    with each path. The callback can return a `Promise` to
+    `(src, dest, fileInfo) -> Promise | Any` The callback
+    will be called with each path. The callback can return a `Promise` to
     keep the async sequence go on.
 
   - **<u>return</u>**:  { _Promise_ }
@@ -405,19 +447,21 @@ Goto [changelog](doc/changelog.md)
   - **<u>example</u>**:
 
     ```coffee
+    # Copy and add license header for each files
+    # from a folder to another.
     nofs.mapDirP(
     	'from'
     	'to'
     	{ isCacheStats: true }
-    	(src, dest, stats) ->
-    		return if stats.isDirectory()
-    		buf = nofs.readFileP src
-    		buf += 'some contents'
-    		nofs.writeFileP dest, buf
+    	(src, dest, fileInfo) ->
+    		return if fileInfo.isDir
+    		nofs.readFileP(src).then (buf) ->
+    			buf += 'License MIT\n' + buf
+    			nofs.writeFileP dest, buf
     )
     ```
 
-- #### <a href="src/main.coffee?source#L571" target="_blank"><b>reduceDirP</b></a>
+- #### <a href="src/main.coffee?source#L583" target="_blank"><b>reduceDirP</b></a>
 
   Walk through directory recursively with a callback.
 
@@ -425,13 +469,10 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>param</u>**: `opts` { _Object_ }
 
-    It extend the options of `readDirs`,
+    Extends the options of `eachDir`,
     with some extra options:
     ```coffee
     {
-    	# Walk children files first.
-    	isReverse: false
-    
     	# The init value of the walk.
     	init: undefined
     }
@@ -439,7 +480,7 @@ Goto [changelog](doc/changelog.md)
 
   - **<u>param</u>**: `fn` { _Function_ }
 
-    `(preVal, path, stats) -> Promise`
+    `(prev, path, isDir, stats) -> Promise`
 
   - **<u>return</u>**:  { _Promise_ }
 
@@ -448,14 +489,16 @@ Goto [changelog](doc/changelog.md)
   - **<u>example</u>**:
 
     ```coffee
-    # Print path name list.
-    nofs.reduceDirP 'dir/path', { init: '' }, (val, path) ->
-    	val += path + '\n'
+    # Concat all files.
+    nofs.reduceDirP 'dir/path', { init: '' }, (val, info) ->
+    	return val if info.isDir
+    	nofs.readFileP(info.path).then (str) ->
+    		val += str + '\n'
     .then (ret) ->
     	console.log ret
     ```
 
-- #### <a href="src/main.coffee?source#L600" target="_blank"><b>writeFileP</b></a>
+- #### <a href="src/main.coffee?source#L606" target="_blank"><b>writeFileP</b></a>
 
   A `writeFile` shim for `< Node v0.10`.
 
