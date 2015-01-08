@@ -191,6 +191,9 @@ nofs =
 	 * 	# The current working directory to search.
 	 * 	cwd: ''
 	 *
+	 * 	# Whether to include the root directory or not.
+	 * 	isIncludeRoot: true
+	 *
 	 * 	# Whehter to follow symbol links or not.
 	 * 	isFollowLink: true
 	 *
@@ -239,6 +242,7 @@ nofs =
 
 		utils.defaults opts, {
 			cwd: ''
+			isIncludeRoot: true
 			isFollowLink: true
 			isReverse: false
 		}
@@ -268,7 +272,10 @@ nofs =
 				Promise.all names.map (name) ->
 					decideNext npath.join(dir, name)
 
-		decideNext path
+		if opts.isIncludeRoot
+			decideNext path
+		else
+			readdir path
 
 	# Feel pity for Node again.
 	# The `fs.exists` api doesn't fulfil the node callback standard.
@@ -391,6 +398,9 @@ nofs =
 	 * 	# To filter paths. It can also be a RegExp.
 	 * 	filter: -> true
 	 *
+	 * 	# Don't include the root directory.
+	 * 	isIncludeRoot: false
+	 *
 	 * 	isCacheStats: false
 	 * }
 	 * ```
@@ -440,6 +450,7 @@ nofs =
 	readDirsP: (root, opts = {}) ->
 		utils.defaults opts, {
 			isCacheStats: false
+			isIncludeRoot: false
 			filter: -> true
 		}
 

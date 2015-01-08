@@ -66,8 +66,8 @@ fs.mkdirsP 'deep/dir/path'
 .then ->
     fs.copyP 'b.txt', 'c.js'
 .then ->
-    # Get all folders.
-    fs.readDirsP 'deep', { filter: /\/$/ }
+    # Get all txt files.
+    fs.readDirsP 'deep', { filter: /\.txt$/ }
 .then (list) ->
     console.log list
 .then ->

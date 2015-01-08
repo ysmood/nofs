@@ -66,8 +66,8 @@ fs.mkdirsP 'deep/dir/path'
 .then ->
     fs.copyP 'b.txt', 'c.js'
 .then ->
-    # Get all folders.
-    fs.readDirsP 'deep', { filter: /\/$/ }
+    # Get all txt files.
+    fs.readDirsP 'deep', { filter: /\.txt$/ }
 .then (list) ->
     console.log list
 .then ->
@@ -178,7 +178,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _boolean_ }
 
-- #### <a href="src/main.coffee?source#L235" target="_blank"><b>eachDirP</b></a>
+- #### <a href="src/main.coffee?source#L238" target="_blank"><b>eachDirP</b></a>
 
   Walk through a path recursively with a callback. The callback
   can return a Promise to continue the sequence. The resolving order
@@ -196,6 +196,9 @@ __No native `fs` funtion will be listed.__
     {
     	# The current working directory to search.
     	cwd: ''
+    
+    	# Whether to include the root directory or not.
+    	isIncludeRoot: true
     
     	# Whehter to follow symbol links or not.
     	isFollowLink: true
@@ -246,7 +249,7 @@ __No native `fs` funtion will be listed.__
     	console.log tree
     ```
 
-- #### <a href="src/main.coffee?source#L285" target="_blank"><b>fileExistsP</b></a>
+- #### <a href="src/main.coffee?source#L292" target="_blank"><b>fileExistsP</b></a>
 
   Check if a path exists, and if it is a file.
 
@@ -256,7 +259,7 @@ __No native `fs` funtion will be listed.__
 
     Resolves a boolean value.
 
-- #### <a href="src/main.coffee?source#L295" target="_blank"><b>fileExistsSync</b></a>
+- #### <a href="src/main.coffee?source#L302" target="_blank"><b>fileExistsSync</b></a>
 
   Check if a path exists, and if it is a file.
 
@@ -264,7 +267,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _boolean_ }
 
-- #### <a href="src/main.coffee?source#L307" target="_blank"><b>mkdirsP</b></a>
+- #### <a href="src/main.coffee?source#L314" target="_blank"><b>mkdirsP</b></a>
 
   Recursively create directory path, like `mkdir -p`.
 
@@ -276,7 +279,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L334" target="_blank"><b>moveP</b></a>
+- #### <a href="src/main.coffee?source#L341" target="_blank"><b>moveP</b></a>
 
   Moves a file or directory. Also works between partitions.
   Behaves like the Unix `mv`.
@@ -305,7 +308,7 @@ __No native `fs` funtion will be listed.__
     It will resolve a boolean value which indicates
     whether this action is taken between two partitions.
 
-- #### <a href="src/main.coffee?source#L375" target="_blank"><b>outputFileP</b></a>
+- #### <a href="src/main.coffee?source#L382" target="_blank"><b>outputFileP</b></a>
 
   Almost the same as `writeFile`, except that if its parent
   directories do not exist, they will be created.
@@ -320,7 +323,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L440" target="_blank"><b>readDirsP</b></a>
+- #### <a href="src/main.coffee?source#L450" target="_blank"><b>readDirsP</b></a>
 
   Read directory recursively.
 
@@ -333,6 +336,9 @@ __No native `fs` funtion will be listed.__
     {
     	# To filter paths. It can also be a RegExp.
     	filter: -> true
+    
+    	# Don't include the root directory.
+    	isIncludeRoot: false
     
     	isCacheStats: false
     }
@@ -385,7 +391,7 @@ __No native `fs` funtion will be listed.__
     .then (paths) -> console.log paths
     ```
 
-- #### <a href="src/main.coffee?source#L477" target="_blank"><b>removeP</b></a>
+- #### <a href="src/main.coffee?source#L488" target="_blank"><b>removeP</b></a>
 
   Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -398,7 +404,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L507" target="_blank"><b>touchP</b></a>
+- #### <a href="src/main.coffee?source#L518" target="_blank"><b>touchP</b></a>
 
   Change file access and modification times.
   If the file does not exist, it is created.
@@ -418,7 +424,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L547" target="_blank"><b>mapDirP</b></a>
+- #### <a href="src/main.coffee?source#L558" target="_blank"><b>mapDirP</b></a>
 
   Map file from a directory to another recursively with a
   callback.
@@ -461,7 +467,7 @@ __No native `fs` funtion will be listed.__
     )
     ```
 
-- #### <a href="src/main.coffee?source#L583" target="_blank"><b>reduceDirP</b></a>
+- #### <a href="src/main.coffee?source#L594" target="_blank"><b>reduceDirP</b></a>
 
   Walk through directory recursively with a callback.
 
@@ -498,7 +504,7 @@ __No native `fs` funtion will be listed.__
     	console.log ret
     ```
 
-- #### <a href="src/main.coffee?source#L606" target="_blank"><b>writeFileP</b></a>
+- #### <a href="src/main.coffee?source#L616" target="_blank"><b>writeFileP</b></a>
 
   A `writeFile` shim for `< Node v0.10`.
 

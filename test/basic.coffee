@@ -61,7 +61,6 @@ describe 'Basic:', ->
 		nofs.readDirsP 'test/fixtures/dir'
 		.then (ls) ->
 			shouldDeepEqual ls.sort(), [
-				'test/fixtures/dir'
 				'test/fixtures/dir/a'
 				'test/fixtures/dir/test0'
 				'test/fixtures/dir/test0/b'
@@ -96,7 +95,7 @@ describe 'Basic:', ->
 			}
 			.then (ls) ->
 				shouldDeepEqual ls.sort(), [
-					"", "a", "test0", "test0/b", "test0/test1"
+					"a", "test0", "test0/b", "test0/test1"
 					"test0/test1/c", "test2", "test2/d"
 				]
 
