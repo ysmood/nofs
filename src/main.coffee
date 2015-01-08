@@ -566,22 +566,24 @@ nofs =
 	 * callback.
 	 * @param  {String}   from The root directory to start with.
 	 * @param  {String}   to This directory can be a non-exists path.
-	 * @param  {Object}   opts Same with the `readDirs`. But `cwd` is
+	 * @param  {Object}   opts Extends the options of `eachDir`. But `cwd` is
 	 * fixed with the same as the `from` parameter.
-	 * @param  {Function} fn The callback will be called
-	 * with each path. The callback can return a `Promise` to
+	 * @param  {Function} fn `(path, isDir, stats) -> Promise | Any` The callback
+	 * will be called with each path. The callback can return a `Promise` to
 	 * keep the async sequence go on.
 	 * @return {Promise}
 	 * @example
 	 * ```coffee
+	 * # Copy and add license header for each files
+	 * # from a folder to another.
 	 * nofs.mapDirP(
 	 * 	'from'
 	 * 	'to'
 	 * 	{ isCacheStats: true }
-	 * 	(src, dest, stats) ->
-	 * 		return if stats.isDirectory()
+	 * 	(src, dest, isDir) ->
+	 * 		return if isDir
 	 * 		buf = nofs.readFileP src
-	 * 		buf += 'some contents'
+	 * 		buf += 'License MIT\n' + buf
 	 * 		nofs.writeFileP dest, buf
 	 * )
 	 * ```
@@ -593,32 +595,29 @@ nofs =
 
 		opts.cwd = from
 
-		nofs.eachDirP '', opts, (path, stats) ->
+		nofs.eachDirP '', opts, (path, isDir, stats) ->
 			src = npath.join from, path
 			dest = npath.join to, path
-			fn src, dest, stats
+			fn src, dest, isDir, stats
 
 	###*
 	 * Walk through directory recursively with a callback.
 	 * @param  {String}   root
-	 * @param  {Object}   opts It extend the options of `readDirs`,
+	 * @param  {Object}   opts Extends the options of `eachDir`,
 	 * with some extra options:
 	 * ```coffee
 	 * {
-	 * 	# Walk children files first.
-	 * 	isReverse: false
-	 *
 	 * 	# The init value of the walk.
 	 * 	init: undefined
 	 * }
 	 * ```
-	 * @param  {Function} fn `(preVal, path, stats) -> Promise`
+	 * @param  {Function} fn `(prev, path, isDir, stats) -> Promise`
 	 * @return {Promise} Final resolved value.
 	 * @example
 	 * ```coffee
-	 * # Print path name list.
+	 * # Concat all files.
 	 * nofs.reduceDirP 'dir/path', { init: '' }, (val, path) ->
-	 * 	val += path + '\n'
+	 * 	val += nofs.readFile(path) + '\n'
 	 * .then (ret) ->
 	 * 	console.log ret
 	 * ```
@@ -628,22 +627,11 @@ nofs =
 			fn = opts
 			opts = {}
 
-		utils.defaults opts, {
-			isReverse: false
-		}
+		prev = Promise.resolve(opts.init)
 
-		nofs.readDirsP root, opts
-		.then (paths) ->
-			paths.reverse() if opts.isReverse
-			paths.reduce (promise, path) ->
-				if promise.then
-					promise.then (val) ->
-						fn val, path, paths.statsCache[path]
-				else
-					Promise.resolve(
-						fn val, path, paths.statsCache[path]
-					)
-			, Promise.resolve(opts.init)
+		nofs.eachDirP root, opts, (path, isDir, stats) ->
+			prev.then (val) ->
+				prev = fn val, path, isDir, stats
 
 	###*
 	 * A `writeFile` shim for `< Node v0.10`.
