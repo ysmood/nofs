@@ -193,8 +193,11 @@ nofs =
 	 * @param  {Object}   opts Optional. Defaults:
 	 * ```coffee
 	 * {
+	 * 	# The current working directory to search.
+	 * 	cwd: ''
+	 *
 	 * 	# Whehter to follow symbol links or not.
-	 * 	isFollowLink: false
+	 * 	isFollowLink: true
 	 *
 	 * 	# Iterate children first, then parent folder.
 	 * 	isReverse: false
@@ -248,14 +251,17 @@ nofs =
 			opts = {}
 
 		utils.defaults opts, {
-			isFollowLink: false
+			cwd: ''
+			isFollowLink: true
 			isReverse: false
 		}
 
 		stat = if opts.isFollowLink then fs.lstatP else fs.statP
 
+		resolve = (path) -> npath.join opts.cwd, path
+
 		decideNext = (path) ->
-			stat(path).then (stats) ->
+			stat(resolve path).then (stats) ->
 				if stats.isDirectory()
 					if opts.isReverse
 						readdir(path).then (arr) ->
@@ -272,9 +278,9 @@ nofs =
 					fn path, stats
 
 		readdir = (dir) ->
-			fs.readdirP(dir).then (paths) ->
-				Promise.all paths.map (path) ->
-					decideNext npath.join(dir, path)
+			fs.readdirP(resolve dir).then (names) ->
+				Promise.all names.map (name) ->
+					decideNext npath.join(dir, name)
 
 		decideNext path
 
