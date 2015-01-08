@@ -195,6 +195,9 @@ nofs =
 	 * {
 	 * 	# Whehter to follow symbol links or not.
 	 * 	isFollowLink: false
+	 *
+	 * 	# Iterate children first, then parent folder.
+	 * 	isReverse: false
 	 * }
 	 * ```
 	 * @param  {Function} fn `(current, stats) -> Promise | Any`.
@@ -203,7 +206,7 @@ nofs =
 	 * If the `fn` is `(c) -> c`, the directory object array may look like:
 	 * ```coffee
 	 * [
-	 * 	dir: 'dir/path'
+	 * 	val: 'dir/path'
 	 *
 	 * 	'dir/path/a.txt'
 	 * 	'dir/path/b.txt'
@@ -214,13 +217,13 @@ nofs =
 	 * tree array object, and it may look like:
 	 * ```coffee
 	 * [
-	 * 	dir: 'root'
+	 * 	val: 'root'
 	 *
 	 * 	'a.txt'
 	 * 	'b.txt'
 	 *
 	 * 	[
-	 * 		dir: 'root/path'
+	 * 		val: 'root/path'
 	 *
 	 * 		'c.txt'
 	 * 		'd.txt'
@@ -246,6 +249,7 @@ nofs =
 
 		utils.defaults opts, {
 			isFollowLink: false
+			isReverse: false
 		}
 
 		stat = if opts.isFollowLink then fs.lstatP else fs.statP
@@ -253,9 +257,17 @@ nofs =
 		decideNext = (path) ->
 			stat(path).then (stats) ->
 				if stats.isDirectory()
-					readdir(path).then (arr) ->
-						arr.dir = path
-						fn arr, stats
+					if opts.isReverse
+						readdir(path).then (arr) ->
+							arr.val = path
+							fn arr, stats
+					else
+						p = fn path, stats
+						p = Promise.resolve p if not p.then
+						p.then (val) ->
+							readdir(path).then (arr) ->
+								arr.val = val
+								arr
 				else
 					fn path, stats
 
