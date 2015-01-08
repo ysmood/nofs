@@ -585,14 +585,13 @@ nofs =
 			fn = opts
 			opts = {}
 
-		prev = Promise.resolve(opts.init)
+		prev = Promise.resolve opts.init
 
 		nofs.eachDirP root, opts, (fileInfo) ->
-			if not prev or not prev.then
-				prev = Promise.resolve prev
-
-			prev.then (val) ->
-				prev = fn val, fileInfo
+			prev = prev.then (val) ->
+				val = fn val, fileInfo
+				if not val or not val.then
+					Promise.resolve val
 		.then ->
 			prev
 

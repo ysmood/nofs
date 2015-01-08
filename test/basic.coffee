@@ -1,4 +1,4 @@
-fs = require '../src/main'
+nofs = require '../src/main'
 { Promise } = require '../src/utils'
 npath = require 'path'
 
@@ -18,50 +18,47 @@ shouldDeepEqual = (args...) ->
 
 describe 'Basic:', ->
 	it 'existsP', ->
-		fs.existsP('readme.md')
+		nofs.existsP('readme.md')
 		.then (ret) ->
 			shouldEqual ret, true
 
 	it 'dirExistsP exists', ->
-		fs.dirExistsP('src').then (ret) ->
+		nofs.dirExistsP('src').then (ret) ->
 			shouldEqual ret, true
 
 	it 'dirExistsP non-exists', ->
-		fs.dirExistsP('asdlkfjf').then (ret) ->
+		nofs.dirExistsP('asdlkfjf').then (ret) ->
 			shouldEqual ret, false
 
 	it 'dirExistsSync', ->
-		assert.equal fs.dirExistsSync('src'), true
+		assert.equal nofs.dirExistsSync('src'), true
 
 	it 'fileExistsSync', ->
-		assert.equal fs.fileExistsSync('readme.md'), true
+		assert.equal nofs.fileExistsSync('readme.md'), true
 
 	it 'fileExistsP exists', ->
-		fs.fileExistsP('readme.md').then (ret) ->
+		nofs.fileExistsP('readme.md').then (ret) ->
 			shouldEqual ret, true
 
 	it 'fileExistsP non-exists', ->
-		fs.fileExistsP('src').then (ret) ->
+		nofs.fileExistsP('src').then (ret) ->
 			shouldEqual ret, false
 
 	it 'readFileP', ->
-		fs.readFileP 'test/fixtures/sample.txt', 'utf8'
+		nofs.readFileP 'test/fixtures/sample.txt', 'utf8'
 		.then (ret) ->
 			shouldEqual ret, 'test'
 
 	it 'reduceDirP', ->
-		fs.reduceDirP 'test/fixtures/dir', {
+		nofs.reduceDirP 'test/fixtures/dir', {
 			init: '', isReverse: true
-		}, (sum, { path: p, stats: s }) ->
-			if s.isFile()
-				sum += p.slice -1
-			else
-				sum
+		}, (sum, { path, isDir }) ->
+			if isDir then sum else sum += path.slice(-1)
 		.then (v) ->
 			shouldEqual v.split('').sort().join(''), 'abcd'
 
 	it 'readDirsP', ->
-		fs.readDirsP 'test/fixtures/dir'
+		nofs.readDirsP 'test/fixtures/dir'
 		.then (ls) ->
 			shouldDeepEqual ls.sort(), [
 				'test/fixtures/dir'
@@ -75,7 +72,7 @@ describe 'Basic:', ->
 			]
 
 	it 'readDirsP cwd filter', ->
-		fs.readDirsP '', {
+		nofs.readDirsP '', {
 			cwd: 'test/fixtures/dir'
 			filter: /[a-z]{1}$/
 		}
@@ -86,15 +83,15 @@ describe 'Basic:', ->
 
 	it 'removeP copyP moveP', ->
 		after ->
-			fs.removeP 'test/fixtures/dirMV'
+			nofs.removeP 'test/fixtures/dirMV'
 
-		fs.removeP 'test/fixtures/dirCP'
+		nofs.removeP 'test/fixtures/dirCP'
 		.then ->
-			fs.copyP 'test/fixtures/dir', 'test/fixtures/dirCP'
+			nofs.copyP 'test/fixtures/dir', 'test/fixtures/dirCP'
 		.then ->
-			fs.moveP 'test/fixtures/dirCP', 'test/fixtures/dirMV'
+			nofs.moveP 'test/fixtures/dirCP', 'test/fixtures/dirMV'
 		.then ->
-			fs.readDirsP '', {
+			nofs.readDirsP '', {
 				cwd: 'test/fixtures/dirMV'
 			}
 			.then (ls) ->
@@ -105,40 +102,40 @@ describe 'Basic:', ->
 
 	it 'touchP time', ->
 		t = Date.now() // 1000
-		fs.touchP 'test/fixtures/sample.txt', {
+		nofs.touchP 'test/fixtures/sample.txt', {
 			mtime: t
 		}
 		.then ->
-			fs.statP 'test/fixtures/sample.txt'
+			nofs.statP 'test/fixtures/sample.txt'
 			.then (stats) ->
 				shouldEqual stats.mtime.getTime() // 1000, t
 
 	it 'touchP create', ->
 		after ->
-			fs.removeP 'test/fixtures/touchCreate'
+			nofs.removeP 'test/fixtures/touchCreate'
 
-		fs.touchP 'test/fixtures/touchCreate'
+		nofs.touchP 'test/fixtures/touchCreate'
 		.then ->
-			fs.fileExistsP 'test/fixtures/touchCreate'
+			nofs.fileExistsP 'test/fixtures/touchCreate'
 		.then (exists) ->
 			shouldEqual exists, true
 
 	it 'outputFileP', ->
 		after ->
-			fs.removeP 'test/fixtures/out'
+			nofs.removeP 'test/fixtures/out'
 
-		fs.outputFileP 'test/fixtures/out/put/file', 'ok'
+		nofs.outputFileP 'test/fixtures/out/put/file', 'ok'
 		.then ->
-			fs.readFileP 'test/fixtures/out/put/file', 'utf8'
+			nofs.readFileP 'test/fixtures/out/put/file', 'utf8'
 		.then (str) ->
 			shouldEqual str, 'ok'
 
 	it 'mkdirsP', ->
 		after ->
-			fs.removeP 'test/fixtures/make'
+			nofs.removeP 'test/fixtures/make'
 
-		fs.mkdirsP 'test/fixtures/make/dir/s'
+		nofs.mkdirsP 'test/fixtures/make/dir/s'
 		.then ->
-			fs.dirExistsP 'test/fixtures/make/dir/s'
+			nofs.dirExistsP 'test/fixtures/make/dir/s'
 		.then (exists) ->
 			shouldEqual exists, true
