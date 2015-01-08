@@ -118,14 +118,13 @@ nofs =
 	 * Like `cp -r`.
 	 * @param  {String} from Source path.
 	 * @param  {String} to Destination path.
-	 * @param  {Object} opts Defaults:
+	 * @param  {Object} opts Extends the options of `eachDir`.
+	 * But the `isCacheStats` is fixed with `true`.
+	 * Defaults:
 	 * ```coffee
 	 * {
 	 * 	# Overwrite file if exists.
 	 * 	isForce: false
-	 *
-	 * 	# Same with the `readDirs`'s
-	 * 	filter: -> true
 	 * }
 	 * ```
 	 * @return {Promise}
@@ -137,12 +136,7 @@ nofs =
 
 		flags = if opts.isForce then 'w' else 'wx'
 
-		walkOpts = {
-			filter: opts.filter
-			isCacheStats: true
-		}
-
-		copy = (src, dest, stats) ->
+		copy = (src, dest, isDir, stats) ->
 			opts = {
 				isForce: opts.isForce
 				mode: stats.mode
@@ -161,7 +155,7 @@ nofs =
 						to = npath.join to, npath.basename(from)
 					nofs.mkdirsP to, stats.mode
 				.then ->
-					nofs.mapDirP from, to, walkOpts, copy
+					nofs.mapDirP from, to, opts, copy
 
 	###*
 	 * Check if a path exists, and if it is a directory.
@@ -203,42 +197,31 @@ nofs =
 	 * 	isReverse: false
 	 * }
 	 * ```
-	 * @param  {Function} fn `(current, isDir, stats) -> Promise | Any`.
-	 * The `current` value can be a `String` or an `Object Array`.
-	 * If it a string, it's a file path, else it's a directory object.
+	 * @param  {Function} fn `({ path, children, stats }) -> Promise | Any`.
 	 * If the `fn` is `(c) -> c`, the directory object array may look like:
 	 * ```coffee
-	 * [
-	 * 	val: 'dir/path'
-	 *
-	 * 	'dir/path/a.txt'
-	 * 	'dir/path/b.txt'
-	 * ]
-	 * ```
-	 * The `isDir` is a boolean.
-	 * The `stats` is a native `fs.Stats` object.
-	 * @return {Promise} If the `fn` is `(c) -> c`, it will resolve a direcotry
-	 * tree array object, and it may look like:
-	 * ```coffee
-	 * [
-	 * 	val: 'root'
-	 *
-	 * 	'a.txt'
-	 * 	'b.txt'
-	 *
-	 * 	[
-	 * 		val: 'root/path'
-	 *
-	 * 		'c.txt'
-	 * 		'd.txt'
+	 * {
+	 * 	path: 'dir/path'
+	 * 	children: [
+	 * 		{ path: 'dir/path/a.txt', stats: { ... } }
+	 * 		{ path: 'dir/path/b.txt', stats: { ... } }
 	 * 	]
-	 * ]
-	 * 	 * ```
+	 * 	stats: {
+	 * 		size: 527
+	 * 		atime: Mon, 10 Oct 2011 23:24:11 GMT
+	 * 		mtime: Mon, 10 Oct 2011 23:24:11 GMT
+	 * 		ctime: Mon, 10 Oct 2011 23:24:11 GMT
+	 * 		...
+	 * 	}
+	 * }
+	 * ```
+	 * The `stats` is a native `fs.Stats` object.
+	 * @return {Promise} Resolves a directory tree object.
 	 * @example
 	 * ```coffee
 	 * # Print all file and directory names, and the modification time.
-	 * nofs.eachDirP 'dir/path', (curr, stats) ->
-	 * 	console.log curr.dir or curr, stats.mtime
+	 * nofs.eachDirP 'dir/path', (obj, stats) ->
+	 * 	console.log obj.path, stats.mtime
 	 *
 	 * # Print path name list.
 	 * nofs.eachDirP 'dir/path', (curr) -> curr
@@ -263,21 +246,18 @@ nofs =
 
 		decideNext = (path) ->
 			stat(resolve path).then (stats) ->
-				isDir = stats.isDirectory()
-				if isDir
+				if stats.isDirectory()
 					if opts.isReverse
-						readdir(path).then (arr) ->
-							arr.val = path
-							fn arr, isDir, stats
+						readdir(path).then (children) ->
+							fn { path, children, stats }
 					else
-						p = fn path, isDir, stats
-						p = Promise.resolve(p) if not p or p.then
+						p = fn { path, stats }
+						p = Promise.resolve(p) if not p or not p.then
 						p.then (val) ->
-							readdir(path).then (arr) ->
-								arr.val = val
-								arr
+							readdir(path).then (children) ->
+								{ path, children }
 				else
-					fn path, isDir, stats
+					fn { path, stats }
 
 		readdir = (dir) ->
 			fs.readdirP(resolve dir).then (names) ->
@@ -490,9 +470,9 @@ nofs =
 			enumerable: false
 		}
 
-		nofs.eachDirP root, opts, (path, isDir, stats) ->
-			if isDir
-				path = path + npath.sep
+		nofs.eachDirP root, opts, ({ path, children, stats }) ->
+			if children
+				path += npath.sep
 
 			if opts.filter path, stats
 				list.push path
@@ -502,7 +482,10 @@ nofs =
 
 			return
 		.then ->
-			list
+			if opts.isReverse
+				list[0...-1]
+			else
+				list[1..]
 
 	###*
 	 * Remove a file or directory peacefully, same with the `rm -rf`.
@@ -518,13 +501,11 @@ nofs =
 			if stats.isFile()
 				fs.unlinkP root
 			else
-				nofs.eachDirP root, opts, (path, isDir) ->
-					if isDir
+				nofs.eachDirP root, opts, ({ path, children }) ->
+					if children
 						fs.rmdirP path.val
 					else
 						fs.unlinkP path
-				.then ->
-					fs.rmdirP root
 		.catch (err) ->
 			if err.code != 'ENOENT' or err.path != root
 				Promise.reject err
@@ -563,7 +544,7 @@ nofs =
 	 * @param  {String}   to This directory can be a non-exists path.
 	 * @param  {Object}   opts Extends the options of `eachDir`. But `cwd` is
 	 * fixed with the same as the `from` parameter.
-	 * @param  {Function} fn `(path, isDir, stats) -> Promise | Any` The callback
+	 * @param  {Function} fn `(src, dest, isDir, stats) -> Promise | Any` The callback
 	 * will be called with each path. The callback can return a `Promise` to
 	 * keep the async sequence go on.
 	 * @return {Promise}
@@ -590,10 +571,10 @@ nofs =
 
 		opts.cwd = from
 
-		nofs.eachDirP '', opts, (path, isDir, stats) ->
+		nofs.eachDirP '', opts, ({ path, children, stats }) ->
 			src = npath.join from, path
 			dest = npath.join to, path
-			fn src, dest, isDir, stats
+			fn src, dest, children, stats
 
 	###*
 	 * Walk through directory recursively with a callback.
@@ -626,12 +607,12 @@ nofs =
 
 		prev = Promise.resolve(opts.init)
 
-		nofs.eachDirP root, opts, (path, isDir, stats) ->
+		nofs.eachDirP root, opts, ({ path, children, stats }) ->
 			if not prev or not prev.then
 				prev = Promise.resolve prev
 
 			prev.then (val) ->
-				prev = fn val, path, isDir, stats
+				prev = fn val, path, children, stats
 		.then ->
 			prev
 
