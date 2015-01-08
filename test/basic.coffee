@@ -70,9 +70,8 @@ describe 'Basic:', ->
 				'test/fixtures/dir/test0/b'
 				'test/fixtures/dir/test0/test1'
 				'test/fixtures/dir/test0/test1/c'
-				'test/fixtures/dir/test0/test2'
-				'test/fixtures/dir/test3'
-				'test/fixtures/dir/test3/d'
+				'test/fixtures/dir/test2'
+				'test/fixtures/dir/test2/d'
 			]
 
 	it 'readDirsP cwd filter', ->
@@ -82,7 +81,7 @@ describe 'Basic:', ->
 		}
 		.then (ls) ->
 			shouldDeepEqual ls.sort(), [
-				"a", "test0/b", "test0/test1/c", "test3/d"
+				"a", "test0/b", "test0/test1/c", "test2/d"
 			]
 
 	it 'removeP copyP moveP', ->
@@ -101,7 +100,7 @@ describe 'Basic:', ->
 			.then (ls) ->
 				shouldDeepEqual ls.sort(), [
 					"", "a", "test0", "test0/b", "test0/test1"
-					"test0/test1/c", "test0/test2", "test3", "test3/d"
+					"test0/test1/c", "test2", "test2/d"
 				]
 
 	it 'touchP time', ->
