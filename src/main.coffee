@@ -507,13 +507,8 @@ nofs =
 	###*
 	 * Remove a file or directory peacefully, same with the `rm -rf`.
 	 * @param  {String} root
-	 * @param {Object} opts Defaults:
-	 * ```coffee
-	 * {
-	 * 	# Same with the `readDirs`'s.
-	 * 	filter: -> true
-	 * }
-	 * ```
+	 * @param {Object} opts Extends the options of `eachDir`. But
+	 * the `isReverse` is fixed with `true`.
 	 * @return {Promise}
 	###
 	removeP: (root, opts = {}) ->
@@ -523,9 +518,9 @@ nofs =
 			if stats.isFile()
 				fs.unlinkP root
 			else
-				nofs.eachDirP root, opts, (path) ->
-					if path.slice(-1) == npath.sep
-						fs.rmdirP path
+				nofs.eachDirP root, opts, (path, isDir) ->
+					if isDir
+						fs.rmdirP path.val
 					else
 						fs.unlinkP path
 				.then ->
