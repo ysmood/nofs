@@ -136,12 +136,12 @@ nofs =
 
 		flags = if opts.isForce then 'w' else 'wx'
 
-		copy = (src, dest, { children, stats }) ->
+		copy = (src, dest, { isDir, stats }) ->
 			opts = {
 				isForce: opts.isForce
 				mode: stats.mode
 			}
-			if children
+			if isDir
 				nofs.copyDirP src, dest, opts
 			else
 				nofs.copyFileP src, dest, opts
@@ -197,14 +197,15 @@ nofs =
 	 * }
 	 * ```
 	 * @param  {Function} fn `(fileInfo) -> Promise | Any`.
-	 * The `fileInfo` object has these properties: `{ path, children, stats }`.
+	 * The `fileInfo` object has these properties: `{ path, isDir, children, stats }`.
 	 * If the `fn` is `(c) -> c`, the directory object array may look like:
 	 * ```coffee
 	 * {
 	 * 	path: 'dir/path'
+	 * 	isDir: true
 	 * 	children: [
-	 * 		{ path: 'dir/path/a.txt', stats: { ... } }
-	 * 		{ path: 'dir/path/b.txt', stats: { ... } }
+	 * 		{ path: 'dir/path/a.txt', isDir: false, stats: { ... } }
+	 * 		{ path: 'dir/path/b.txt', isDir: false, stats: { ... } }
 	 * 	]
 	 * 	stats: {
 	 * 		size: 527
@@ -246,18 +247,19 @@ nofs =
 
 		decideNext = (path) ->
 			stat(resolve path).then (stats) ->
-				if stats.isDirectory()
+				isDir = stats.isDirectory()
+				if isDir
 					if opts.isReverse
 						readdir(path).then (children) ->
-							fn { path, children, stats }
+							fn { path, isDir, children, stats }
 					else
-						p = fn { path, stats }
+						p = fn { path, isDir, stats }
 						p = Promise.resolve(p) if not p or not p.then
 						p.then (val) ->
 							readdir(path).then (children) ->
-								{ path, children }
+								{ path, isDir, children }
 				else
-					fn { path, stats }
+					fn { path, isDir, stats }
 
 		readdir = (dir) ->
 			fs.readdirP(resolve dir).then (names) ->
@@ -470,8 +472,8 @@ nofs =
 			enumerable: false
 		}
 
-		nofs.eachDirP root, opts, ({ path, children, stats }) ->
-			if children
+		nofs.eachDirP root, opts, ({ path, isDir, stats }) ->
+			if isDir
 				path += npath.sep
 
 			if opts.filter path, stats
@@ -501,8 +503,8 @@ nofs =
 			if stats.isFile()
 				fs.unlinkP root
 			else
-				nofs.eachDirP root, opts, ({ path, children }) ->
-					if children
+				nofs.eachDirP root, opts, ({ path, isDir }) ->
+					if isDir
 						fs.rmdirP path
 					else
 						fs.unlinkP path
@@ -557,7 +559,7 @@ nofs =
 	 * 	'to'
 	 * 	{ isCacheStats: true }
 	 * 	(src, dest, fileInfo) ->
-	 * 		return if fileInfo.children
+	 * 		return if fileInfo.isDir
 	 * 		nofs.readFileP(src).then (buf) ->
 	 * 			buf += 'License MIT\n' + buf
 	 * 			nofs.writeFileP dest, buf
@@ -593,7 +595,7 @@ nofs =
 	 * ```coffee
 	 * # Concat all files.
 	 * nofs.reduceDirP 'dir/path', { init: '' }, (val, info) ->
-	 * 	return val if info.children
+	 * 	return val if info.isDir
 	 * 	nofs.readFileP(info.path).then (str) ->
 	 * 		val += str + '\n'
 	 * .then (ret) ->
