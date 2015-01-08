@@ -24,6 +24,11 @@ with it if you don't like other functions.
 `nofs` only extends the native module, no pollution will be found. You can
 still call `nofs.readFile` as easy as pie.
 
+### Inheritance of Options
+
+A Function's options may inherits other function's, especially the functions it calls internally. Such as the `readDirs` extends the `eachDir`'s
+option, therefore `readDirs` also has a `filter` option.
+
 [![NPM version](https://badge.fury.io/js/nofs.svg)](http://badge.fury.io/js/nofs) [![Build Status](https://travis-ci.org/ysmood/nofs.svg)](https://travis-ci.org/ysmood/nofs) [![Build status](https://ci.appveyor.com/api/projects/status/11ddy1j4wofdhal7?svg=true)](https://ci.appveyor.com/project/ysmood/nofs)
  [![Deps Up to Date](https://david-dm.org/ysmood/nofs.svg?style=flat)](https://david-dm.org/ysmood/nofs)
 
