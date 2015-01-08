@@ -32,7 +32,7 @@ for k of fs
 nofs =
 
 	###*
-	 * Copy a directory.
+	 * Copy an empty directory.
 	 * @param  {String} src
 	 * @param  {String} dest
 	 * @param  {Object} opts
@@ -67,7 +67,7 @@ nofs =
 				copy()
 
 	###*
-	 * Copy a file.
+	 * Copy a single file.
 	 * @param  {String} src
 	 * @param  {String} dest
 	 * @param  {Object} opts
@@ -147,14 +147,16 @@ nofs =
 				nofs.copyFileP src, dest, opts
 
 		fs.statP(from).then (stats) ->
-			if stats.isFile()
-				copy from, to, stats
-			else
+			if stats.isDirectory()
 				nofs.dirExistsP(to).then (exists) ->
 					if exists
 						to = npath.join to, npath.basename(from)
+					else
+						nofs.mkdirsP npath.dirname(to)
 				.then ->
 					nofs.mapDirP from, to, opts, copy
+			else
+				copy from, to, stats
 
 	###*
 	 * Check if a path exists, and if it is a directory.
@@ -318,11 +320,12 @@ nofs =
 	 * Behaves like the Unix `mv`.
 	 * @param  {String} from Source path.
 	 * @param  {String} to   Destination path.
-	 * @param  {Object} opts Defaults:
+	 * @param  {Object} opts Extends the options of `eachDir`.
+	 * But the `isCacheStats` is fixed with `true`.
+	 * Defaults:
 	 * ```coffee
 	 * {
 	 * 	isForce: false
-	 * 	filter: -> true
 	 * }
 	 * ```
 	 * @return {Promise} It will resolve a boolean value which indicates
@@ -333,10 +336,7 @@ nofs =
 			isForce: false
 		}
 
-		walkOpts = {
-			filter: opts.filter
-			isCacheStats: true
-		}
+		opts.isCacheStats = true
 
 		moveFile = (src, dest) ->
 			if opts.isForce
@@ -345,42 +345,24 @@ nofs =
 				fs.linkP(src, dest).then ->
 					fs.unlinkP src
 
-		moveDir = (src, dest, { mode }) ->
-			nofs.copyDirP src, dest, {
-				isForce: opts.isForce
-				mode
-			}
-
-		move = (src, dest, stats) ->
-			isFile = stats.isFile()
-			action = if isFile then moveFile else moveDir
-
-			action src, dest, stats
-			.catch (err) ->
-				if err.code == 'EXDEV'
-					action = if isFile
-						nofs.copyFileP
-					else
-						nofs.copyDirP
-					action src, dest, {
-						isForce: opts.isForce
-						mode: stats.mode
-					}
-				else
-					Promise.reject err
-
 		fs.statP(from).then (stats) ->
-			if stats.isFile()
-				moveFile from, to
-			else
+			if stats.isDirectory()
 				nofs.dirExistsP(to).then (exists) ->
 					if exists
 						to = npath.join to, npath.basename(from)
-					nofs.mkdirsP to
+					else
+						nofs.mkdirsP npath.dirname(to)
 				.then ->
-					nofs.mapDirP from, to, walkOpts, move
+					fs.renameP from, to
+			else
+				moveFile from, to
+		.catch (err) ->
+			if err.code == 'EXDEV'
+				nofs.copyP from, to, opts
 				.then ->
 					fs.removeP from
+			else
+				Promise.reject err
 
 	###*
 	 * Almost the same as `writeFile`, except that if its parent
@@ -500,14 +482,14 @@ nofs =
 		opts.isReverse = true
 
 		fs.statP(root).then (stats) ->
-			if stats.isFile()
-				fs.unlinkP root
-			else
+			if stats.isDirectory()
 				nofs.eachDirP root, opts, ({ path, isDir }) ->
 					if isDir
 						fs.rmdirP path
 					else
 						fs.unlinkP path
+			else
+				fs.unlinkP root
 		.catch (err) ->
 			if err.code != 'ENOENT' or err.path != root
 				Promise.reject err
