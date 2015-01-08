@@ -203,7 +203,7 @@ nofs =
 	 * 	isReverse: false
 	 * }
 	 * ```
-	 * @param  {Function} fn `(current, stats) -> Promise | Any`.
+	 * @param  {Function} fn `(current, isDir, stats) -> Promise | Any`.
 	 * The `current` value can be a `String` or an `Object Array`.
 	 * If it a string, it's a file path, else it's a directory object.
 	 * If the `fn` is `(c) -> c`, the directory object array may look like:
@@ -215,6 +215,7 @@ nofs =
 	 * 	'dir/path/b.txt'
 	 * ]
 	 * ```
+	 * The `isDir` is a boolean.
 	 * The `stats` is a native `fs.Stats` object.
 	 * @return {Promise} If the `fn` is `(c) -> c`, it will resolve a direcotry
 	 * tree array object, and it may look like:
@@ -262,20 +263,21 @@ nofs =
 
 		decideNext = (path) ->
 			stat(resolve path).then (stats) ->
-				if stats.isDirectory()
+				isDir = stats.isDirectory()
+				if isDir
 					if opts.isReverse
 						readdir(path).then (arr) ->
 							arr.val = path
-							fn arr, stats
+							fn arr, isDir, stats
 					else
-						p = fn path, stats
-						p = Promise.resolve p if not p.then
+						p = fn path, isDir, stats
+						p = Promise.resolve(p) if not p or p.then
 						p.then (val) ->
 							readdir(path).then (arr) ->
 								arr.val = val
 								arr
 				else
-					fn path, stats
+					fn path, isDir, stats
 
 		readdir = (dir) ->
 			fs.readdirP(resolve dir).then (names) ->
@@ -419,16 +421,13 @@ nofs =
 	###*
 	 * Read directory recursively.
 	 * @param {String} root
-	 * @param {Object} opts Defaults:
+	 * @param {Object} opts Extends the options of `eachDir`. Defaults:
 	 * ```coffee
 	 * {
 	 * 	# To filter paths.
 	 * 	filter: (path, stats) -> true
 	 *
 	 * 	isCacheStats: false
-	 *
-	 * 	# The current working directory to search.
-	 * 	cwd: ''
 	 * }
 	 * ```
 	 * If `isCacheStats` is set true, the return list array
@@ -469,7 +468,7 @@ nofs =
 	 * # Custom handler
 	 * nofs.readDirsP 'dir/path', {
 	 * 	filter: (path, stats) ->
-	 * 		path.indexOf('a') > -1 and stats.isFile()
+	 * 		path.slice(-1) != '/' and stats.size > 1000
 	 * }
 	 * .then (paths) -> console.log paths
 	 * ```
@@ -477,7 +476,6 @@ nofs =
 	readDirsP: (root, opts = {}) ->
 		utils.defaults opts, {
 			isCacheStats: false
-			cwd: ''
 			filter: -> true
 		}
 
@@ -492,30 +490,19 @@ nofs =
 			enumerable: false
 		}
 
-		resolve = (path) -> npath.join opts.cwd, path
+		nofs.eachDirP root, opts, (path, isDir, stats) ->
+			if isDir
+				path = path + npath.sep
 
-		nextEntity = (path) ->
-			fs.statP(resolve path).then (stats) ->
-				if stats.isDirectory()
-					path = path + npath.sep
-					addPath path, stats
-					readdir path
-				else
-					addPath path, stats
-
-		addPath = (path, stats) ->
 			if opts.filter path, stats
 				list.push path
 
-				if opts.isCacheStats
-					list.statsCache[path] = stats
+			if opts.isCacheStats
+				statsCache[path] = stats
 
-		readdir = (root) ->
-			fs.readdirP(resolve root).then (paths) ->
-				Promise.all paths.map (path) ->
-					nextEntity npath.join(root, path)
-
-		readdir(root).then -> list
+			return
+		.then ->
+			list
 
 	###*
 	 * Remove a file or directory peacefully, same with the `rm -rf`.
