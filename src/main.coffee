@@ -185,36 +185,86 @@ nofs =
 			false
 
 	###*
-	 * Walk through directory recursively with a callback.
-	 * @param  {String}   root
-	 * @param  {Object}   opts It extend the options of `readDirs`,
-	 * with some extra options:
+	 * Walk through a path recursively with a callback. The callback
+	 * can return a Promise to continue the sequence. The resolving order
+	 * is also recursive, a directory path resolves after all its children
+	 * are resolved.
+	 * @param  {String} path The path may point to a directory or a file.
+	 * @param  {Object}   opts Optional. Defaults:
 	 * ```coffee
 	 * {
-	 * 	# Walk children files first.
-	 * 	isReverse: false
+	 * 	# Whehter to follow symbol links or not.
+	 * 	isFollowLink: false
 	 * }
 	 * ```
-	 * @param  {Function} fn `(path, stats) -> Promise`
-	 * @return {Promise} Final resolved value.
+	 * @param  {Function} fn `(current, stats) -> Promise | Any`.
+	 * The `current` value can be a `String` or an `Object Array`.
+	 * If it a string, it's a file path, else it's a directory object.
+	 * If the `fn` is `(c) -> c`, the directory object array may look like:
+	 * ```coffee
+	 * [
+	 * 	dir: 'dir/path'
+	 *
+	 * 	'dir/path/a.txt'
+	 * 	'dir/path/b.txt'
+	 * ]
+	 * ```
+	 * The `stats` is a native `fs.Stats` object.
+	 * @return {Promise} If the `fn` is `(c) -> c`, it will resolve a direcotry
+	 * tree array object, and it may look like:
+	 * ```coffee
+	 * [
+	 * 	dir: 'root'
+	 *
+	 * 	'a.txt'
+	 * 	'b.txt'
+	 *
+	 * 	[
+	 * 		dir: 'root/path'
+	 *
+	 * 		'c.txt'
+	 * 		'd.txt'
+	 * 	]
+	 * ]
+	 * 	 * ```
 	 * @example
 	 * ```coffee
-	 * # Print path name list.
-	 * nofs.eachDirP 'dir/path', (path) ->
-	 * 	console.log path
+	 * # Print all file and directory names, and the modification time.
+	 * nofs.eachDirP 'dir/path', (curr, stats) ->
+	 * 	console.log curr.dir or curr, stats.mtime
 	 *
 	 * # Print path name list.
-	 * nofs.eachDirP 'dir/path', { isCacheStats: true }, (path, stats) ->
-	 * 	console.log path, stats.isFile()
+	 * nofs.eachDirP 'dir/path', (curr) -> curr
+	 * .then (tree) ->
+	 * 	console.log tree
 	 * ```
 	###
-	eachDirP: (root, opts = {}, fn) ->
+	eachDirP: (path, opts, fn) ->
 		if opts instanceof Function
 			fn = opts
 			opts = {}
 
-		nofs.reduceDirP root, opts, (nil, path, stats) ->
-			fn path, stats
+		utils.defaults opts, {
+			isFollowLink: false
+		}
+
+		stat = if opts.isFollowLink then fs.lstatP else fs.statP
+
+		decideNext = (path) ->
+			stat(path).then (stats) ->
+				if stats.isDirectory()
+					readdir(path).then (arr) ->
+						arr.dir = path
+						fn arr, stats
+				else
+					fn path, stats
+
+		readdir = (dir) ->
+			fs.readdirP(dir).then (paths) ->
+				Promise.all paths.map (path) ->
+					decideNext npath.join(dir, path)
+
+		decideNext path
 
 	# Feel pity for Node again.
 	# The `fs.exists` api doesn't fulfil the node callback standard.
