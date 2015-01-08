@@ -51,35 +51,39 @@ describe 'Basic:', ->
 
 	it 'reduceDirP', ->
 		fs.reduceDirP 'test/fixtures/dir', {
-			init: '', isReverse: true, isCacheStats: true
-		}, (sum, p, s) ->
+			init: '', isReverse: true
+		}, (sum, { path: p, stats: s }) ->
 			if s.isFile()
 				sum += p.slice -1
 			else
 				sum
 		.then (v) ->
-			shouldEqual v, 'drba'
+			shouldEqual v.split('').sort().join(''), 'abcd'
 
 	it 'readDirsP', ->
 		fs.readDirsP 'test/fixtures/dir'
 		.then (ls) ->
-			shouldDeepEqual ls, [
+			shouldDeepEqual ls.sort(), [
+				'test/fixtures/dir'
 				'test/fixtures/dir/a'
-				'test/fixtures/dir/test/'
-				'test/fixtures/dir/test2/'
-				'test/fixtures/dir/test/b'
-				'test/fixtures/dir/test/test/'
-				'test/fixtures/dir/test2/r'
-				'test/fixtures/dir/test/test/d'
+				'test/fixtures/dir/test0'
+				'test/fixtures/dir/test0/b'
+				'test/fixtures/dir/test0/test1'
+				'test/fixtures/dir/test0/test1/c'
+				'test/fixtures/dir/test0/test2'
+				'test/fixtures/dir/test3'
+				'test/fixtures/dir/test3/d'
 			]
 
 	it 'readDirsP cwd filter', ->
 		fs.readDirsP '', {
 			cwd: 'test/fixtures/dir'
-			filter: new RegExp("[^#{npath.sep}]$")
+			filter: /[a-z]{1}$/
 		}
 		.then (ls) ->
-			shouldDeepEqual ls, ["a","test/b","test2/r","test/test/d"]
+			shouldDeepEqual ls.sort(), [
+				"a", "test0/b", "test0/test1/c", "test3/d"
+			]
 
 	it 'removeP copyP moveP', ->
 		after ->
@@ -95,8 +99,9 @@ describe 'Basic:', ->
 				cwd: 'test/fixtures/dirMV'
 			}
 			.then (ls) ->
-				shouldDeepEqual ls, [
-					'a', 'test/', 'test2/', 'test/b', 'test/test/', 'test2/r', 'test/test/d'
+				shouldDeepEqual ls.sort(), [
+					"", "a", "test0", "test0/b", "test0/test1"
+					"test0/test1/c", "test0/test2", "test3", "test3/d"
 				]
 
 	it 'touchP time', ->

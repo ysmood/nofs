@@ -388,8 +388,8 @@ nofs =
 	 * @param {Object} opts Extends the options of `eachDir`. Defaults:
 	 * ```coffee
 	 * {
-	 * 	# To filter paths.
-	 * 	filter: (path, stats) -> true
+	 * 	# To filter paths. It can also be a RegExp.
+	 * 	filter: -> true
 	 *
 	 * 	isCacheStats: false
 	 * }
@@ -431,7 +431,7 @@ nofs =
 	 *
 	 * # Custom handler
 	 * nofs.readDirsP 'dir/path', {
-	 * 	filter: (path, stats) ->
+	 * 	filter: ({ path, stats }) ->
 	 * 		path.slice(-1) != '/' and stats.size > 1000
 	 * }
 	 * .then (paths) -> console.log paths
@@ -445,7 +445,7 @@ nofs =
 
 		if opts.filter instanceof RegExp
 			reg = opts.filter
-			opts.filter = (path) -> reg.test path
+			opts.filter = (fileInfo) -> reg.test fileInfo.path
 
 		list = []
 		statsCache = {}
@@ -454,11 +454,10 @@ nofs =
 			enumerable: false
 		}
 
-		nofs.eachDirP root, opts, ({ path, isDir, stats }) ->
-			if isDir
-				path += npath.sep
+		nofs.eachDirP root, opts, (fileInfo) ->
+			{ path, isDir, stats } = fileInfo
 
-			if opts.filter path, stats
+			if opts.filter fileInfo
 				list.push path
 
 			if opts.isCacheStats
@@ -466,10 +465,7 @@ nofs =
 
 			return
 		.then ->
-			if opts.isReverse
-				list[0...-1]
-			else
-				list[1..]
+			list
 
 	###*
 	 * Remove a file or directory peacefully, same with the `rm -rf`.
