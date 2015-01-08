@@ -395,7 +395,7 @@ __No native `fs` funtion will be listed.__
 
   Remove a file or directory peacefully, same with the `rm -rf`.
 
-  - **<u>param</u>**: `root` { _String_ }
+  - **<u>param</u>**: `path` { _String_ }
 
   - **<u>param</u>**: `opts` { _Object_ }
 
@@ -471,7 +471,7 @@ __No native `fs` funtion will be listed.__
 
   Walk through directory recursively with a callback.
 
-  - **<u>param</u>**: `root` { _String_ }
+  - **<u>param</u>**: `path` { _String_ }
 
   - **<u>param</u>**: `opts` { _Object_ }
 

@@ -480,25 +480,25 @@ nofs =
 
 	###*
 	 * Remove a file or directory peacefully, same with the `rm -rf`.
-	 * @param  {String} root
+	 * @param  {String} path
 	 * @param {Object} opts Extends the options of `eachDir`. But
 	 * the `isReverse` is fixed with `true`.
 	 * @return {Promise}
 	###
-	removeP: (root, opts = {}) ->
+	removeP: (path, opts = {}) ->
 		opts.isReverse = true
 
-		fs.statP(root).then (stats) ->
+		fs.statP(path).then (stats) ->
 			if stats.isDirectory()
-				nofs.eachDirP root, opts, ({ path, isDir }) ->
+				nofs.eachDirP path, opts, ({ path, isDir }) ->
 					if isDir
 						fs.rmdirP path
 					else
 						fs.unlinkP path
 			else
-				fs.unlinkP root
+				fs.unlinkP path
 		.catch (err) ->
-			if err.code != 'ENOENT' or err.path != root
+			if err.code != 'ENOENT' or err.path != path
 				Promise.reject err
 
 	###*
@@ -569,7 +569,7 @@ nofs =
 
 	###*
 	 * Walk through directory recursively with a callback.
-	 * @param  {String}   root
+	 * @param  {String}   path
 	 * @param  {Object}   opts Extends the options of `eachDir`,
 	 * with some extra options:
 	 * ```coffee
@@ -591,14 +591,14 @@ nofs =
 	 * 	console.log ret
 	 * ```
 	###
-	reduceDirP: (root, opts = {}, fn) ->
+	reduceDirP: (path, opts = {}, fn) ->
 		if opts instanceof Function
 			fn = opts
 			opts = {}
 
 		prev = Promise.resolve opts.init
 
-		nofs.eachDirP root, opts, (fileInfo) ->
+		nofs.eachDirP path, opts, (fileInfo) ->
 			prev = prev.then (val) ->
 				val = fn val, fileInfo
 				if not val or not val.then
