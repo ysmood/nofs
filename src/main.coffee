@@ -582,9 +582,9 @@ nofs =
 	 * 	{ isCacheStats: true }
 	 * 	(src, dest, isDir) ->
 	 * 		return if isDir
-	 * 		buf = nofs.readFileP src
-	 * 		buf += 'License MIT\n' + buf
-	 * 		nofs.writeFileP dest, buf
+	 * 		nofs.readFileP(src).then (buf) ->
+	 * 			buf += 'License MIT\n' + buf
+	 * 			nofs.writeFileP dest, buf
 	 * )
 	 * ```
 	###
@@ -616,8 +616,10 @@ nofs =
 	 * @example
 	 * ```coffee
 	 * # Concat all files.
-	 * nofs.reduceDirP 'dir/path', { init: '' }, (val, path) ->
-	 * 	val += nofs.readFile(path) + '\n'
+	 * nofs.reduceDirP 'dir/path', { init: '' }, (val, path, isDir) ->
+	 * 	return val if isDir
+	 * 	nofs.readFileP(path).then (str) ->
+	 * 		val += str + '\n'
 	 * .then (ret) ->
 	 * 	console.log ret
 	 * ```
@@ -630,8 +632,13 @@ nofs =
 		prev = Promise.resolve(opts.init)
 
 		nofs.eachDirP root, opts, (path, isDir, stats) ->
+			if not prev or not prev.then
+				prev = Promise.resolve prev
+
 			prev.then (val) ->
 				prev = fn val, path, isDir, stats
+		.then ->
+			prev
 
 	###*
 	 * A `writeFile` shim for `< Node v0.10`.
