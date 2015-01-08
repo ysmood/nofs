@@ -136,15 +136,15 @@ nofs =
 
 		flags = if opts.isForce then 'w' else 'wx'
 
-		copy = (src, dest, isDir, stats) ->
+		copy = (src, dest, { children, stats }) ->
 			opts = {
 				isForce: opts.isForce
 				mode: stats.mode
 			}
-			if stats.isFile()
-				nofs.copyFileP src, dest, opts
-			else
+			if children
 				nofs.copyDirP src, dest, opts
+			else
+				nofs.copyFileP src, dest, opts
 
 		fs.statP(from).then (stats) ->
 			if stats.isFile()
@@ -196,7 +196,8 @@ nofs =
 	 * 	isReverse: false
 	 * }
 	 * ```
-	 * @param  {Function} fn `({ path, children, stats }) -> Promise | Any`.
+	 * @param  {Function} fn `(fileInfo) -> Promise | Any`.
+	 * The `fileInfo` object has these properties: `{ path, children, stats }`.
 	 * If the `fn` is `(c) -> c`, the directory object array may look like:
 	 * ```coffee
 	 * {
@@ -502,7 +503,7 @@ nofs =
 			else
 				nofs.eachDirP root, opts, ({ path, children }) ->
 					if children
-						fs.rmdirP path.val
+						fs.rmdirP path
 					else
 						fs.unlinkP path
 		.catch (err) ->
@@ -543,7 +544,7 @@ nofs =
 	 * @param  {String}   to This directory can be a non-exists path.
 	 * @param  {Object}   opts Extends the options of `eachDir`. But `cwd` is
 	 * fixed with the same as the `from` parameter.
-	 * @param  {Function} fn `(src, dest, isDir, stats) -> Promise | Any` The callback
+	 * @param  {Function} fn `(src, dest, fileInfo) -> Promise | Any` The callback
 	 * will be called with each path. The callback can return a `Promise` to
 	 * keep the async sequence go on.
 	 * @return {Promise}
@@ -555,8 +556,8 @@ nofs =
 	 * 	'from'
 	 * 	'to'
 	 * 	{ isCacheStats: true }
-	 * 	(src, dest, isDir) ->
-	 * 		return if isDir
+	 * 	(src, dest, fileInfo) ->
+	 * 		return if fileInfo.children
 	 * 		nofs.readFileP(src).then (buf) ->
 	 * 			buf += 'License MIT\n' + buf
 	 * 			nofs.writeFileP dest, buf
@@ -570,10 +571,10 @@ nofs =
 
 		opts.cwd = from
 
-		nofs.eachDirP '', opts, ({ path, children, stats }) ->
-			src = npath.join from, path
-			dest = npath.join to, path
-			fn src, dest, children, stats
+		nofs.eachDirP '', opts, (fileInfo) ->
+			src = npath.join from, fileInfo.path
+			dest = npath.join to, fileInfo.path
+			fn src, dest, fileInfo
 
 	###*
 	 * Walk through directory recursively with a callback.
@@ -591,9 +592,9 @@ nofs =
 	 * @example
 	 * ```coffee
 	 * # Concat all files.
-	 * nofs.reduceDirP 'dir/path', { init: '' }, (val, path, isDir) ->
-	 * 	return val if isDir
-	 * 	nofs.readFileP(path).then (str) ->
+	 * nofs.reduceDirP 'dir/path', { init: '' }, (val, info) ->
+	 * 	return val if info.children
+	 * 	nofs.readFileP(info.path).then (str) ->
 	 * 		val += str + '\n'
 	 * .then (ret) ->
 	 * 	console.log ret
@@ -606,12 +607,12 @@ nofs =
 
 		prev = Promise.resolve(opts.init)
 
-		nofs.eachDirP root, opts, ({ path, children, stats }) ->
+		nofs.eachDirP root, opts, (fileInfo) ->
 			if not prev or not prev.then
 				prev = Promise.resolve prev
 
 			prev.then (val) ->
-				prev = fn val, path, children, stats
+				prev = fn val, fileInfo
 		.then ->
 			prev
 
