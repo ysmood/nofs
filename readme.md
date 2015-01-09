@@ -42,7 +42,7 @@ still call `nofs.readFile` as easy as pie.
 ### Inheritance of Options
 
 A Function's options may inherit other function's, especially the functions it calls internally. Such as the `readDirs` extends the `eachDir`'s
-option, therefore `readDirs` also has a `cwd` option.
+option, therefore `readDirs` also has a `filter` option.
 
 ## Quick Start
 
@@ -134,7 +134,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L132" target="_blank"><b>copyP</b></a>
+- #### <a href="src/main.coffee?source#L131" target="_blank"><b>copyP</b></a>
 
   Like `cp -r`.
 
@@ -160,7 +160,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L166" target="_blank"><b>dirExistsP</b></a>
+- #### <a href="src/main.coffee?source#L165" target="_blank"><b>dirExistsP</b></a>
 
   Check if a path exists, and if it is a directory.
 
@@ -170,7 +170,7 @@ __No native `fs` funtion will be listed.__
 
     Resolves a boolean value.
 
-- #### <a href="src/main.coffee?source#L176" target="_blank"><b>dirExistsSync</b></a>
+- #### <a href="src/main.coffee?source#L175" target="_blank"><b>dirExistsSync</b></a>
 
   Check if a path exists, and if it is a directory.
 
@@ -178,7 +178,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _boolean_ }
 
-- #### <a href="src/main.coffee?source#L238" target="_blank"><b>eachDirP</b></a>
+- #### <a href="src/main.coffee?source#L248" target="_blank"><b>eachDirP</b></a>
 
   Walk through a path recursively with a callback. The callback
   can return a Promise to continue the sequence. The resolving order
@@ -247,9 +247,20 @@ __No native `fs` funtion will be listed.__
     nofs.eachDirP 'dir/path', (curr) -> curr
     .then (tree) ->
     	console.log tree
+    
+    # Find all js files.
+    nofs.eachDirP 'dir/path', { filter: /\.js$/ }, ({ path }) ->
+    	console.log paths
+    
+    # Custom filter
+    nofs.eachDirP 'dir/path', {
+    	filter: ({ path, stats }) ->
+    		path.slice(-1) != '/' and stats.size > 1000
+    }, (path) ->
+    	console.log path
     ```
 
-- #### <a href="src/main.coffee?source#L292" target="_blank"><b>fileExistsP</b></a>
+- #### <a href="src/main.coffee?source#L311" target="_blank"><b>fileExistsP</b></a>
 
   Check if a path exists, and if it is a file.
 
@@ -259,7 +270,7 @@ __No native `fs` funtion will be listed.__
 
     Resolves a boolean value.
 
-- #### <a href="src/main.coffee?source#L302" target="_blank"><b>fileExistsSync</b></a>
+- #### <a href="src/main.coffee?source#L321" target="_blank"><b>fileExistsSync</b></a>
 
   Check if a path exists, and if it is a file.
 
@@ -267,7 +278,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _boolean_ }
 
-- #### <a href="src/main.coffee?source#L314" target="_blank"><b>mkdirsP</b></a>
+- #### <a href="src/main.coffee?source#L333" target="_blank"><b>mkdirsP</b></a>
 
   Recursively create directory path, like `mkdir -p`.
 
@@ -279,7 +290,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L341" target="_blank"><b>moveP</b></a>
+- #### <a href="src/main.coffee?source#L360" target="_blank"><b>moveP</b></a>
 
   Moves a file or directory. Also works between partitions.
   Behaves like the Unix `mv`.
@@ -308,7 +319,7 @@ __No native `fs` funtion will be listed.__
     It will resolve a boolean value which indicates
     whether this action is taken between two partitions.
 
-- #### <a href="src/main.coffee?source#L382" target="_blank"><b>outputFileP</b></a>
+- #### <a href="src/main.coffee?source#L401" target="_blank"><b>outputFileP</b></a>
 
   Almost the same as `writeFile`, except that if its parent
   directories do not exist, they will be created.
@@ -323,7 +334,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L450" target="_blank"><b>readDirsP</b></a>
+- #### <a href="src/main.coffee?source#L458" target="_blank"><b>readDirsP</b></a>
 
   Read directory recursively.
 
@@ -378,17 +389,6 @@ __No native `fs` funtion will be listed.__
     nofs.readDirsP 'dir/path', { isCacheStats: true }
     .then (paths) ->
     	console.log paths.statsCache['path/a']
-    
-    # Find all js files.
-    nofs.readDirsP 'dir/path', { filter: /\.js$/ }
-    .then (paths) -> console.log paths
-    
-    # Custom handler
-    nofs.readDirsP 'dir/path', {
-    	filter: ({ path, stats }) ->
-    		path.slice(-1) != '/' and stats.size > 1000
-    }
-    .then (paths) -> console.log paths
     ```
 
 - #### <a href="src/main.coffee?source#L488" target="_blank"><b>removeP</b></a>

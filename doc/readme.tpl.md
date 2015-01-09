@@ -42,7 +42,7 @@ still call `nofs.readFile` as easy as pie.
 ### Inheritance of Options
 
 A Function's options may inherit other function's, especially the functions it calls internally. Such as the `readDirs` extends the `eachDir`'s
-option, therefore `readDirs` also has a `cwd` option.
+option, therefore `readDirs` also has a `filter` option.
 
 ## Quick Start
 

@@ -232,6 +232,17 @@ nofs =
 	 * nofs.eachDirP 'dir/path', (curr) -> curr
 	 * .then (tree) ->
 	 * 	console.log tree
+	 *
+	 * # Find all js files.
+	 * nofs.eachDirP 'dir/path', { filter: /\.js$/ }, ({ path }) ->
+	 * 	console.log paths
+	 *
+	 * # Custom filter
+	 * nofs.eachDirP 'dir/path', {
+	 * 	filter: ({ path, stats }) ->
+	 * 		path.slice(-1) != '/' and stats.size > 1000
+	 * }, (path) ->
+	 * 	console.log path
 	 * ```
 	###
 	eachDirP: (path, opts, fn) ->
@@ -240,31 +251,40 @@ nofs =
 			opts = {}
 
 		utils.defaults opts, {
+			filter: -> true
 			cwd: ''
 			isIncludeRoot: true
 			isFollowLink: true
 			isReverse: false
 		}
 
+		if opts.filter instanceof RegExp
+			reg = opts.filter
+			opts.filter = (fileInfo) -> reg.test fileInfo.path
+
 		stat = if opts.isFollowLink then fs.lstatP else fs.statP
 
 		resolve = (path) -> npath.join opts.cwd, path
 
+		execFn = (fileInfo) -> fn fileInfo if opts.filter fileInfo
+
 		decideNext = (path) ->
 			stat(resolve path).then (stats) ->
 				isDir = stats.isDirectory()
+				fileInfo = { path, isDir, stats }
 				if isDir
 					if opts.isReverse
 						readdir(path).then (children) ->
-							fn { path, isDir, children, stats }
+							fileInfo.children = children
+							execFn fileInfo
 					else
-						p = fn { path, isDir, stats }
+						p = execFn fileInfo
 						p = Promise.resolve(p) if not p or not p.then
 						p.then (val) ->
 							readdir(path).then (children) ->
 								{ path, isDir, children }
 				else
-					fn { path, isDir, stats }
+					execFn fileInfo
 
 		readdir = (dir) ->
 			fs.readdirP(resolve dir).then (names) ->
@@ -433,29 +453,13 @@ nofs =
 	 * nofs.readDirsP 'dir/path', { isCacheStats: true }
 	 * .then (paths) ->
 	 * 	console.log paths.statsCache['path/a']
-	 *
-	 * # Find all js files.
-	 * nofs.readDirsP 'dir/path', { filter: /\.js$/ }
-	 * .then (paths) -> console.log paths
-	 *
-	 * # Custom handler
-	 * nofs.readDirsP 'dir/path', {
-	 * 	filter: ({ path, stats }) ->
-	 * 		path.slice(-1) != '/' and stats.size > 1000
-	 * }
-	 * .then (paths) -> console.log paths
 	 * ```
 	###
 	readDirsP: (root, opts = {}) ->
 		utils.defaults opts, {
 			isCacheStats: false
 			isIncludeRoot: false
-			filter: -> true
 		}
-
-		if opts.filter instanceof RegExp
-			reg = opts.filter
-			opts.filter = (fileInfo) -> reg.test fileInfo.path
 
 		list = []
 		statsCache = {}
@@ -467,13 +471,10 @@ nofs =
 		nofs.eachDirP root, opts, (fileInfo) ->
 			{ path, isDir, stats } = fileInfo
 
-			if opts.filter fileInfo
-				list.push path
-
 			if opts.isCacheStats
 				statsCache[path] = stats
 
-			return
+			list.push path
 		.then ->
 			list
 
