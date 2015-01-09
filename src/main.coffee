@@ -288,6 +288,7 @@ nofs =
 	 * ```coffee
 	 * {
 	 * 	# To filter paths. It can also be a RegExp or a glob pattern string.
+	 * 	# When it's a string, it extends the Minimatch's options.
 	 * 	filter: -> true
 	 *
 	 * 	# The current working directory to search.
@@ -338,7 +339,9 @@ nofs =
 	 * 	console.log tree
 	 *
 	 * # Find all js files.
-	 * nofs.eachDirP 'dir/path', { filter: '**\/*.js' }, ({ path }) ->
+	 * nofs.eachDirP 'dir/path', {
+	 * 	filter: '**\/*.js', nocase: true
+	 * }, ({ path }) ->
 	 * 	console.log paths
 	 *
 	 * # Find all js files.
@@ -373,7 +376,7 @@ nofs =
 		if typeof opts.filter == 'string'
 			pattern = opts.filter
 			opts.filter = (fileInfo) ->
-				nofs.minimatch fileInfo.path, pattern
+				nofs.minimatch fileInfo.path, pattern, opts
 
 		stat = if opts.isFollowLink then fs.lstatP else fs.statP
 
@@ -503,17 +506,97 @@ nofs =
 	###*
 	 * Get files by patterns.
 	 * @param  {String | Array} pattern The minimatch pattern.
-	 * @param {Object} opts Extends the options of `readDirs`.
-	 * @return {Promise}
+	 * @param {Object} opts Extends the options of `eachDir`.
+	 * But the `filter` property will be fixed with the pattern.
+	 * @param {Function} fn `(fileInfo, list) -> Promise | Any`.
+	 * It will be called after each match. By default it is:
+	 * `(fileInfo, list) -> list.push fileInfo.path`
+	 * @return {Promise} Resolves the list array.
+	 * @example
+	 * ```coffee
+	 * # Get all js files.
+	 * nofs.globP('**\/*.js').then (paths) ->
+	 * 	console.log paths
+	 *
+	 * # Custom the iterator. Append '/' to each directory path.
+	 * nofs.globP('**\/*.js', (info, list) ->
+	 * 	list.push if info.isDir
+	 * 		info.path + '/'
+	 * 	else
+	 * 		info.path
+	 * ).then (paths) ->
+	 * 	console.log paths
+	 * ```
 	###
-	globP: (patterns, opts = {}) ->
+	globP: (patterns, opts = {}, fn) ->
+		if opts instanceof Function
+			fn = opts
+			opts = {}
+
 		if typeof patterns == 'string'
 			patterns = [patterns]
 
+		list = []
+
+		fn ?= (fileInfo, list) -> list.push fileInfo.path
+
+		getDirPath = (dir) ->
+			nofs.dirExistsP(dir).then (exists) ->
+				if exists
+					dir
+				else
+					getDirPath npath.dirname(dir)
+
+		cleanPrefix = (pattern) ->
+			pattern.replace /^!/, ''
+
 		glob = (pattern) ->
-			pattern
+			getDirPath(cleanPrefix pattern).then (dir) ->
+				subOpts = utils.defaults {
+					filter: pattern
+				}, opts
+				nofs.eachDirP dir, subOpts, (fileInfo) ->
+					fn fileInfo, list
 
 		Promise.all patterns.map glob
+		.then -> list
+
+	###*
+	 * See `globP`.
+	 * @return {Array} The list array.
+	###
+	globSync: (patterns, opts = {}, fn) ->
+		if opts instanceof Function
+			fn = opts
+			opts = {}
+
+		if typeof patterns == 'string'
+			patterns = [patterns]
+
+		list = []
+
+		fn ?= (fileInfo, list) -> list.push fileInfo.path
+
+		getDirPath = (dir) ->
+			if nofs.dirExistsSync dir
+				dir
+			else
+				getDirPath npath.dirname(dir)
+
+		cleanPrefix = (pattern) ->
+			pattern.replace /^!/, ''
+
+		glob = (pattern) ->
+			dir = getDirPath(cleanPrefix pattern)
+			subOpts = utils.defaults {
+				filter: pattern
+			}, opts
+			nofs.eachDirSync dir, subOpts, (fileInfo) ->
+				fn fileInfo, list
+
+		patterns.map glob
+
+		list
 
 	###*
 	 * Map file from a directory to another recursively with a

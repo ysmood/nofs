@@ -247,3 +247,16 @@ describe 'Basic:', ->
 		nofs.ensureFileP 'test/fixtures/alias/file/path'
 		.then (created) ->
 			shouldEqual created, true
+
+	it 'globP', ->
+		nofs.globP '**/*.txt', {
+			cwd: 'test/fixtures/'
+		}
+		.then (list) ->
+			shouldDeepEqual list, ["sample.txt"]
+
+	it 'globSync', ->
+		list = nofs.globSync '**/*.txt', {
+			cwd: 'test/fixtures/'
+		}
+		shouldDeepEqual list, ["sample.txt"]
