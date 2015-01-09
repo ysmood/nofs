@@ -162,7 +162,7 @@ nofs =
 			if opts.isForce
 				try
 					fs.unlinkSync dest
-				catch (err) ->
+				catch err
 					if err.code != 'ENOENT'
 						throw err
 				copyFile()
