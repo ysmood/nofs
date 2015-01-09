@@ -106,7 +106,6 @@ nofs =
 			else
 				copyFile src, dest, opts.mode
 
-
 		if opts.mode
 			copy()
 		else
