@@ -900,6 +900,26 @@ nofs =
 			pos = if flag.indexOf('a') > -1 then null else 0
 			fs.writeP fd, buf, 0, buf.length, pos
 
+	writeFileSync: (path, data, opts = {}) ->
+		switch typeof opts
+			when 'string'
+				encoding = opts
+			when 'object'
+				{ encoding, flag, mode } = opts
+			else
+				throw new TypeError('Bad arguments')
+
+		flag ?= 'w'
+		mode ?= 0o666
+
+		fd = fs.openSync(path, flag, mode)
+		buf = if data.constructor.name == 'Buffer'
+			data
+		else
+			new Buffer('' + data, encoding)
+		pos = if flag.indexOf('a') > -1 then null else 0
+		fs.writeSync fd, buf, 0, buf.length, pos
+
 # Add nofs functions
 utils.extend fs, nofs
 
