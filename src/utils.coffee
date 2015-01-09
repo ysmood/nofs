@@ -1,4 +1,4 @@
-Promise = require '../lib/bluebird/js/main/bluebird'
+Promise = require 'bluebird'
 
 module.exports =
 

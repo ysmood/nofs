@@ -19,7 +19,7 @@ Promise = utils.Promise
 fs = utils.extend {}, require 'fs'
 
 # Evil of Node.
-utils.extend fs, require('../lib/graceful-fs/graceful-fs')
+utils.extend fs, require('graceful-fs')
 
 # Promisify fs.
 for k of fs
@@ -66,6 +66,9 @@ nofs =
 				opts.mode = mode
 				copy()
 
+	###*
+	 * See `copyDirP`.
+	###
 	copyDirSync: (src, dest, opts) ->
 		utils.defaults opts, {
 			isForce: false
@@ -137,6 +140,9 @@ nofs =
 				opts.mode = mode
 				copy()
 
+	###*
+	 * See `copyDirP`.
+	###
 	copyFileSync: (src, dest, opts) ->
 		utils.defaults opts, {
 			isForce: false
@@ -220,6 +226,9 @@ nofs =
 			else
 				copy from, to, stats
 
+	###*
+	 * See `copyP`.
+	###
 	copySync: (from, to, opts = {}) ->
 		utils.defaults opts, {
 			isForce: false
@@ -278,6 +287,9 @@ nofs =
 	 * @param  {Object}   opts Optional. Defaults:
 	 * ```coffee
 	 * {
+	 * 	# To filter paths. It can also be a RegExp or a glob pattern string.
+	 * 	filter: -> true
+	 *
 	 * 	# The current working directory to search.
 	 * 	cwd: ''
 	 *
@@ -326,6 +338,10 @@ nofs =
 	 * 	console.log tree
 	 *
 	 * # Find all js files.
+	 * nofs.eachDirP 'dir/path', { filter: '**\/*.js' }, ({ path }) ->
+	 * 	console.log paths
+	 *
+	 * # Find all js files.
 	 * nofs.eachDirP 'dir/path', { filter: /\.js$/ }, ({ path }) ->
 	 * 	console.log paths
 	 *
@@ -353,6 +369,11 @@ nofs =
 		if opts.filter instanceof RegExp
 			reg = opts.filter
 			opts.filter = (fileInfo) -> reg.test fileInfo.path
+
+		if typeof opts.filter == 'string'
+			pattern = opts.filter
+			opts.filter = (fileInfo) ->
+				nofs.minimatch fileInfo.path, pattern
 
 		stat = if opts.isFollowLink then fs.lstatP else fs.statP
 
@@ -390,6 +411,11 @@ nofs =
 		else
 			readdir path
 
+	###*
+	 * See `eachDirP`.
+	 * @return {Object | Array} A tree data structure that
+	 * represents the files recursively.
+	###
 	eachDirSync: (path, opts, fn) ->
 		if opts instanceof Function
 			fn = opts
@@ -406,6 +432,11 @@ nofs =
 		if opts.filter instanceof RegExp
 			reg = opts.filter
 			opts.filter = (fileInfo) -> reg.test fileInfo.path
+
+		if typeof opts.filter == 'string'
+			pattern = opts.filter
+			opts.filter = (fileInfo) ->
+				nofs.minimatch fileInfo.path, pattern
 
 		stat = if opts.isFollowLink then fs.lstatSync else fs.statSync
 
@@ -470,6 +501,14 @@ nofs =
 			false
 
 	###*
+	 * The `minimatch` lib.
+	 * [Documentation](https://github.com/isaacs/minimatch)
+	 * [Offline Documentation](?gotoDoc=minimatch/readme.md)
+	 * @type {Funtion}
+	###
+	minimatch: require 'minimatch'
+
+	###*
 	 * Recursively create directory path, like `mkdir -p`.
 	 * @param  {String} path
 	 * @param  {String} mode Defaults: `0o777 & ~process.umask()`
@@ -486,6 +525,9 @@ nofs =
 						fs.mkdirP path, mode
 		makedir path
 
+	###*
+	 * See `mkdirsP`.
+	###
 	mkdirsSync: (path, mode = 0o777 & ~process.umask()) ->
 		makedir = (path) ->
 			if not nofs.dirExistsSync path
@@ -543,6 +585,9 @@ nofs =
 			else
 				Promise.reject err
 
+	###*
+	 * See `moveP`.
+	###
 	moveSync: (from, to, opts = {}) ->
 		utils.defaults opts, {
 			isForce: false
@@ -591,6 +636,9 @@ nofs =
 				fs.mkdirsP(dir, opts.mode).then ->
 					nofs.writeFileP path, data, opts
 
+	###*
+	 * See `outputFileP`.
+	###
 	outputFileSync: (path, data, opts = {}) ->
 		if fs.fileExistsSync path
 			fs.writeFileSync path, data, opts
@@ -605,9 +653,6 @@ nofs =
 	 * @param {Object} opts Extends the options of `eachDir`. Defaults:
 	 * ```coffee
 	 * {
-	 * 	# To filter paths. It can also be a RegExp.
-	 * 	filter: -> true
-	 *
 	 * 	# Don't include the root directory.
 	 * 	isIncludeRoot: false
 	 *
@@ -669,6 +714,10 @@ nofs =
 		.then ->
 			list
 
+	###*
+	 * See `readDirsP`.
+	 * @return {Array} Path string array.
+	###
 	readDirsSync: (root, opts = {}) ->
 		utils.defaults opts, {
 			isCacheStats: false
@@ -715,6 +764,9 @@ nofs =
 			if err.code != 'ENOENT' or err.path != path
 				Promise.reject err
 
+	###*
+	 * See `removeP`.
+	###
 	removeSync: (path, opts = {}) ->
 		opts.isReverse = true
 
@@ -744,7 +796,7 @@ nofs =
 	 * 	mode: undefined
 	 * }
 	 * ```
-	 * @return {Promise}
+	 * @return {Promise} If new file created, resolves true.
 	###
 	touchP: (path, opts = {}) ->
 		now = new Date
@@ -754,11 +806,17 @@ nofs =
 		}
 
 		nofs.fileExistsP(path).then (exists) ->
-			if exists
+			(if exists
 				fs.utimesP path, opts.atime, opts.mtime
 			else
 				nofs.outputFileP path, new Buffer(0), opts
+			).then ->
+				not exists
 
+	###*
+	 * See `touchP`.
+	 * @return {Boolean} Whether a new file is created or not.
+	###
 	touchSync: (path, opts = {}) ->
 		now = new Date
 		utils.defaults opts, {
@@ -766,10 +824,13 @@ nofs =
 			mtime: now
 		}
 
-		if nofs.fileExistsSync path
+		exists = nofs.fileExistsSync path
+		if exists
 			fs.utimesSync path, opts.atime, opts.mtime
 		else
 			nofs.outputFileSync path, new Buffer(0), opts
+
+		not exists
 
 	###*
 	 * Map file from a directory to another recursively with a
@@ -781,7 +842,7 @@ nofs =
 	 * @param  {Function} fn `(src, dest, fileInfo) -> Promise | Any` The callback
 	 * will be called with each path. The callback can return a `Promise` to
 	 * keep the async sequence go on.
-	 * @return {Promise}
+	 * @return {Promise} Resolves a tree object.
 	 * @example
 	 * ```coffee
 	 * # Copy and add license header for each files
@@ -810,6 +871,10 @@ nofs =
 			dest = npath.join to, fileInfo.path
 			fn src, dest, fileInfo
 
+	###*
+	 * See `mapDirP`.
+	 * @return {Object | Array} A tree object.
+	###
 	mapDirSync: (from, to, opts = {}, fn) ->
 		if opts instanceof Function
 			fn = opts
@@ -861,6 +926,10 @@ nofs =
 		.then ->
 			prev
 
+	###*
+	 * See `reduceDirP`
+	 * @return {Any} Final value.
+	###
 	reduceDirSync: (path, opts = {}, fn) ->
 		if opts instanceof Function
 			fn = opts
@@ -900,6 +969,9 @@ nofs =
 			pos = if flag.indexOf('a') > -1 then null else 0
 			fs.writeP fd, buf, 0, buf.length, pos
 
+	###*
+	 * See `writeFileP`
+	###
 	writeFileSync: (path, data, opts = {}) ->
 		switch typeof opts
 			when 'string'

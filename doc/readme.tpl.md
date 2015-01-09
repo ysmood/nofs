@@ -9,7 +9,8 @@
 
 ## Features
 
-- Super light weight, no dependency.
+- `map` and `reduce` folders.
+- Recursive `move`, `copy`, `remove`, etc.
 - **Promise** by default.
 - Unified API. Support **Promise**, **Sync** and **Callback** paradigms.
 
