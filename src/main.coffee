@@ -215,7 +215,8 @@ nofs =
 				nofs.copyFileP src, dest, opts
 
 		fs.statP(from).then (stats) ->
-			if stats.isDirectory()
+			isDir = stats.isDirectory()
+			if isDir
 				nofs.dirExistsP(to).then (exists) ->
 					if exists
 						to = npath.join to, npath.basename(from)
@@ -224,7 +225,7 @@ nofs =
 				.then ->
 					nofs.mapDirP from, to, opts, copy
 			else
-				copy from, to, stats
+				copy from, to, { isDir, stats }
 
 	###*
 	 * See `copyP`.
@@ -247,7 +248,8 @@ nofs =
 				nofs.copyFileSync src, dest, opts
 
 		stats = fs.statSync from
-		if stats.isDirectory()
+		isDir = stats.isDirectory()
+		if isDir
 			if nofs.dirExistsSync to
 				to = npath.join to, npath.basename(from)
 			else
@@ -255,7 +257,7 @@ nofs =
 
 			nofs.mapDirSync from, to, opts, copy
 		else
-			copy from, to, stats
+			copy from, to, { isDir, stats }
 
 	###*
 	 * Check if a path exists, and if it is a directory.

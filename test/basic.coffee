@@ -137,6 +137,18 @@ describe 'Basic:', ->
 					"test0/test1/c", "test2", "test2/d"
 				]
 
+	it 'copyP moveP a file', ->
+		after ->
+			nofs.removeP 'test/fixtures/copySample2'
+
+		nofs.copyP 'test/fixtures/sample.txt', 'test/fixtures/copySample'
+		.then ->
+			nofs.moveP 'test/fixtures/copySample', 'test/fixtures/copySample2'
+		.then ->
+			nofs.fileExistsP 'test/fixtures/copySample2'
+			.then (exists) ->
+				shouldEqual exists, true
+
 	it 'removeSync copySync moveSync', ->
 		after ->
 			nofs.removeSync 'test/fixtures/dirMV-sync'
@@ -151,6 +163,18 @@ describe 'Basic:', ->
 			"a", "test0", "test0/b", "test0/test1"
 			"test0/test1/c", "test2", "test2/d"
 		]
+
+	it 'copySync moveSync a file', ->
+		after ->
+			nofs.removeP 'test/fixtures/copySampleSync2'
+
+		nofs.copyP 'test/fixtures/sample.txt', 'test/fixtures/copySampleSync'
+		.then ->
+			nofs.moveP 'test/fixtures/copySampleSync', 'test/fixtures/copySampleSync2'
+		.then ->
+			nofs.fileExistsP 'test/fixtures/copySampleSync2'
+			.then (exists) ->
+				shouldEqual exists, true
 
 	it 'touchP time', ->
 		after ->
@@ -255,8 +279,17 @@ describe 'Basic:', ->
 		.then (list) ->
 			shouldDeepEqual list, ["sample.txt"]
 
+	it 'globP a file', ->
+		nofs.globP 'test/fixtures/sample.txt'
+		.then (list) ->
+			shouldDeepEqual list, ['test/fixtures/sample.txt']
+
 	it 'globSync', ->
 		list = nofs.globSync '**/*.txt', {
 			cwd: 'test/fixtures/'
 		}
 		shouldDeepEqual list, ["sample.txt"]
+
+	it 'globSync a file', ->
+		list = nofs.globSync 'test/fixtures/sample.txt'
+		shouldDeepEqual list, ['test/fixtures/sample.txt']
