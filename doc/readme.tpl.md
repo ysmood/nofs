@@ -1,5 +1,3 @@
-# Alpha: Now Only Promise and Callbak APIs are Avaiable
-
 # [nofs](https://github.com/ysmood/nofs)
 
 ## Overview
