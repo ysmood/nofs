@@ -84,6 +84,10 @@ __No native `fs` funtion will be listed.__
 
 <%= api %>
 
+## Benckmark
+
+[`nofs.copy` vs `ncp`](benchmark/ncp.coffee)
+
 ## Lisence
 
 MIT
