@@ -943,6 +943,68 @@ nofs =
 		prev
 
 	###*
+	 * Read A Json file and parse it to a object.
+	 * @param  {String} path
+	 * @param  {Object | String} opts Same with the native `fs.readFile`.
+	 * @return {Promise} Resolves a parsed object.
+	 * @example
+	 * ```coffee
+	 * nofs.readJsonP('a.json').then (obj) ->
+	 * 	console.log obj.name, obj.age
+	 * ```
+	###
+	readJsonP: (path, opts = {}) ->
+		fs.readFileP(path, opts).then (data) ->
+			try
+				JSON.parse data + ''
+			catch err
+				Promise.reject err
+
+	###*
+	 * See `readJSONP`.
+	 * @return {Any} The parsed object.
+	###
+	readJsonSync: (path, opts = {}) ->
+		data = fs.readFileSync path, opts
+		JSON.parse data + ''
+
+	###*
+	 * Write a object to a file, if its parent directory doesn't
+	 * exists, it will be created.
+	 * @param  {String} path
+	 * @param  {Any} obj  The data object to save.
+	 * @param  {Object | String} opts Extends the options of `outputFileP`.
+	 * Defaults:
+	 * ```coffee
+	 * {
+	 * 	replacer: null
+	 * 	space: null
+	 * }
+	 * ```
+	 * @return {Promise}
+	###
+	outputJsonP: (path, obj, opts = {}) ->
+		if typeof opts == 'string'
+			opts = { encoding: opts }
+
+		try
+			str = JSON.stringify obj, opts.replacer, opts.space
+		catch err
+			return Promise.reject err
+
+		nofs.outputFileP path, str, opts
+
+	###*
+	 * See `outputJSONP`.
+	###
+	outputJsonSync: (path, obj, opts = {}) ->
+		if typeof opts == 'string'
+			opts = { encoding: opts }
+
+		str = JSON.stringify obj, opts.replacer, opts.space
+		nofs.outputFileSync path, str, opts
+
+	###*
 	 * A `writeFile` shim for `< Node v0.10`.
 	 * @param  {String} path
 	 * @param  {String | Buffer} data

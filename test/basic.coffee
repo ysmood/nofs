@@ -229,3 +229,13 @@ describe 'Basic:', ->
 		nofs.mkdirsSync 'test/fixtures/make/dir/s'
 		exists = nofs.dirExistsSync 'test/fixtures/make/dir/s'
 		shouldEqual exists, true
+
+	it 'writeJsonP readJsonP', ->
+		after ->
+			nofs.removeP 'test/fixtures/json'
+
+		nofs.outputJsonP 'test/fixtures/json/json.json', { val: 'test' }
+		.then ->
+			nofs.readJsonP 'test/fixtures/json/json.json'
+			.then (obj) ->
+				shouldDeepEqual obj, { val: 'test' }
