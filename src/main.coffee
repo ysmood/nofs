@@ -1063,4 +1063,7 @@ for k of fs
 		continue if fs[name]
 		fs[name] = utils.callbackify fs[k]
 
+alias = require './alias'
+alias fs
+
 module.exports = fs

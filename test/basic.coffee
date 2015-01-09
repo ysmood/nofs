@@ -239,3 +239,11 @@ describe 'Basic:', ->
 			nofs.readJsonP 'test/fixtures/json/json.json'
 			.then (obj) ->
 				shouldDeepEqual obj, { val: 'test' }
+
+	it 'alias', ->
+		after ->
+			nofs.removeSync 'test/fixtures/alias'
+
+		nofs.ensureFileP 'test/fixtures/alias/file/path'
+		.then (created) ->
+			shouldEqual created, true
