@@ -33,9 +33,6 @@ describe 'Basic:', ->
 	it 'dirExistsSync', ->
 		assert.equal nofs.dirExistsSync('src'), true
 
-	it 'fileExistsSync', ->
-		assert.equal nofs.fileExistsSync('readme.md'), true
-
 	it 'fileExistsP exists', ->
 		nofs.fileExistsP('readme.md').then (ret) ->
 			shouldEqual ret, true
@@ -43,6 +40,9 @@ describe 'Basic:', ->
 	it 'fileExistsP non-exists', ->
 		nofs.fileExistsP('src').then (ret) ->
 			shouldEqual ret, false
+
+	it 'fileExistsSync', ->
+		assert.equal nofs.fileExistsSync('readme.md'), true
 
 	it 'readFileP', ->
 		nofs.readFileP 'test/fixtures/sample.txt', 'utf8'
@@ -57,6 +57,14 @@ describe 'Basic:', ->
 		.then (v) ->
 			shouldEqual v.split('').sort().join(''), 'abcd'
 
+	it 'reduceDirSync', ->
+		v = nofs.reduceDirSync 'test/fixtures/dir', {
+			init: '', isReverse: true
+		}, (sum, { path, isDir }) ->
+			if isDir then sum else sum += path.slice(-1)
+
+		shouldEqual v.split('').sort().join(''), 'abcd'
+
 	it 'readDirsP', ->
 		nofs.readDirsP 'test/fixtures/dir'
 		.then (ls) ->
@@ -70,6 +78,18 @@ describe 'Basic:', ->
 				'test/fixtures/dir/test2/d'
 			]
 
+	it 'readDirsSync', ->
+		ls = nofs.readDirsSync 'test/fixtures/dir'
+		shouldDeepEqual ls.sort(), [
+			'test/fixtures/dir/a'
+			'test/fixtures/dir/test0'
+			'test/fixtures/dir/test0/b'
+			'test/fixtures/dir/test0/test1'
+			'test/fixtures/dir/test0/test1/c'
+			'test/fixtures/dir/test2'
+			'test/fixtures/dir/test2/d'
+		]
+
 	it 'readDirsP cwd filter', ->
 		nofs.readDirsP '', {
 			cwd: 'test/fixtures/dir'
@@ -80,18 +100,27 @@ describe 'Basic:', ->
 				"a", "test0/b", "test0/test1/c", "test2/d"
 			]
 
+	it 'readDirsSync cwd filter', ->
+		ls = nofs.readDirsSync '', {
+			cwd: 'test/fixtures/dir'
+			filter: /[a-z]{1}$/
+		}
+		shouldDeepEqual ls.sort(), [
+			"a", "test0/b", "test0/test1/c", "test2/d"
+		]
+
 	it 'removeP copyP moveP', ->
 		after ->
-			nofs.removeP 'test/fixtures/dirMV'
+			nofs.removeP 'test/fixtures/dirMV-p'
 
-		nofs.removeP 'test/fixtures/dirCP'
+		nofs.removeP 'test/fixtures/dirCP-p'
 		.then ->
-			nofs.copyP 'test/fixtures/dir', 'test/fixtures/dirCP'
+			nofs.copyP 'test/fixtures/dir', 'test/fixtures/dirCP-p'
 		.then ->
-			nofs.moveP 'test/fixtures/dirCP', 'test/fixtures/dirMV'
+			nofs.moveP 'test/fixtures/dirCP-p', 'test/fixtures/dirMV-p'
 		.then ->
 			nofs.readDirsP '', {
-				cwd: 'test/fixtures/dirMV'
+				cwd: 'test/fixtures/dirMV-p'
 			}
 			.then (ls) ->
 				shouldDeepEqual ls.sort(), [
@@ -99,15 +128,44 @@ describe 'Basic:', ->
 					"test0/test1/c", "test2", "test2/d"
 				]
 
+	it 'removeSync copySync moveSync', ->
+		after ->
+			nofs.removeSync 'test/fixtures/dirMV-sync'
+
+		nofs.removeSync 'test/fixtures/dirCP-sync'
+		nofs.copySync 'test/fixtures/dir', 'test/fixtures/dirCP-sync'
+		nofs.moveSync 'test/fixtures/dirCP-sync', 'test/fixtures/dirMV-sync'
+		ls = nofs.readDirsSync '', {
+			cwd: 'test/fixtures/dirMV-sync'
+		}
+		shouldDeepEqual ls.sort(), [
+			"a", "test0", "test0/b", "test0/test1"
+			"test0/test1/c", "test2", "test2/d"
+		]
+
 	it 'touchP time', ->
+		after ->
+			nofs.removeSync 'test/fixtures/touchP'
+
 		t = Date.now() // 1000
-		nofs.touchP 'test/fixtures/sample.txt', {
+		nofs.touchP 'test/fixtures/touchP', {
 			mtime: t
 		}
 		.then ->
-			nofs.statP 'test/fixtures/sample.txt'
+			nofs.statP 'test/fixtures/touchP'
 			.then (stats) ->
 				shouldEqual stats.mtime.getTime() // 1000, t
+
+	it 'touchSync time', ->
+		after ->
+			nofs.removeSync 'test/fixtures/touchSync'
+
+		t = Date.now() // 1000
+		nofs.touchSync 'test/fixtures/touchSync', {
+			mtime: t
+		}
+		stats = nofs.statSync 'test/fixtures/touchSync'
+		shouldEqual stats.mtime.getTime() // 1000, t
 
 	it 'touchP create', ->
 		after ->
@@ -119,6 +177,14 @@ describe 'Basic:', ->
 		.then (exists) ->
 			shouldEqual exists, true
 
+	it 'touchSync create', ->
+		after ->
+			nofs.removeSync 'test/fixtures/touchCreate'
+
+		nofs.touchSync 'test/fixtures/touchCreate'
+		exists = nofs.fileExistsSync 'test/fixtures/touchCreate'
+		shouldEqual exists, true
+
 	it 'outputFileP', ->
 		after ->
 			nofs.removeP 'test/fixtures/out'
@@ -129,6 +195,14 @@ describe 'Basic:', ->
 		.then (str) ->
 			shouldEqual str, 'ok'
 
+	it 'outputFileSync', ->
+		after ->
+			nofs.removeSync 'test/fixtures/out'
+
+		nofs.outputFileSync 'test/fixtures/out/put/file', 'ok'
+		str = nofs.readFileSync 'test/fixtures/out/put/file', 'utf8'
+		shouldEqual str, 'ok'
+
 	it 'mkdirsP', ->
 		after ->
 			nofs.removeP 'test/fixtures/make'
@@ -138,3 +212,11 @@ describe 'Basic:', ->
 			nofs.dirExistsP 'test/fixtures/make/dir/s'
 		.then (exists) ->
 			shouldEqual exists, true
+
+	it 'mkdirsSync', ->
+		after ->
+			nofs.removeSync 'test/fixtures/make'
+
+		nofs.mkdirsSync 'test/fixtures/make/dir/s'
+		exists = nofs.dirExistsSync 'test/fixtures/make/dir/s'
+		shouldEqual exists, true

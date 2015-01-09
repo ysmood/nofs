@@ -718,8 +718,8 @@ nofs =
 	removeSync: (path, opts = {}) ->
 		opts.isReverse = true
 
-		stats = fs.statSync(path)
 		try
+			stats = fs.statSync(path)
 			if stats.isDirectory()
 				nofs.eachDirSync path, opts, ({ path, isDir }) ->
 					if isDir
@@ -766,11 +766,10 @@ nofs =
 			mtime: now
 		}
 
-		nofs.fileExistsSync(path).then (exists) ->
-			if exists
-				fs.utimesSync path, opts.atime, opts.mtime
-			else
-				nofs.outputFileSync path, new Buffer(0), opts
+		if nofs.fileExistsSync path
+			fs.utimesSync path, opts.atime, opts.mtime
+		else
+			nofs.outputFileSync path, new Buffer(0), opts
 
 	###*
 	 * Map file from a directory to another recursively with a
