@@ -501,6 +501,76 @@ nofs =
 			false
 
 	###*
+	 * Get files by patterns.
+	 * @param  {String | Array} pattern The minimatch pattern.
+	 * @param {Object} opts Extends the options of `readDirs`.
+	 * @return {Promise}
+	###
+	globP: (patterns, opts = {}) ->
+		if typeof patterns == 'string'
+			patterns = [patterns]
+
+		glob = (pattern) ->
+			pattern
+
+		Promise.all patterns.map glob
+
+	###*
+	 * Map file from a directory to another recursively with a
+	 * callback.
+	 * @param  {String}   from The root directory to start with.
+	 * @param  {String}   to This directory can be a non-exists path.
+	 * @param  {Object}   opts Extends the options of `eachDir`. But `cwd` is
+	 * fixed with the same as the `from` parameter.
+	 * @param  {Function} fn `(src, dest, fileInfo) -> Promise | Any` The callback
+	 * will be called with each path. The callback can return a `Promise` to
+	 * keep the async sequence go on.
+	 * @return {Promise} Resolves a tree object.
+	 * @example
+	 * ```coffee
+	 * # Copy and add license header for each files
+	 * # from a folder to another.
+	 * nofs.mapDirP(
+	 * 	'from'
+	 * 	'to'
+	 * 	{ isCacheStats: true }
+	 * 	(src, dest, fileInfo) ->
+	 * 		return if fileInfo.isDir
+	 * 		nofs.readFileP(src).then (buf) ->
+	 * 			buf += 'License MIT\n' + buf
+	 * 			nofs.writeFileP dest, buf
+	 * )
+	 * ```
+	###
+	mapDirP: (from, to, opts = {}, fn) ->
+		if opts instanceof Function
+			fn = opts
+			opts = {}
+
+		opts.cwd = from
+
+		nofs.eachDirP '', opts, (fileInfo) ->
+			src = npath.join from, fileInfo.path
+			dest = npath.join to, fileInfo.path
+			fn src, dest, fileInfo
+
+	###*
+	 * See `mapDirP`.
+	 * @return {Object | Array} A tree object.
+	###
+	mapDirSync: (from, to, opts = {}, fn) ->
+		if opts instanceof Function
+			fn = opts
+			opts = {}
+
+		opts.cwd = from
+
+		nofs.eachDirSync '', opts, (fileInfo) ->
+			src = npath.join from, fileInfo.path
+			dest = npath.join to, fileInfo.path
+			fn src, dest, fileInfo
+
+	###*
 	 * The `minimatch` lib.
 	 * [Documentation](https://github.com/isaacs/minimatch)
 	 * [Offline Documentation](?gotoDoc=minimatch/readme.md)
@@ -648,6 +718,42 @@ nofs =
 			fs.writeFileSync path, data, opts
 
 	###*
+	 * Write a object to a file, if its parent directory doesn't
+	 * exists, it will be created.
+	 * @param  {String} path
+	 * @param  {Any} obj  The data object to save.
+	 * @param  {Object | String} opts Extends the options of `outputFileP`.
+	 * Defaults:
+	 * ```coffee
+	 * {
+	 * 	replacer: null
+	 * 	space: null
+	 * }
+	 * ```
+	 * @return {Promise}
+	###
+	outputJsonP: (path, obj, opts = {}) ->
+		if typeof opts == 'string'
+			opts = { encoding: opts }
+
+		try
+			str = JSON.stringify obj, opts.replacer, opts.space
+		catch err
+			return Promise.reject err
+
+		nofs.outputFileP path, str, opts
+
+	###*
+	 * See `outputJSONP`.
+	###
+	outputJsonSync: (path, obj, opts = {}) ->
+		if typeof opts == 'string'
+			opts = { encoding: opts }
+
+		str = JSON.stringify obj, opts.replacer, opts.space
+		nofs.outputFileSync path, str, opts
+
+	###*
 	 * Read directory recursively.
 	 * @param {String} root
 	 * @param {Object} opts Extends the options of `eachDir`. Defaults:
@@ -742,6 +848,87 @@ nofs =
 		list
 
 	###*
+	 * Read A Json file and parse it to a object.
+	 * @param  {String} path
+	 * @param  {Object | String} opts Same with the native `fs.readFile`.
+	 * @return {Promise} Resolves a parsed object.
+	 * @example
+	 * ```coffee
+	 * nofs.readJsonP('a.json').then (obj) ->
+	 * 	console.log obj.name, obj.age
+	 * ```
+	###
+	readJsonP: (path, opts = {}) ->
+		fs.readFileP(path, opts).then (data) ->
+			try
+				JSON.parse data + ''
+			catch err
+				Promise.reject err
+
+	###*
+	 * See `readJSONP`.
+	 * @return {Any} The parsed object.
+	###
+	readJsonSync: (path, opts = {}) ->
+		data = fs.readFileSync path, opts
+		JSON.parse data + ''
+
+	###*
+	 * Walk through directory recursively with a callback.
+	 * @param  {String}   path
+	 * @param  {Object}   opts Extends the options of `eachDir`,
+	 * with some extra options:
+	 * ```coffee
+	 * {
+	 * 	# The init value of the walk.
+	 * 	init: undefined
+	 * }
+	 * ```
+	 * @param  {Function} fn `(prev, path, isDir, stats) -> Promise`
+	 * @return {Promise} Final resolved value.
+	 * @example
+	 * ```coffee
+	 * # Concat all files.
+	 * nofs.reduceDirP 'dir/path', { init: '' }, (val, info) ->
+	 * 	return val if info.isDir
+	 * 	nofs.readFileP(info.path).then (str) ->
+	 * 		val += str + '\n'
+	 * .then (ret) ->
+	 * 	console.log ret
+	 * ```
+	###
+	reduceDirP: (path, opts = {}, fn) ->
+		if opts instanceof Function
+			fn = opts
+			opts = {}
+
+		prev = Promise.resolve opts.init
+
+		nofs.eachDirP path, opts, (fileInfo) ->
+			prev = prev.then (val) ->
+				val = fn val, fileInfo
+				if not val or not val.then
+					Promise.resolve val
+		.then ->
+			prev
+
+	###*
+	 * See `reduceDirP`
+	 * @return {Any} Final value.
+	###
+	reduceDirSync: (path, opts = {}, fn) ->
+		if opts instanceof Function
+			fn = opts
+			opts = {}
+
+		prev = opts.init
+
+		nofs.eachDirSync path, opts, (fileInfo) ->
+			prev = fn prev, fileInfo
+
+		prev
+
+	###*
 	 * Remove a file or directory peacefully, same with the `rm -rf`.
 	 * @param  {String} path
 	 * @param {Object} opts Extends the options of `eachDir`. But
@@ -831,178 +1018,6 @@ nofs =
 			nofs.outputFileSync path, new Buffer(0), opts
 
 		not exists
-
-	###*
-	 * Map file from a directory to another recursively with a
-	 * callback.
-	 * @param  {String}   from The root directory to start with.
-	 * @param  {String}   to This directory can be a non-exists path.
-	 * @param  {Object}   opts Extends the options of `eachDir`. But `cwd` is
-	 * fixed with the same as the `from` parameter.
-	 * @param  {Function} fn `(src, dest, fileInfo) -> Promise | Any` The callback
-	 * will be called with each path. The callback can return a `Promise` to
-	 * keep the async sequence go on.
-	 * @return {Promise} Resolves a tree object.
-	 * @example
-	 * ```coffee
-	 * # Copy and add license header for each files
-	 * # from a folder to another.
-	 * nofs.mapDirP(
-	 * 	'from'
-	 * 	'to'
-	 * 	{ isCacheStats: true }
-	 * 	(src, dest, fileInfo) ->
-	 * 		return if fileInfo.isDir
-	 * 		nofs.readFileP(src).then (buf) ->
-	 * 			buf += 'License MIT\n' + buf
-	 * 			nofs.writeFileP dest, buf
-	 * )
-	 * ```
-	###
-	mapDirP: (from, to, opts = {}, fn) ->
-		if opts instanceof Function
-			fn = opts
-			opts = {}
-
-		opts.cwd = from
-
-		nofs.eachDirP '', opts, (fileInfo) ->
-			src = npath.join from, fileInfo.path
-			dest = npath.join to, fileInfo.path
-			fn src, dest, fileInfo
-
-	###*
-	 * See `mapDirP`.
-	 * @return {Object | Array} A tree object.
-	###
-	mapDirSync: (from, to, opts = {}, fn) ->
-		if opts instanceof Function
-			fn = opts
-			opts = {}
-
-		opts.cwd = from
-
-		nofs.eachDirSync '', opts, (fileInfo) ->
-			src = npath.join from, fileInfo.path
-			dest = npath.join to, fileInfo.path
-			fn src, dest, fileInfo
-
-	###*
-	 * Walk through directory recursively with a callback.
-	 * @param  {String}   path
-	 * @param  {Object}   opts Extends the options of `eachDir`,
-	 * with some extra options:
-	 * ```coffee
-	 * {
-	 * 	# The init value of the walk.
-	 * 	init: undefined
-	 * }
-	 * ```
-	 * @param  {Function} fn `(prev, path, isDir, stats) -> Promise`
-	 * @return {Promise} Final resolved value.
-	 * @example
-	 * ```coffee
-	 * # Concat all files.
-	 * nofs.reduceDirP 'dir/path', { init: '' }, (val, info) ->
-	 * 	return val if info.isDir
-	 * 	nofs.readFileP(info.path).then (str) ->
-	 * 		val += str + '\n'
-	 * .then (ret) ->
-	 * 	console.log ret
-	 * ```
-	###
-	reduceDirP: (path, opts = {}, fn) ->
-		if opts instanceof Function
-			fn = opts
-			opts = {}
-
-		prev = Promise.resolve opts.init
-
-		nofs.eachDirP path, opts, (fileInfo) ->
-			prev = prev.then (val) ->
-				val = fn val, fileInfo
-				if not val or not val.then
-					Promise.resolve val
-		.then ->
-			prev
-
-	###*
-	 * See `reduceDirP`
-	 * @return {Any} Final value.
-	###
-	reduceDirSync: (path, opts = {}, fn) ->
-		if opts instanceof Function
-			fn = opts
-			opts = {}
-
-		prev = opts.init
-
-		nofs.eachDirSync path, opts, (fileInfo) ->
-			prev = fn prev, fileInfo
-
-		prev
-
-	###*
-	 * Read A Json file and parse it to a object.
-	 * @param  {String} path
-	 * @param  {Object | String} opts Same with the native `fs.readFile`.
-	 * @return {Promise} Resolves a parsed object.
-	 * @example
-	 * ```coffee
-	 * nofs.readJsonP('a.json').then (obj) ->
-	 * 	console.log obj.name, obj.age
-	 * ```
-	###
-	readJsonP: (path, opts = {}) ->
-		fs.readFileP(path, opts).then (data) ->
-			try
-				JSON.parse data + ''
-			catch err
-				Promise.reject err
-
-	###*
-	 * See `readJSONP`.
-	 * @return {Any} The parsed object.
-	###
-	readJsonSync: (path, opts = {}) ->
-		data = fs.readFileSync path, opts
-		JSON.parse data + ''
-
-	###*
-	 * Write a object to a file, if its parent directory doesn't
-	 * exists, it will be created.
-	 * @param  {String} path
-	 * @param  {Any} obj  The data object to save.
-	 * @param  {Object | String} opts Extends the options of `outputFileP`.
-	 * Defaults:
-	 * ```coffee
-	 * {
-	 * 	replacer: null
-	 * 	space: null
-	 * }
-	 * ```
-	 * @return {Promise}
-	###
-	outputJsonP: (path, obj, opts = {}) ->
-		if typeof opts == 'string'
-			opts = { encoding: opts }
-
-		try
-			str = JSON.stringify obj, opts.replacer, opts.space
-		catch err
-			return Promise.reject err
-
-		nofs.outputFileP path, str, opts
-
-	###*
-	 * See `outputJSONP`.
-	###
-	outputJsonSync: (path, obj, opts = {}) ->
-		if typeof opts == 'string'
-			opts = { encoding: opts }
-
-		str = JSON.stringify obj, opts.replacer, opts.space
-		nofs.outputFileSync path, str, opts
 
 	###*
 	 * A `writeFile` shim for `< Node v0.10`.

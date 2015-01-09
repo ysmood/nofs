@@ -7,6 +7,7 @@ module.exports = (fs) ->
 		readJson: ['readJSON']
 		remove: ['delete']
 		writeJson: ['writeJSON']
+		readDirs: ['readdirs']
 	}
 
 	for k, list of aliasList
