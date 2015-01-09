@@ -16,10 +16,18 @@ module.exports =
 
 	callbackify: (fn, self) ->
 		(args..., cb) ->
+			if arguments.length == 1
+				args = [cb]
+				cb == null
+
 			fn.apply self, args
 			.then (val) ->
-				cb null, val
-			.catch cb
+				cb? null, val
+			.catch (err) ->
+				if cb
+					cb err
+				else
+					Promise.reject err
 
 	extend: (to, from) ->
 		for k of from
