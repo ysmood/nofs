@@ -109,6 +109,15 @@ describe 'Basic:', ->
 			"a", "test0/b", "test0/test1/c", "test2/d"
 		]
 
+	it 'readDirsSync cwd minimatch', ->
+		ls = nofs.readDirsSync '', {
+			cwd: 'test/fixtures/dir'
+			filter: '**/{a,b,c}'
+		}
+		shouldDeepEqual ls.sort(), [
+			"a", "test0/b", "test0/test1/c"
+		]
+
 	it 'removeP copyP moveP', ->
 		after ->
 			nofs.removeP 'test/fixtures/dirMV-p'
