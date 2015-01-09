@@ -718,7 +718,7 @@ __No native `fs` funtion will be listed.__
 
 ## Function Alias
 
-For some naming convention reason, `nofs` also uses some common alias for fucntions. See [src/alias.coffee](src/alias.coffee).
+For some naming convention reasons, `nofs` also uses some common alias for fucntions. See [src/alias.coffee](src/alias.coffee).
 
 ## Benckmark
 
