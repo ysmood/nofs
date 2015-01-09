@@ -66,6 +66,30 @@ nofs =
 				opts.mode = mode
 				copy()
 
+	copyDirSync: (src, dest, opts) ->
+		utils.defaults opts, {
+			isForce: false
+		}
+
+		copy = ->
+			if opts.isForce
+				try
+					fs.rmdirSync dest
+				catch err
+					if err.code != 'ENOENT'
+						throw err
+
+				fs.mkdirSync dest, opts.mode
+			else
+				fs.mkdirSync dest, opts.mode
+
+		if opts.mode
+			copy()
+		else
+			{ mode } = fs.statSync(src)
+			opts.mode = mode
+			copy()
+
 	###*
 	 * Copy a single file.
 	 * @param  {String} src
@@ -102,9 +126,9 @@ nofs =
 					if err.code != 'ENOENT'
 						Promise.reject err
 				.then ->
-					copyFile src, dest, opts.mode
+					copyFile()
 			else
-				copyFile src, dest, opts.mode
+				copyFile()
 
 		if opts.mode
 			copy()
@@ -112,6 +136,45 @@ nofs =
 			fs.statP(src).then ({ mode }) ->
 				opts.mode = mode
 				copy()
+
+	copyFileSync: (src, dest, opts) ->
+		utils.defaults opts, {
+			isForce: false
+		}
+		bufLen = 64 * 1024
+		buf = new Buffer(bufLen)
+
+		copyFile = ->
+			fdr = fs.openSync src, 'r'
+			fdw = fs.openSync dest, 'w', opts.mode
+			bytesRead = 1
+			pos = 0
+
+			while bytesRead > 0
+				bytesRead = fs.readSync fdr, buf, 0, bufLen, pos
+				fs.writeSync fdw, buf, 0, bytesRead
+				pos += bytesRead
+
+			fs.closeSync fdr
+			fs.closeSync fdw
+
+		copy = ->
+			if opts.isForce
+				try
+					fs.unlinkSync dest
+				catch (err) ->
+					if err.code != 'ENOENT'
+						throw err
+				copyFile()
+			else
+				copyFile()
+
+		if opts.mode
+			copy()
+		else
+			{ mode } = fs.statSync src
+			opts.mode = mode
+			copy()
 
 	###*
 	 * Like `cp -r`.
@@ -156,6 +219,34 @@ nofs =
 					nofs.mapDirP from, to, opts, copy
 			else
 				copy from, to, stats
+
+	copySync: (from, to, opts = {}) ->
+		utils.defaults opts, {
+			isForce: false
+		}
+
+		flags = if opts.isForce then 'w' else 'wx'
+
+		copy = (src, dest, { isDir, stats }) ->
+			opts = {
+				isForce: opts.isForce
+				mode: stats.mode
+			}
+			if isDir
+				nofs.copyDirSync src, dest, opts
+			else
+				nofs.copyFileSync src, dest, opts
+
+		stats = fs.statSync from
+		if stats.isDirectory()
+			if nofs.dirExistsSync to
+				to = npath.join to, npath.basename(from)
+			else
+				nofs.mkdirsSync npath.dirname(to)
+
+			nofs.mapDirSync from, to, opts, copy
+		else
+			copy from, to, stats
 
 	###*
 	 * Check if a path exists, and if it is a directory.
@@ -207,6 +298,7 @@ nofs =
 	 * {
 	 * 	path: 'dir/path'
 	 * 	isDir: true
+	 * 	val: 'test'
 	 * 	children: [
 	 * 		{ path: 'dir/path/a.txt', isDir: false, stats: { ... } }
 	 * 		{ path: 'dir/path/b.txt', isDir: false, stats: { ... } }
@@ -282,7 +374,9 @@ nofs =
 						p = Promise.resolve(p) if not p or not p.then
 						p.then (val) ->
 							readdir(path).then (children) ->
-								{ path, isDir, children }
+								fileInfo.children = children
+								fileInfo.val = val
+								fileInfo
 				else
 					execFn fileInfo
 
@@ -290,6 +384,57 @@ nofs =
 			fs.readdirP(resolve dir).then (names) ->
 				Promise.all names.map (name) ->
 					decideNext npath.join(dir, name)
+
+		if opts.isIncludeRoot
+			decideNext path
+		else
+			readdir path
+
+	eachDirSync: (path, opts, fn) ->
+		if opts instanceof Function
+			fn = opts
+			opts = {}
+
+		utils.defaults opts, {
+			filter: -> true
+			cwd: ''
+			isIncludeRoot: true
+			isFollowLink: true
+			isReverse: false
+		}
+
+		if opts.filter instanceof RegExp
+			reg = opts.filter
+			opts.filter = (fileInfo) -> reg.test fileInfo.path
+
+		stat = if opts.isFollowLink then fs.lstatSync else fs.statSync
+
+		resolve = (path) -> npath.join opts.cwd, path
+
+		execFn = (fileInfo) -> fn fileInfo if opts.filter fileInfo
+
+		decideNext = (path) ->
+			stats = stat(resolve path)
+			isDir = stats.isDirectory()
+			fileInfo = { path, isDir, stats }
+			if isDir
+				if opts.isReverse
+					children = readdir(path)
+					fileInfo.children = children
+					execFn fileInfo
+				else
+					val = execFn fileInfo
+					children = readdir(path)
+					fileInfo.children = children
+					fileInfo.val = val
+					fileInfo
+			else
+				execFn fileInfo
+
+		readdir = (dir) ->
+			names = fs.readdirSync(resolve dir)
+			names.map (name) ->
+				decideNext npath.join(dir, name)
 
 		if opts.isIncludeRoot
 			decideNext path
@@ -341,6 +486,14 @@ nofs =
 						fs.mkdirP path, mode
 		makedir path
 
+	mkdirsSync: (path, mode = 0o777 & ~process.umask()) ->
+		makedir = (path) ->
+			if not nofs.dirExistsSync path
+				parentPath = npath.dirname path
+				makedir parentPath
+				fs.mkdirSync path, mode
+		makedir path
+
 	###*
 	 * Moves a file or directory. Also works between partitions.
 	 * Behaves like the Unix `mv`.
@@ -390,6 +543,37 @@ nofs =
 			else
 				Promise.reject err
 
+	moveSync: (from, to, opts = {}) ->
+		utils.defaults opts, {
+			isForce: false
+		}
+
+		opts.isCacheStats = true
+
+		moveFile = (src, dest) ->
+			if opts.isForce
+				fs.renameSync src, dest
+			else
+				fs.linkSync(src, dest).then ->
+					fs.unlinkSync src
+
+		stats = fs.statSync(from)
+		try
+			if stats.isDirectory()
+				if nofs.dirExistsSync to
+					to = npath.join to, npath.basename(from)
+				else
+					nofs.mkdirsSync npath.dirname(to)
+				fs.renameSync from, to
+			else
+				moveFile from, to
+		catch err
+			if err.code == 'EXDEV'
+				nofs.copySync from, to, opts
+				fs.removeSync from
+			else
+				throw err
+
 	###*
 	 * Almost the same as `writeFile`, except that if its parent
 	 * directories do not exist, they will be created.
@@ -399,14 +583,21 @@ nofs =
 	 * @return {Promise}
 	###
 	outputFileP: (path, data, opts = {}) ->
-		args = arguments
 		fs.fileExistsP(path).then (exists) ->
 			if exists
-				nofs.writeFileP.apply null, args
+				nofs.writeFileP path, data, opts
 			else
 				dir = npath.dirname path
 				fs.mkdirsP(dir, opts.mode).then ->
-					nofs.writeFileP.apply null, args
+					nofs.writeFileP path, data, opts
+
+	outputFileSync: (path, data, opts = {}) ->
+		if fs.fileExistsSync path
+			fs.writeFileSync path, data, opts
+		else
+			dir = npath.dirname path
+			fs.mkdirsSync dir, opts.mode
+			fs.writeFileSync path, data, opts
 
 	###*
 	 * Read directory recursively.
@@ -478,6 +669,29 @@ nofs =
 		.then ->
 			list
 
+	readDirsSync: (root, opts = {}) ->
+		utils.defaults opts, {
+			isCacheStats: false
+			isIncludeRoot: false
+		}
+
+		list = []
+		statsCache = {}
+		Object.defineProperty list, 'statsCache', {
+			value: statsCache
+			enumerable: false
+		}
+
+		nofs.eachDirSync root, opts, (fileInfo) ->
+			{ path, isDir, stats } = fileInfo
+
+			if opts.isCacheStats
+				statsCache[path] = stats
+
+			list.push path
+
+		list
+
 	###*
 	 * Remove a file or directory peacefully, same with the `rm -rf`.
 	 * @param  {String} path
@@ -500,6 +714,23 @@ nofs =
 		.catch (err) ->
 			if err.code != 'ENOENT' or err.path != path
 				Promise.reject err
+
+	removeSync: (path, opts = {}) ->
+		opts.isReverse = true
+
+		stats = fs.statSync(path)
+		try
+			if stats.isDirectory()
+				nofs.eachDirSync path, opts, ({ path, isDir }) ->
+					if isDir
+						fs.rmdirSync path
+					else
+						fs.unlinkSync path
+			else
+				fs.unlinkSync path
+		catch err
+			if err.code != 'ENOENT' or err.path != path
+				throw err
 
 	###*
 	 * Change file access and modification times.
@@ -527,6 +758,19 @@ nofs =
 				fs.utimesP path, opts.atime, opts.mtime
 			else
 				nofs.outputFileP path, new Buffer(0), opts
+
+	touchSync: (path, opts = {}) ->
+		now = new Date
+		utils.defaults opts, {
+			atime: now
+			mtime: now
+		}
+
+		nofs.fileExistsSync(path).then (exists) ->
+			if exists
+				fs.utimesSync path, opts.atime, opts.mtime
+			else
+				nofs.outputFileSync path, new Buffer(0), opts
 
 	###*
 	 * Map file from a directory to another recursively with a
@@ -563,6 +807,18 @@ nofs =
 		opts.cwd = from
 
 		nofs.eachDirP '', opts, (fileInfo) ->
+			src = npath.join from, fileInfo.path
+			dest = npath.join to, fileInfo.path
+			fn src, dest, fileInfo
+
+	mapDirSync: (from, to, opts = {}, fn) ->
+		if opts instanceof Function
+			fn = opts
+			opts = {}
+
+		opts.cwd = from
+
+		nofs.eachDirSync '', opts, (fileInfo) ->
 			src = npath.join from, fileInfo.path
 			dest = npath.join to, fileInfo.path
 			fn src, dest, fileInfo
@@ -605,6 +861,18 @@ nofs =
 					Promise.resolve val
 		.then ->
 			prev
+
+	reduceDirSync: (path, opts = {}, fn) ->
+		if opts instanceof Function
+			fn = opts
+			opts = {}
+
+		prev = opts.init
+
+		nofs.eachDirSync path, opts, (fileInfo) ->
+			prev = fn prev, fileInfo
+
+		prev
 
 	###*
 	 * A `writeFile` shim for `< Node v0.10`.
