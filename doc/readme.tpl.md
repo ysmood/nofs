@@ -84,6 +84,10 @@ __No native `fs` funtion will be listed.__
 
 <%= api %>
 
+## Function Alias
+
+For some naming convention reason, `nofs` also uses some common alias for fucntions. See [src/alias.coffee](src/alias.coffee).
+
 ## Benckmark
 
 [`nofs.copy` vs `ncp`](benchmark/ncp.coffee)
