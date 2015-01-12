@@ -40,8 +40,8 @@ module.exports =
 				to[k] = from[k]
 		to
 
-	isString: (obj) -> typeof obj == 'string'
+	isString: (val) -> typeof val == 'string'
 
-	isFunction: (obj) -> typeof obj == 'Function'
+	isFunction: (val) -> typeof val == 'Function'
 
-	isRegExp: (obj) -> ojb instanceof RegExp 
+	isRegExp: (val) -> val instanceof RegExp
