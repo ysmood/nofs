@@ -65,6 +65,25 @@ describe 'Basic:', ->
 
 		shouldEqual v.split('').sort().join(''), 'abcd'
 
+	it 'eachDirP searchFilter', ->
+		list = []
+		nofs.eachDirP 'test/fixtures/dir', {
+			searchFilter: ({ path }) ->
+				path != 'test/fixtures/dir/test0'
+		}, (fileInfo) ->
+			list.push fileInfo.name
+		.then ->
+			shouldDeepEqual list.sort(), ["a", "d", "dir", "test2"]
+
+	it 'eachDirSync searchFilter', ->
+		list = []
+		nofs.eachDirSync 'test/fixtures/dir', {
+			searchFilter: ({ path }) ->
+				path != 'test/fixtures/dir/test0'
+		}, (fileInfo) ->
+			list.push fileInfo.name
+		shouldDeepEqual list.sort(), ["a", "d", "dir", "test2"]
+
 	it 'readDirsP', ->
 		nofs.readDirsP 'test/fixtures/dir'
 		.then (ls) ->
@@ -88,6 +107,27 @@ describe 'Basic:', ->
 			'test/fixtures/dir/test0/test1/c'
 			'test/fixtures/dir/test2'
 			'test/fixtures/dir/test2/d'
+		]
+
+	it 'readDirsP all', ->
+		nofs.readDirsP '', {
+			all: true
+			cwd: 'test/fixtures/dir'
+		}
+		.then (ls) ->
+			shouldDeepEqual ls.sort(), [
+				"a","test0","test0/b","test0/test1"
+				"test0/test1/c","test2","test2/.e","test2/d"
+			]
+
+	it 'readDirsSync all', ->
+		ls = nofs.readDirsSync '', {
+			all: true
+			cwd: 'test/fixtures/dir'
+		}
+		shouldDeepEqual ls.sort(), [
+			"a","test0","test0/b","test0/test1"
+			"test0/test1/c","test2","test2/.e","test2/d"
 		]
 
 	it 'readDirsP cwd filter', ->

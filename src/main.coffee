@@ -285,13 +285,16 @@ nofs =
 	 * can return a Promise to continue the sequence. The resolving order
 	 * is also recursive, a directory path resolves after all its children
 	 * are resolved.
-	 * @param  {String} path The path may point to a directory or a file.
+	 * @param  {String} spath The path may point to a directory or a file.
 	 * @param  {Object}   opts Optional. Defaults:
 	 * ```coffee
 	 * {
+	 * 	# Include entries whose names begin with a dot (.).
+	 * 	all: false
+	 *
 	 * 	# To filter paths. It can also be a RegExp or a glob pattern string.
 	 * 	# When it's a string, it extends the Minimatch's options.
-	 * 	filter: -> true
+	 * 	filter: (fileInfo) -> true
 	 *
 	 * 	# The current working directory to search.
 	 * 	cwd: ''
@@ -304,6 +307,15 @@ nofs =
 	 *
 	 * 	# Iterate children first, then parent folder.
 	 * 	isReverse: false
+	 *
+	 * 	# When isReverse is false, it will be the previous fn resolve value.
+	 * 	val: any
+	 *
+	 * 	# If it return false, sub-entries won't be searched.
+	 * 	# When the `filter` option returns false, its children will
+	 * 	# still be itered. But when `searchFilter` returns false, children
+	 * 	# won't be itered by the fn.
+	 * 	searchFilter: (fileInfo) -> true
 	 * }
 	 * ```
 	 * @param  {Function} fn `(fileInfo) -> Promise | Any`.
@@ -312,11 +324,12 @@ nofs =
 	 * ```coffee
 	 * {
 	 * 	path: 'dir/path'
+	 * 	name: 'path'
 	 * 	isDir: true
 	 * 	val: 'test'
 	 * 	children: [
-	 * 		{ path: 'dir/path/a.txt', isDir: false, stats: { ... } }
-	 * 		{ path: 'dir/path/b.txt', isDir: false, stats: { ... } }
+	 * 		{ path: 'dir/path/a.txt', name: 'a.txt', isDir: false, stats: { ... } }
+	 * 		{ path: 'dir/path/b.txt', name: 'b.txt', isDir: false, stats: { ... } }
 	 * 	]
 	 * 	stats: {
 	 * 		size: 527
@@ -358,13 +371,15 @@ nofs =
 	 * 	console.log path
 	 * ```
 	###
-	eachDirP: (path, opts, fn) ->
+	eachDirP: (spath, opts, fn) ->
 		if opts instanceof Function
 			fn = opts
 			opts = {}
 
 		utils.defaults opts, {
+			all: false
 			filter: -> true
+			searchFilter: -> true
 			cwd: ''
 			isIncludeRoot: true
 			isFollowLink: true
@@ -384,13 +399,21 @@ nofs =
 
 		resolve = (path) -> npath.join opts.cwd, path
 
-		execFn = (fileInfo) -> fn fileInfo if opts.filter fileInfo
+		execFn = (fileInfo) ->
+			if not opts.all and fileInfo.name[0] == '.'
+				return
 
-		decideNext = (path) ->
+			fn fileInfo if opts.filter fileInfo
+
+		decideNext = (dir, name) ->
+			path = npath.join dir, name
+
 			stat(resolve path).then (stats) ->
 				isDir = stats.isDirectory()
-				fileInfo = { path, isDir, stats }
+				fileInfo = { path, name, isDir, stats }
 				if isDir
+					return if not opts.searchFilter fileInfo
+
 					if opts.isReverse
 						readdir(path).then (children) ->
 							fileInfo.children = children
@@ -409,25 +432,27 @@ nofs =
 		readdir = (dir) ->
 			fs.readdirP(resolve dir).then (names) ->
 				Promise.all names.map (name) ->
-					decideNext npath.join(dir, name)
+					decideNext dir, name
 
 		if opts.isIncludeRoot
-			decideNext path
+			decideNext npath.dirname(spath), npath.basename(spath)
 		else
-			readdir path
+			readdir spath
 
 	###*
 	 * See `eachDirP`.
 	 * @return {Object | Array} A tree data structure that
 	 * represents the files recursively.
 	###
-	eachDirSync: (path, opts, fn) ->
+	eachDirSync: (spath, opts, fn) ->
 		if opts instanceof Function
 			fn = opts
 			opts = {}
 
 		utils.defaults opts, {
+			all: false
 			filter: -> true
+			searchFilter: -> true
 			cwd: ''
 			isIncludeRoot: true
 			isFollowLink: true
@@ -447,13 +472,21 @@ nofs =
 
 		resolve = (path) -> npath.join opts.cwd, path
 
-		execFn = (fileInfo) -> fn fileInfo if opts.filter fileInfo
+		execFn = (fileInfo) ->
+			if not opts.all and fileInfo.name[0] == '.'
+				return
 
-		decideNext = (path) ->
+			fn fileInfo if opts.filter fileInfo
+
+		decideNext = (dir, name) ->
+			path = npath.join dir, name
+
 			stats = stat(resolve path)
 			isDir = stats.isDirectory()
-			fileInfo = { path, isDir, stats }
+			fileInfo = { path, name, isDir, stats }
 			if isDir
+				return if not opts.searchFilter fileInfo
+
 				if opts.isReverse
 					children = readdir(path)
 					fileInfo.children = children
@@ -470,12 +503,12 @@ nofs =
 		readdir = (dir) ->
 			names = fs.readdirSync(resolve dir)
 			names.map (name) ->
-				decideNext npath.join(dir, name)
+				decideNext dir, name
 
 		if opts.isIncludeRoot
-			decideNext path
+			decideNext npath.dirname(spath), npath.basename(spath)
 		else
-			readdir path
+			readdir spath
 
 	# Feel pity for Node again.
 	# The `fs.exists` api doesn't fulfil the node callback standard.
@@ -1163,7 +1196,6 @@ for k of fs
 		continue if fs[name]
 		fs[name] = utils.callbackify fs[k]
 
-alias = require './alias'
-alias fs
+require('./alias')(fs)
 
 module.exports = fs
