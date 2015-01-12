@@ -394,7 +394,7 @@ _.extend nofs, {
 		if _.isString opts.filter
 			pattern = opts.filter
 			opts.filter = (fileInfo) ->
-				nofs.minimatch fileInfo.path, pattern, opts
+				nofs.minimatch fileInfo.path, pattern
 
 		stat = if opts.isFollowLink then nofs.lstatP else nofs.statP
 
