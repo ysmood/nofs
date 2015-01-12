@@ -16,20 +16,21 @@ utils = require './utils'
 Promise = utils.Promise
 
 # nofs won't pollute the native fs.
-fs = utils.extend {}, require 'fs'
+fs = require 'fs'
+nofs = utils.extend {}, fs
 
 # Evil of Node.
-utils.extend fs, require('graceful-fs')
+utils.extend nofs, require('graceful-fs')
 
 # Promisify fs.
-for k of fs
+for k of nofs
 	if k.slice(-4) == 'Sync'
 		name = k[0...-4]
 		pname = name + 'P'
-		continue if fs[pname]
-		fs[pname] = utils.promisify fs[name]
+		continue if nofs[pname]
+		nofs[pname] = utils.promisify nofs[name]
 
-nofs =
+utils.extend nofs, {
 
 	###*
 	 * Copy an empty directory.
@@ -51,18 +52,18 @@ nofs =
 
 		copy = ->
 			if opts.isForce
-				fs.rmdirP(dest).catch (err) ->
+				nofs.rmdirP(dest).catch (err) ->
 					if err.code != 'ENOENT'
 						Promise.reject err
 				.then ->
-					fs.mkdirP dest, opts.mode
+					nofs.mkdirP dest, opts.mode
 			else
-				fs.mkdirP dest, opts.mode
+				nofs.mkdirP dest, opts.mode
 
 		if opts.mode
 			copy()
 		else
-			fs.statP(src).then ({ mode }) ->
+			nofs.statP(src).then ({ mode }) ->
 				opts.mode = mode
 				copy()
 
@@ -77,19 +78,19 @@ nofs =
 		copy = ->
 			if opts.isForce
 				try
-					fs.rmdirSync dest
+					nofs.rmdirSync dest
 				catch err
 					if err.code != 'ENOENT'
 						throw err
 
-				fs.mkdirSync dest, opts.mode
+				nofs.mkdirSync dest, opts.mode
 			else
-				fs.mkdirSync dest, opts.mode
+				nofs.mkdirSync dest, opts.mode
 
 		if opts.mode
 			copy()
 		else
-			{ mode } = fs.statSync(src)
+			{ mode } = nofs.statSync(src)
 			opts.mode = mode
 			copy()
 
@@ -114,8 +115,8 @@ nofs =
 		copyFile = ->
 			new Promise (resolve, reject) ->
 				try
-					sDest = fs.createWriteStream dest, opts
-					sSrc = fs.createReadStream src
+					sDest = nofs.createWriteStream dest, opts
+					sSrc = nofs.createReadStream src
 				catch err
 					reject err
 				sSrc.on 'error', reject
@@ -125,7 +126,7 @@ nofs =
 
 		copy = ->
 			if opts.isForce
-				fs.unlinkP(dest).catch (err) ->
+				nofs.unlinkP(dest).catch (err) ->
 					if err.code != 'ENOENT'
 						Promise.reject err
 				.then ->
@@ -136,7 +137,7 @@ nofs =
 		if opts.mode
 			copy()
 		else
-			fs.statP(src).then ({ mode }) ->
+			nofs.statP(src).then ({ mode }) ->
 				opts.mode = mode
 				copy()
 
@@ -151,23 +152,23 @@ nofs =
 		buf = new Buffer(bufLen)
 
 		copyFile = ->
-			fdr = fs.openSync src, 'r'
-			fdw = fs.openSync dest, 'w', opts.mode
+			fdr = nofs.openSync src, 'r'
+			fdw = nofs.openSync dest, 'w', opts.mode
 			bytesRead = 1
 			pos = 0
 
 			while bytesRead > 0
-				bytesRead = fs.readSync fdr, buf, 0, bufLen, pos
-				fs.writeSync fdw, buf, 0, bytesRead
+				bytesRead = nofs.readSync fdr, buf, 0, bufLen, pos
+				nofs.writeSync fdw, buf, 0, bytesRead
 				pos += bytesRead
 
-			fs.closeSync fdr
-			fs.closeSync fdw
+			nofs.closeSync fdr
+			nofs.closeSync fdw
 
 		copy = ->
 			if opts.isForce
 				try
-					fs.unlinkSync dest
+					nofs.unlinkSync dest
 				catch err
 					if err.code != 'ENOENT'
 						throw err
@@ -178,7 +179,7 @@ nofs =
 		if opts.mode
 			copy()
 		else
-			{ mode } = fs.statSync src
+			{ mode } = nofs.statSync src
 			opts.mode = mode
 			copy()
 
@@ -214,7 +215,7 @@ nofs =
 			else
 				nofs.copyFileP src, dest, opts
 
-		fs.statP(from).then (stats) ->
+		nofs.statP(from).then (stats) ->
 			isDir = stats.isDirectory()
 			if isDir
 				nofs.dirExistsP(to).then (exists) ->
@@ -247,7 +248,7 @@ nofs =
 			else
 				nofs.copyFileSync src, dest, opts
 
-		stats = fs.statSync from
+		stats = nofs.statSync from
 		isDir = stats.isDirectory()
 		if isDir
 			if nofs.dirExistsSync to
@@ -265,7 +266,7 @@ nofs =
 	 * @return {Promise} Resolves a boolean value.
 	###
 	dirExistsP: (path) ->
-		fs.statP(path).then (stats) ->
+		nofs.statP(path).then (stats) ->
 			stats.isDirectory()
 		.catch -> false
 
@@ -275,8 +276,8 @@ nofs =
 	 * @return {boolean}
 	###
 	dirExistsSync: (path) ->
-		if fs.existsSync(path)
-			fs.statSync(path).isDirectory()
+		if nofs.existsSync(path)
+			nofs.statSync(path).isDirectory()
 		else
 			false
 
@@ -340,7 +341,7 @@ nofs =
 	 * 	}
 	 * }
 	 * ```
-	 * The `stats` is a native `fs.Stats` object.
+	 * The `stats` is a native `nofs.Stats` object.
 	 * @return {Promise} Resolves a directory tree object.
 	 * @example
 	 * ```coffee
@@ -395,7 +396,7 @@ nofs =
 			opts.filter = (fileInfo) ->
 				nofs.minimatch fileInfo.path, pattern, opts
 
-		stat = if opts.isFollowLink then fs.lstatP else fs.statP
+		stat = if opts.isFollowLink then nofs.lstatP else nofs.statP
 
 		resolve = (path) -> npath.join opts.cwd, path
 
@@ -430,7 +431,7 @@ nofs =
 					execFn fileInfo
 
 		readdir = (dir) ->
-			fs.readdirP(resolve dir).then (names) ->
+			nofs.readdirP(resolve dir).then (names) ->
 				Promise.all names.map (name) ->
 					decideNext dir, name
 
@@ -468,7 +469,7 @@ nofs =
 			opts.filter = (fileInfo) ->
 				nofs.minimatch fileInfo.path, pattern
 
-		stat = if opts.isFollowLink then fs.lstatSync else fs.statSync
+		stat = if opts.isFollowLink then nofs.lstatSync else nofs.statSync
 
 		resolve = (path) -> npath.join opts.cwd, path
 
@@ -501,7 +502,7 @@ nofs =
 				execFn fileInfo
 
 		readdir = (dir) ->
-			names = fs.readdirSync(resolve dir)
+			names = nofs.readdirSync(resolve dir)
 			names.map (name) ->
 				decideNext dir, name
 
@@ -511,10 +512,10 @@ nofs =
 			readdir spath
 
 	# Feel pity for Node again.
-	# The `fs.exists` api doesn't fulfil the node callback standard.
+	# The `nofs.exists` api doesn't fulfil the node callback standard.
 	existsP: (path) ->
 		new Promise (resolve) ->
-			fs.exists path, (exists) ->
+			nofs.exists path, (exists) ->
 				resolve exists
 
 	###*
@@ -523,7 +524,7 @@ nofs =
 	 * @return {Promise} Resolves a boolean value.
 	###
 	fileExistsP: (path) ->
-		fs.statP(path).then (stats) ->
+		nofs.statP(path).then (stats) ->
 			stats.isFile()
 		.catch -> false
 
@@ -533,8 +534,8 @@ nofs =
 	 * @return {boolean}
 	###
 	fileExistsSync: (path) ->
-		if fs.existsSync path
-			fs.statSync(path).isFile()
+		if nofs.existsSync path
+			nofs.statSync(path).isFile()
 		else
 			false
 
@@ -710,7 +711,7 @@ nofs =
 				else
 					parentPath = npath.dirname path
 					makedir(parentPath).then ->
-						fs.mkdirP path, mode
+						nofs.mkdirP path, mode
 		makedir path
 
 	###*
@@ -721,7 +722,7 @@ nofs =
 			if not nofs.dirExistsSync path
 				parentPath = npath.dirname path
 				makedir parentPath
-				fs.mkdirSync path, mode
+				nofs.mkdirSync path, mode
 		makedir path
 
 	###*
@@ -749,12 +750,12 @@ nofs =
 
 		moveFile = (src, dest) ->
 			if opts.isForce
-				fs.renameP src, dest
+				nofs.renameP src, dest
 			else
-				fs.linkP(src, dest).then ->
-					fs.unlinkP src
+				nofs.linkP(src, dest).then ->
+					nofs.unlinkP src
 
-		fs.statP(from).then (stats) ->
+		nofs.statP(from).then (stats) ->
 			if stats.isDirectory()
 				nofs.dirExistsP(to).then (exists) ->
 					if exists
@@ -762,14 +763,14 @@ nofs =
 					else
 						nofs.mkdirsP npath.dirname(to)
 				.then ->
-					fs.renameP from, to
+					nofs.renameP from, to
 			else
 				moveFile from, to
 		.catch (err) ->
 			if err.code == 'EXDEV'
 				nofs.copyP from, to, opts
 				.then ->
-					fs.removeP from
+					nofs.removeP from
 			else
 				Promise.reject err
 
@@ -785,25 +786,25 @@ nofs =
 
 		moveFile = (src, dest) ->
 			if opts.isForce
-				fs.renameSync src, dest
+				nofs.renameSync src, dest
 			else
-				fs.linkSync(src, dest).then ->
-					fs.unlinkSync src
+				nofs.linkSync(src, dest).then ->
+					nofs.unlinkSync src
 
-		stats = fs.statSync(from)
+		stats = nofs.statSync(from)
 		try
 			if stats.isDirectory()
 				if nofs.dirExistsSync to
 					to = npath.join to, npath.basename(from)
 				else
 					nofs.mkdirsSync npath.dirname(to)
-				fs.renameSync from, to
+				nofs.renameSync from, to
 			else
 				moveFile from, to
 		catch err
 			if err.code == 'EXDEV'
 				nofs.copySync from, to, opts
-				fs.removeSync from
+				nofs.removeSync from
 			else
 				throw err
 
@@ -812,28 +813,28 @@ nofs =
 	 * directories do not exist, they will be created.
 	 * @param  {String} path
 	 * @param  {String | Buffer} data
-	 * @param  {String | Object} opts Same with the `fs.writeFile`.
+	 * @param  {String | Object} opts Same with the `nofs.writeFile`.
 	 * @return {Promise}
 	###
 	outputFileP: (path, data, opts = {}) ->
-		fs.fileExistsP(path).then (exists) ->
+		nofs.fileExistsP(path).then (exists) ->
 			if exists
 				nofs.writeFileP path, data, opts
 			else
 				dir = npath.dirname path
-				fs.mkdirsP(dir, opts.mode).then ->
+				nofs.mkdirsP(dir, opts.mode).then ->
 					nofs.writeFileP path, data, opts
 
 	###*
 	 * See `outputFileP`.
 	###
 	outputFileSync: (path, data, opts = {}) ->
-		if fs.fileExistsSync path
-			fs.writeFileSync path, data, opts
+		if nofs.fileExistsSync path
+			nofs.writeFileSync path, data, opts
 		else
 			dir = npath.dirname path
-			fs.mkdirsSync dir, opts.mode
-			fs.writeFileSync path, data, opts
+			nofs.mkdirsSync dir, opts.mode
+			nofs.writeFileSync path, data, opts
 
 	###*
 	 * Write a object to a file, if its parent directory doesn't
@@ -894,7 +895,7 @@ nofs =
 	 * 	}
 	 * }
 	 * ```
-	 * The key is the entity path, the value is the `fs.Stats` object.
+	 * The key is the entity path, the value is the `nofs.Stats` object.
 	 * @return {Promise} Resolves an path array. Every directory path will ends
 	 * with `/` (Unix) or `\` (Windows).
 	 * @example
@@ -968,7 +969,7 @@ nofs =
 	###*
 	 * Read A Json file and parse it to a object.
 	 * @param  {String} path
-	 * @param  {Object | String} opts Same with the native `fs.readFile`.
+	 * @param  {Object | String} opts Same with the native `nofs.readFile`.
 	 * @return {Promise} Resolves a parsed object.
 	 * @example
 	 * ```coffee
@@ -977,7 +978,7 @@ nofs =
 	 * ```
 	###
 	readJsonP: (path, opts = {}) ->
-		fs.readFileP(path, opts).then (data) ->
+		nofs.readFileP(path, opts).then (data) ->
 			try
 				JSON.parse data + ''
 			catch err
@@ -988,7 +989,7 @@ nofs =
 	 * @return {Any} The parsed object.
 	###
 	readJsonSync: (path, opts = {}) ->
-		data = fs.readFileSync path, opts
+		data = nofs.readFileSync path, opts
 		JSON.parse data + ''
 
 	###*
@@ -1056,15 +1057,15 @@ nofs =
 	removeP: (path, opts = {}) ->
 		opts.isReverse = true
 
-		fs.statP(path).then (stats) ->
+		nofs.statP(path).then (stats) ->
 			if stats.isDirectory()
 				nofs.eachDirP path, opts, ({ path, isDir }) ->
 					if isDir
-						fs.rmdirP path
+						nofs.rmdirP path
 					else
-						fs.unlinkP path
+						nofs.unlinkP path
 			else
-				fs.unlinkP path
+				nofs.unlinkP path
 		.catch (err) ->
 			if err.code != 'ENOENT' or err.path != path
 				Promise.reject err
@@ -1076,15 +1077,15 @@ nofs =
 		opts.isReverse = true
 
 		try
-			stats = fs.statSync(path)
+			stats = nofs.statSync(path)
 			if stats.isDirectory()
 				nofs.eachDirSync path, opts, ({ path, isDir }) ->
 					if isDir
-						fs.rmdirSync path
+						nofs.rmdirSync path
 					else
-						fs.unlinkSync path
+						nofs.unlinkSync path
 			else
-				fs.unlinkSync path
+				nofs.unlinkSync path
 		catch err
 			if err.code != 'ENOENT' or err.path != path
 				throw err
@@ -1112,7 +1113,7 @@ nofs =
 
 		nofs.fileExistsP(path).then (exists) ->
 			(if exists
-				fs.utimesP path, opts.atime, opts.mtime
+				nofs.utimesP path, opts.atime, opts.mtime
 			else
 				nofs.outputFileP path, new Buffer(0), opts
 			).then ->
@@ -1131,7 +1132,7 @@ nofs =
 
 		exists = nofs.fileExistsSync path
 		if exists
-			fs.utimesSync path, opts.atime, opts.mtime
+			nofs.utimesSync path, opts.atime, opts.mtime
 		else
 			nofs.outputFileSync path, new Buffer(0), opts
 
@@ -1156,13 +1157,13 @@ nofs =
 		flag ?= 'w'
 		mode ?= 0o666
 
-		fs.openP(path, flag, mode).then (fd) ->
+		nofs.openP(path, flag, mode).then (fd) ->
 			buf = if data.constructor.name == 'Buffer'
 				data
 			else
 				new Buffer('' + data, encoding)
 			pos = if flag.indexOf('a') > -1 then null else 0
-			fs.writeP fd, buf, 0, buf.length, pos
+			nofs.writeP fd, buf, 0, buf.length, pos
 
 	###*
 	 * See `writeFileP`
@@ -1179,23 +1180,22 @@ nofs =
 		flag ?= 'w'
 		mode ?= 0o666
 
-		fd = fs.openSync(path, flag, mode)
+		fd = nofs.openSync(path, flag, mode)
 		buf = if data.constructor.name == 'Buffer'
 			data
 		else
 			new Buffer('' + data, encoding)
 		pos = if flag.indexOf('a') > -1 then null else 0
-		fs.writeSync fd, buf, 0, buf.length, pos
+		nofs.writeSync fd, buf, 0, buf.length, pos
 
-# Add nofs functions
-utils.extend fs, nofs
+}
 
-for k of fs
+for k of nofs
 	if k.slice(-1) == 'P'
 		name = k[0...-1]
-		continue if fs[name]
-		fs[name] = utils.callbackify fs[k]
+		continue if nofs[name]
+		nofs[name] = utils.callbackify nofs[k]
 
-require('./alias')(fs)
+require('./alias')(nofs)
 
-module.exports = fs
+module.exports = nofs

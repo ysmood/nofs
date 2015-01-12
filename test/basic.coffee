@@ -313,22 +313,26 @@ describe 'Basic:', ->
 			shouldEqual created, true
 
 	it 'globP', ->
-		nofs.globP '**/*.txt', {
-			cwd: 'test/fixtures/'
+		nofs.globP '**', {
+			cwd: 'test/fixtures/dir'
 		}
 		.then (list) ->
-			shouldDeepEqual list, ["sample.txt"]
+			shouldDeepEqual list.sort(), [
+				"a","test0","test0/b","test0/test1","test0/test1/c","test2","test2/d"
+			]
+
+	it 'globSync', ->
+		list = nofs.globSync '**', {
+			cwd: 'test/fixtures/dir'
+		}
+		shouldDeepEqual list.sort(), [
+			"a","test0","test0/b","test0/test1","test0/test1/c","test2","test2/d"
+		]
 
 	it 'globP a file', ->
 		nofs.globP 'test/fixtures/sample.txt'
 		.then (list) ->
 			shouldDeepEqual list, ['test/fixtures/sample.txt']
-
-	it 'globSync', ->
-		list = nofs.globSync '**/*.txt', {
-			cwd: 'test/fixtures/'
-		}
-		shouldDeepEqual list, ["sample.txt"]
 
 	it 'globSync a file', ->
 		list = nofs.globSync 'test/fixtures/sample.txt'
