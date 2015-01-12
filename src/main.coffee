@@ -1139,6 +1139,65 @@ utils.extend nofs, {
 		not exists
 
 	###*
+	 * Watch a file. If the file changes, the handler will be invoked.
+	 * You can change the polling interval by using `process.env.pollingWatch`.
+	 * Use `process.env.watchPersistent = 'off'` to disable the persistent.
+	 * Why not use `nofs.watch`? Because `nofs.watch` is unstable on some file
+	 * systems, such as Samba or OSX.
+	 * @param  {String}   path    The file path
+	 * @param  {Function} handler Event listener.
+	 * The handler has these params:
+	 * - file path
+	 * - current `nofs.Stats`
+	 * - previous `nofs.Stats`
+	 * - if its a deletion
+	 * @param {Boolean} autoUnwatch Auto unwatch the file while file deletion.
+	 * Default is true.
+	 * @return {Function} The wrapped watch listeners.
+	 * @example
+	 * ```coffee
+	 * process.env.watchPersistent = 'off'
+	 * nofs.watchFile 'a.js', (path, curr, prev, isDeletion) ->
+	 * 	if curr.mtime != prev.mtime
+	 * 		console.log path
+	 * ```
+	###
+	watchFile: (path, handler, autoUnwatch = true) ->
+		listener = (curr, prev) ->
+			isDeletion = curr.mtime.getTime() == 0
+			handler(path, curr, prev, isDeletion)
+			if autoUnwatch and isDeletion
+				nofs.unwatchFile path, listener
+
+		fs.watchFile(
+			path
+			{
+				persistent: process.env.watchPersistent != 'off'
+				interval: +process.env.pollingWatch or 300
+			}
+			listener
+		)
+		listener
+
+	###*
+	 * Watch files, when file changes, the handler will be invoked.
+	 * It is build on the top of `nofs.watchFile`.
+	 * @param  {Array} patterns String array with minimatch syntax.
+	 * Such as `['*\/**.css', 'lib\/**\/*.js']`.
+	 * @param  {Function} handler
+	 * @return {Promise} It contains the wrapped watch listeners.
+	 * @example
+	 * ```coffee
+	 * nofs.watchFiles '*.js', (path, curr, prev, isDeletion) ->
+	 * 	console.log path
+	 * ```
+	###
+	watchFiles: (patterns, handler) ->
+		nofs.globP(patterns).then (paths) ->
+			paths.map (path) ->
+				nofs.watchFile path, handler
+
+	###*
 	 * A `writeFile` shim for `< Node v0.10`.
 	 * @param  {String} path
 	 * @param  {String | Buffer} data

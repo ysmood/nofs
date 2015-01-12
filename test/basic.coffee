@@ -337,3 +337,16 @@ describe 'Basic:', ->
 	it 'globSync a file', ->
 		list = nofs.globSync 'test/fixtures/sample.txt'
 		shouldDeepEqual list, ['test/fixtures/sample.txt']
+
+describe 'Watch:', ->
+	it 'watchFile', (tdone) ->
+		path = 'test/fixtures/watchFile.txt'
+		origin = nofs.readFileSync path
+
+		after ->
+			nofs.outputFileSync path, origin
+
+		nofs.watchFile path, ->
+			tdone()
+
+		nofs.outputFileSync path, 'test'
