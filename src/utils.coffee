@@ -39,3 +39,9 @@ module.exports =
 			if to[k] == undefined
 				to[k] = from[k]
 		to
+
+	isString: (obj) -> typeof obj == 'string'
+
+	isFunction: (obj) -> typeof obj == 'Function'
+
+	isRegExp: (obj) -> ojb instanceof RegExp 

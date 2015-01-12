@@ -5,7 +5,7 @@
 Overview = 'nofs'
 
 npath = require 'path'
-utils = require './utils'
+_ = require './utils'
 
 ###*
  * Here I use [Bluebird][Bluebird] only as an ES6 shim for Promise.
@@ -13,14 +13,14 @@ utils = require './utils'
  * future it will be removed.
  * [Bluebird]: https://github.com/petkaantonov/bluebird
 ###
-Promise = utils.Promise
+Promise = _.Promise
 
 # nofs won't pollute the native fs.
 fs = require 'fs'
-nofs = utils.extend {}, fs
+nofs = _.extend {}, fs
 
 # Evil of Node.
-utils.extend nofs, require('graceful-fs')
+_.extend nofs, require('graceful-fs')
 
 # Promisify fs.
 for k of nofs
@@ -28,9 +28,9 @@ for k of nofs
 		name = k[0...-4]
 		pname = name + 'P'
 		continue if nofs[pname]
-		nofs[pname] = utils.promisify nofs[name]
+		nofs[pname] = _.promisify nofs[name]
 
-utils.extend nofs, {
+_.extend nofs, {
 
 	###*
 	 * Copy an empty directory.
@@ -46,7 +46,7 @@ utils.extend nofs, {
 	 * @return {Promise}
 	###
 	copyDirP: (src, dest, opts) ->
-		utils.defaults opts, {
+		_.defaults opts, {
 			isForce: false
 		}
 
@@ -71,7 +71,7 @@ utils.extend nofs, {
 	 * See `copyDirP`.
 	###
 	copyDirSync: (src, dest, opts) ->
-		utils.defaults opts, {
+		_.defaults opts, {
 			isForce: false
 		}
 
@@ -108,7 +108,7 @@ utils.extend nofs, {
 	 * @return {Promise}
 	###
 	copyFileP: (src, dest, opts) ->
-		utils.defaults opts, {
+		_.defaults opts, {
 			isForce: false
 		}
 
@@ -145,7 +145,7 @@ utils.extend nofs, {
 	 * See `copyDirP`.
 	###
 	copyFileSync: (src, dest, opts) ->
-		utils.defaults opts, {
+		_.defaults opts, {
 			isForce: false
 		}
 		bufLen = 64 * 1024
@@ -199,7 +199,7 @@ utils.extend nofs, {
 	 * @return {Promise}
 	###
 	copyP: (from, to, opts = {}) ->
-		utils.defaults opts, {
+		_.defaults opts, {
 			isForce: false
 		}
 
@@ -232,7 +232,7 @@ utils.extend nofs, {
 	 * See `copyP`.
 	###
 	copySync: (from, to, opts = {}) ->
-		utils.defaults opts, {
+		_.defaults opts, {
 			isForce: false
 		}
 
@@ -373,11 +373,11 @@ utils.extend nofs, {
 	 * ```
 	###
 	eachDirP: (spath, opts, fn) ->
-		if opts instanceof Function
+		if _.isFunction opts
 			fn = opts
 			opts = {}
 
-		utils.defaults opts, {
+		_.defaults opts, {
 			all: false
 			filter: -> true
 			searchFilter: -> true
@@ -387,11 +387,11 @@ utils.extend nofs, {
 			isReverse: false
 		}
 
-		if opts.filter instanceof RegExp
+		if _.isRegExp opts.filter
 			reg = opts.filter
 			opts.filter = (fileInfo) -> reg.test fileInfo.path
 
-		if typeof opts.filter == 'string'
+		if _.isString opts.filter
 			pattern = opts.filter
 			opts.filter = (fileInfo) ->
 				nofs.minimatch fileInfo.path, pattern, opts
@@ -446,11 +446,11 @@ utils.extend nofs, {
 	 * represents the files recursively.
 	###
 	eachDirSync: (spath, opts, fn) ->
-		if opts instanceof Function
+		if _.isFunction opts
 			fn = opts
 			opts = {}
 
-		utils.defaults opts, {
+		_.defaults opts, {
 			all: false
 			filter: -> true
 			searchFilter: -> true
@@ -460,11 +460,11 @@ utils.extend nofs, {
 			isReverse: false
 		}
 
-		if opts.filter instanceof RegExp
+		if _.isRegExp opts.filter
 			reg = opts.filter
 			opts.filter = (fileInfo) -> reg.test fileInfo.path
 
-		if typeof opts.filter == 'string'
+		if _.isString opts.filter
 			pattern = opts.filter
 			opts.filter = (fileInfo) ->
 				nofs.minimatch fileInfo.path, pattern
@@ -565,11 +565,11 @@ utils.extend nofs, {
 	 * ```
 	###
 	globP: (patterns, opts = {}, fn) ->
-		if opts instanceof Function
+		if _.isFunction opts
 			fn = opts
 			opts = {}
 
-		if typeof patterns == 'string'
+		if _.isString patterns
 			patterns = [patterns]
 
 		list = []
@@ -588,7 +588,7 @@ utils.extend nofs, {
 
 		glob = (pattern) ->
 			getDirPath(cleanPrefix pattern).then (dir) ->
-				subOpts = utils.defaults {
+				subOpts = _.defaults {
 					filter: pattern
 				}, opts
 				nofs.eachDirP dir, subOpts, (fileInfo) ->
@@ -602,11 +602,11 @@ utils.extend nofs, {
 	 * @return {Array} The list array.
 	###
 	globSync: (patterns, opts = {}, fn) ->
-		if opts instanceof Function
+		if _.isFunction opts
 			fn = opts
 			opts = {}
 
-		if typeof patterns == 'string'
+		if _.isString patterns
 			patterns = [patterns]
 
 		list = []
@@ -624,7 +624,7 @@ utils.extend nofs, {
 
 		glob = (pattern) ->
 			dir = getDirPath(cleanPrefix pattern)
-			subOpts = utils.defaults {
+			subOpts = _.defaults {
 				filter: pattern
 			}, opts
 			nofs.eachDirSync dir, subOpts, (fileInfo) ->
@@ -662,7 +662,7 @@ utils.extend nofs, {
 	 * ```
 	###
 	mapDirP: (from, to, opts = {}, fn) ->
-		if opts instanceof Function
+		if _.isFunction opts
 			fn = opts
 			opts = {}
 
@@ -678,7 +678,7 @@ utils.extend nofs, {
 	 * @return {Object | Array} A tree object.
 	###
 	mapDirSync: (from, to, opts = {}, fn) ->
-		if opts instanceof Function
+		if _.isFunction opts
 			fn = opts
 			opts = {}
 
@@ -742,7 +742,7 @@ utils.extend nofs, {
 	 * whether this action is taken between two partitions.
 	###
 	moveP: (from, to, opts = {}) ->
-		utils.defaults opts, {
+		_.defaults opts, {
 			isForce: false
 		}
 
@@ -778,7 +778,7 @@ utils.extend nofs, {
 	 * See `moveP`.
 	###
 	moveSync: (from, to, opts = {}) ->
-		utils.defaults opts, {
+		_.defaults opts, {
 			isForce: false
 		}
 
@@ -852,7 +852,7 @@ utils.extend nofs, {
 	 * @return {Promise}
 	###
 	outputJsonP: (path, obj, opts = {}) ->
-		if typeof opts == 'string'
+		if _.isString opts
 			opts = { encoding: opts }
 
 		try
@@ -866,7 +866,7 @@ utils.extend nofs, {
 	 * See `outputJSONP`.
 	###
 	outputJsonSync: (path, obj, opts = {}) ->
-		if typeof opts == 'string'
+		if _.isString opts
 			opts = { encoding: opts }
 
 		str = JSON.stringify obj, opts.replacer, opts.space
@@ -917,7 +917,7 @@ utils.extend nofs, {
 	 * ```
 	###
 	readDirsP: (root, opts = {}) ->
-		utils.defaults opts, {
+		_.defaults opts, {
 			isCacheStats: false
 			isIncludeRoot: false
 		}
@@ -944,7 +944,7 @@ utils.extend nofs, {
 	 * @return {Array} Path string array.
 	###
 	readDirsSync: (root, opts = {}) ->
-		utils.defaults opts, {
+		_.defaults opts, {
 			isCacheStats: false
 			isIncludeRoot: false
 		}
@@ -1017,7 +1017,7 @@ utils.extend nofs, {
 	 * ```
 	###
 	reduceDirP: (path, opts = {}, fn) ->
-		if opts instanceof Function
+		if _.isFunction opts
 			fn = opts
 			opts = {}
 
@@ -1036,7 +1036,7 @@ utils.extend nofs, {
 	 * @return {Any} Final value.
 	###
 	reduceDirSync: (path, opts = {}, fn) ->
-		if opts instanceof Function
+		if _.isFunction opts
 			fn = opts
 			opts = {}
 
@@ -1106,7 +1106,7 @@ utils.extend nofs, {
 	###
 	touchP: (path, opts = {}) ->
 		now = new Date
-		utils.defaults opts, {
+		_.defaults opts, {
 			atime: now
 			mtime: now
 		}
@@ -1125,7 +1125,7 @@ utils.extend nofs, {
 	###
 	touchSync: (path, opts = {}) ->
 		now = new Date
-		utils.defaults opts, {
+		_.defaults opts, {
 			atime: now
 			mtime: now
 		}
@@ -1253,7 +1253,7 @@ for k of nofs
 	if k.slice(-1) == 'P'
 		name = k[0...-1]
 		continue if nofs[name]
-		nofs[name] = utils.callbackify nofs[k]
+		nofs[name] = _.callbackify nofs[k]
 
 require('./alias')(nofs)
 
