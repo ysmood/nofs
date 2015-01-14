@@ -31,12 +31,13 @@ shouldDeepEqualDone = (done, args...) ->
 		done err
 
 normalizePath = (val) ->
+	rep = (str) -> str.replace ///#{'\\' + npath.sep}///g, '/'
 	if val instanceof Array
 		for el, i in val
-			val[i] = el.replace ///#{npath.sep}///g, '/'
+			val[i] = rep el
 		val.sort()
 	else if typeof val == 'string'
-		val.replace ///#{npath.sep}///g, '/'
+		rep val
 
 describe 'Basic:', ->
 	it 'existsP', ->
@@ -91,7 +92,7 @@ describe 'Basic:', ->
 		ls = []
 		nofs.eachDirP 'test/fixtures/dir', {
 			searchFilter: ({ path }) ->
-				path != 'test/fixtures/dir/test0'
+				normalizePath(path) != 'test/fixtures/dir/test0'
 		}, (fileInfo) ->
 			ls.push fileInfo.name
 		.then ->
@@ -101,7 +102,7 @@ describe 'Basic:', ->
 		ls = []
 		nofs.eachDirSync 'test/fixtures/dir', {
 			searchFilter: ({ path }) ->
-				path != 'test/fixtures/dir/test0'
+				normalizePath(path) != 'test/fixtures/dir/test0'
 		}, (fileInfo) ->
 			ls.push fileInfo.name
 		shouldDeepEqual normalizePath(ls), ["a", "d", "dir", "test2"]
@@ -354,11 +355,11 @@ describe 'Basic:', ->
 	it 'globP a file', ->
 		nofs.globP 'test/fixtures/sample.txt'
 		.then (ls) ->
-			shouldDeepEqual ls, ['test/fixtures/sample.txt']
+			shouldDeepEqual normalizePath(ls), ['test/fixtures/sample.txt']
 
 	it 'globSync a file', ->
 		ls = nofs.globSync 'test/fixtures/sample.txt'
-		shouldDeepEqual ls, ['test/fixtures/sample.txt']
+		shouldDeepEqual normalizePath(ls), ['test/fixtures/sample.txt']
 
 describe 'Watch:', ->
 	it 'watchFile', (tdone) ->
@@ -376,7 +377,7 @@ describe 'Watch:', ->
 	it 'watchDir modify', (tdone) ->
 		tmp = 'test/fixtures/watchDirModify'
 		after ->
-			nofs.removeP tmp
+			nofs.removeSync tmp
 
 		nofs.copyP 'test/fixtures/watchDir', tmp
 		.then ->

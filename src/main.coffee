@@ -1067,7 +1067,7 @@ _.extend nofs, {
 			else
 				nofs.unlinkP path
 		.catch (err) ->
-			if err.code != 'ENOENT' or err.path != path
+			if err.code != 'ENOENT'
 				Promise.reject err
 
 	###*
@@ -1087,7 +1087,7 @@ _.extend nofs, {
 			else
 				nofs.unlinkSync path
 		catch err
-			if err.code != 'ENOENT' or err.path != path
+			if err.code != 'ENOENT'
 				throw err
 
 	###*
