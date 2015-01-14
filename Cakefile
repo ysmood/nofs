@@ -78,7 +78,7 @@ task 'test', 'Test', (opts) ->
 		'-t', '5000'
 		'-r', 'coffee-script/register'
 		'-R', 'spec'
-		'-g', opts.grep or ''
+		'-g', opts.grep or '.'
 		'test/basic.coffee'
 	]).catch ({ code }) ->
 		process.exit code

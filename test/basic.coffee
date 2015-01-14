@@ -30,6 +30,14 @@ shouldDeepEqualDone = (done, args...) ->
 	catch err
 		done err
 
+normalizePath = (val) ->
+	if val instanceof Array
+		for el, i in val
+			val[i] = el.replace ///#{npath.sep}///g, '/'
+		val.sort()
+	else if typeof val == 'string'
+		val.replace ///#{npath.sep}///g, '/'
+
 describe 'Basic:', ->
 	it 'existsP', ->
 		nofs.existsP('readme.md')
@@ -80,28 +88,28 @@ describe 'Basic:', ->
 		shouldEqual v.split('').sort().join(''), 'abcd'
 
 	it 'eachDirP searchFilter', ->
-		list = []
+		ls = []
 		nofs.eachDirP 'test/fixtures/dir', {
 			searchFilter: ({ path }) ->
 				path != 'test/fixtures/dir/test0'
 		}, (fileInfo) ->
-			list.push fileInfo.name
+			ls.push fileInfo.name
 		.then ->
-			shouldDeepEqual list.sort(), ["a", "d", "dir", "test2"]
+			shouldDeepEqual normalizePath(ls), ["a", "d", "dir", "test2"]
 
 	it 'eachDirSync searchFilter', ->
-		list = []
+		ls = []
 		nofs.eachDirSync 'test/fixtures/dir', {
 			searchFilter: ({ path }) ->
 				path != 'test/fixtures/dir/test0'
 		}, (fileInfo) ->
-			list.push fileInfo.name
-		shouldDeepEqual list.sort(), ["a", "d", "dir", "test2"]
+			ls.push fileInfo.name
+		shouldDeepEqual normalizePath(ls), ["a", "d", "dir", "test2"]
 
 	it 'readDirsP', ->
 		nofs.readDirsP 'test/fixtures/dir'
 		.then (ls) ->
-			shouldDeepEqual ls.sort(), [
+			shouldDeepEqual normalizePath(ls), [
 				'test/fixtures/dir/a'
 				'test/fixtures/dir/test0'
 				'test/fixtures/dir/test0/b'
@@ -113,7 +121,7 @@ describe 'Basic:', ->
 
 	it 'readDirsSync', ->
 		ls = nofs.readDirsSync 'test/fixtures/dir'
-		shouldDeepEqual ls.sort(), [
+		shouldDeepEqual normalizePath(ls), [
 			'test/fixtures/dir/a'
 			'test/fixtures/dir/test0'
 			'test/fixtures/dir/test0/b'
@@ -129,7 +137,7 @@ describe 'Basic:', ->
 			cwd: 'test/fixtures/dir'
 		}
 		.then (ls) ->
-			shouldDeepEqual ls.sort(), [
+			shouldDeepEqual normalizePath(ls), [
 				"a","test0","test0/b","test0/test1"
 				"test0/test1/c","test2","test2/.e","test2/d"
 			]
@@ -139,7 +147,7 @@ describe 'Basic:', ->
 			all: true
 			cwd: 'test/fixtures/dir'
 		}
-		shouldDeepEqual ls.sort(), [
+		shouldDeepEqual normalizePath(ls), [
 			"a","test0","test0/b","test0/test1"
 			"test0/test1/c","test2","test2/.e","test2/d"
 		]
@@ -150,7 +158,7 @@ describe 'Basic:', ->
 			filter: /[a-z]{1}$/
 		}
 		.then (ls) ->
-			shouldDeepEqual ls.sort(), [
+			shouldDeepEqual normalizePath(ls), [
 				"a", "test0/b", "test0/test1/c", "test2/d"
 			]
 
@@ -159,7 +167,7 @@ describe 'Basic:', ->
 			cwd: 'test/fixtures/dir'
 			filter: /[a-z]{1}$/
 		}
-		shouldDeepEqual ls.sort(), [
+		shouldDeepEqual normalizePath(ls), [
 			"a", "test0/b", "test0/test1/c", "test2/d"
 		]
 
@@ -168,7 +176,7 @@ describe 'Basic:', ->
 			cwd: 'test/fixtures/dir'
 			filter: '**/{a,b,c}'
 		}
-		shouldDeepEqual ls.sort(), [
+		shouldDeepEqual normalizePath(ls), [
 			"a", "test0/b", "test0/test1/c"
 		]
 
@@ -186,7 +194,7 @@ describe 'Basic:', ->
 				cwd: 'test/fixtures/dirMV-p'
 			}
 			.then (ls) ->
-				shouldDeepEqual ls.sort(), [
+				shouldDeepEqual normalizePath(ls), [
 					"a", "test0", "test0/b", "test0/test1"
 					"test0/test1/c", "test2", "test2/d"
 				]
@@ -213,7 +221,7 @@ describe 'Basic:', ->
 		ls = nofs.readDirsSync '', {
 			cwd: 'test/fixtures/dirMV-sync'
 		}
-		shouldDeepEqual ls.sort(), [
+		shouldDeepEqual normalizePath(ls), [
 			"a", "test0", "test0/b", "test0/test1"
 			"test0/test1/c", "test2", "test2/d"
 		]
@@ -330,27 +338,27 @@ describe 'Basic:', ->
 		nofs.globP '**', {
 			cwd: 'test/fixtures/dir'
 		}
-		.then (list) ->
-			shouldDeepEqual list.sort(), [
+		.then (ls) ->
+			shouldDeepEqual normalizePath(ls), [
 				"a","test0","test0/b","test0/test1","test0/test1/c","test2","test2/d"
 			]
 
 	it 'globSync', ->
-		list = nofs.globSync '**', {
+		ls = nofs.globSync '**', {
 			cwd: 'test/fixtures/dir'
 		}
-		shouldDeepEqual list.sort(), [
+		shouldDeepEqual normalizePath(ls), [
 			"a","test0","test0/b","test0/test1","test0/test1/c","test2","test2/d"
 		]
 
 	it 'globP a file', ->
 		nofs.globP 'test/fixtures/sample.txt'
-		.then (list) ->
-			shouldDeepEqual list, ['test/fixtures/sample.txt']
+		.then (ls) ->
+			shouldDeepEqual ls, ['test/fixtures/sample.txt']
 
 	it 'globSync a file', ->
-		list = nofs.globSync 'test/fixtures/sample.txt'
-		shouldDeepEqual list, ['test/fixtures/sample.txt']
+		ls = nofs.globSync 'test/fixtures/sample.txt'
+		shouldDeepEqual ls, ['test/fixtures/sample.txt']
 
 describe 'Watch:', ->
 	it 'watchFile', (tdone) ->
@@ -377,11 +385,11 @@ describe 'Watch:', ->
 				handler: (type, path) ->
 					shouldDeepEqualDone tdone, { type, path }, {
 						type: 'modify'
-						path: npath.join(tmp, 'dir0/c')
+						path: npath.join(tmp, 'dir0', 'c')
 					}
 			}
 		.then ->
-			nofs.outputFileP npath.join(tmp, 'dir0/c'), 'ok'
+			nofs.outputFileP npath.join(tmp, 'dir0', 'c'), 'ok'
 
 	it 'watchDir create', (tdone) ->
 		tmp = 'test/fixtures/watchDirCreate'
@@ -395,11 +403,11 @@ describe 'Watch:', ->
 				handler: (type, path) ->
 					shouldDeepEqualDone tdone, { type, path }, {
 						type: 'create'
-						path: npath.join(tmp, 'dir0/d')
+						path: npath.join(tmp, 'dir0', 'd')
 					}
 			}
 		.then ->
-			nofs.outputFileP npath.join(tmp, 'dir0/d'), 'ok'
+			nofs.outputFileP npath.join(tmp, 'dir0', 'd'), 'ok'
 
 	it 'watchDir delete', (tdone) ->
 		tmp = 'test/fixtures/watchDirDelete'
@@ -413,8 +421,8 @@ describe 'Watch:', ->
 				handler: (type, path) ->
 					shouldDeepEqualDone tdone, { type, path }, {
 						type: 'delete'
-						path: npath.join(tmp, 'dir0/c')
+						path: npath.join(tmp, 'dir0', 'c')
 					}
 			}
 		.then ->
-			nofs.removeP npath.join(tmp, 'dir0/c')
+			nofs.removeP npath.join(tmp, 'dir0', 'c')
