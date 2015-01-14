@@ -1200,6 +1200,7 @@ _.extend nofs, {
 	###*
 	 * Watch directory and all the files in it.
 	 * It supports three types of change: create, modify, move, delete.
+	 * By default, `move` event is disabled.
 	 * It is build on the top of `nofs.watchFile`.
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
@@ -1215,6 +1216,8 @@ _.extend nofs, {
 	 *
 	 * 	# The minimatch options.
 	 * 	minimatch: {}
+	 *
+	 * 	isEnableMoveEvent: false
 	 * }
 	 * ```
 	 * @return {Promise}
@@ -1244,7 +1247,6 @@ _.extend nofs, {
 		opts.minimatch.dot = opts.all
 
 		watchedList = {}
-		deletedList = {}
 
 		isSameFile = (statsA, statsB) ->
 			# On Unix just "ino" will do the trick, but on Windows
@@ -1261,32 +1263,30 @@ _.extend nofs, {
 		match = (path, pattern) ->
 			nofs.minimatch path, pattern, opts.minimatch
 
+		dirPath = (dir) -> npath.join dir, '/'
+
 		fileHandler = (path, curr, prev, isDelete) ->
 			if isDelete
-				deletedList[path] = prev
 				opts.handler 'delete', path
 			else
 				opts.handler 'modify', path
 
 		dirHandler = (dir, curr, prev, isDelete) ->
 			# Possible Event Order
-			# 1. modify event: file modify -> parent modify.
+			# 1. modify event: file modify.
 			# 2. delete event: file delete -> parent modify.
 			# 3. create event: parent modify -> file create.
-			# 4.   move event: file create -> file delete -> parent modify.
-			# 5.  touch event: file touch.
+			# 4.   move event: file delete -> parent modify -> file create.
 
 			if isDelete
-				deletedList[dir] = prev
-				opts.handler 'delete', path
+				opts.handler 'delete', dirPath(dir)
 				return
 
 			pattern = npath.join dir, opts.pattern
 
-			currPaths = []
-
-			opts.handler 'modify', dir if curr
-
+			# Prevent high frequency concurrent fs changes,
+			# we should to use Sync function here. But for
+			# now if we don't need `move` event, everything is OK.
 			nofs.eachDirP dir, {
 				all: opts.all
 			}, (fileInfo) ->
@@ -1294,19 +1294,14 @@ _.extend nofs, {
 				if watchedList[path]
 					return
 
-				opts.handler 'create', path if curr
-
 				watchedList[path] =
 				if fileInfo.isDir
-					currPaths.push path
+					opts.handler 'create', dirPath(path) if curr
 					nofs.watchFile path, dirHandler
 				else
 					if match path, pattern
-						currPaths.push path
+						opts.handler 'create', path if curr
 						nofs.watchFile path, fileHandler
-
-				path
-			.then (tree) ->
 
 		dirHandler opts.dir
 

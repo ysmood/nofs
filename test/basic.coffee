@@ -10,11 +10,25 @@ shouldEqual = (args...) ->
 	catch err
 		Promise.reject err
 
+shouldEqualDone = (done, args...) ->
+	try
+		assert.strictEqual.apply assert, args
+		done()
+	catch err
+		done err
+
 shouldDeepEqual = (args...) ->
 	try
 		assert.deepEqual.apply assert, args
 	catch err
 		Promise.reject err
+
+shouldDeepEqualDone = (done, args...) ->
+	try
+		assert.deepEqual.apply assert, args
+		done()
+	catch err
+		done err
 
 describe 'Basic:', ->
 	it 'existsP', ->
@@ -350,3 +364,57 @@ describe 'Watch:', ->
 			tdone()
 
 		nofs.outputFileSync path, 'test'
+
+	it 'watchDir modify', (tdone) ->
+		tmp = 'test/fixtures/watchDirModify'
+		after ->
+			nofs.removeP tmp
+
+		nofs.copyP 'test/fixtures/watchDir', tmp
+		.then ->
+			nofs.watchDir {
+				dir: tmp
+				handler: (type, path) ->
+					shouldDeepEqualDone tdone, { type, path }, {
+						type: 'modify'
+						path: npath.join(tmp, 'dir0/c')
+					}
+			}
+		.then ->
+			nofs.outputFileP npath.join(tmp, 'dir0/c'), 'ok'
+
+	it 'watchDir create', (tdone) ->
+		tmp = 'test/fixtures/watchDirCreate'
+		after ->
+			nofs.removeP tmp
+
+		nofs.copyP 'test/fixtures/watchDir', tmp
+		.then ->
+			nofs.watchDir {
+				dir: tmp
+				handler: (type, path) ->
+					shouldDeepEqualDone tdone, { type, path }, {
+						type: 'create'
+						path: npath.join(tmp, 'dir0/d')
+					}
+			}
+		.then ->
+			nofs.outputFileP npath.join(tmp, 'dir0/d'), 'ok'
+
+	it 'watchDir delete', (tdone) ->
+		tmp = 'test/fixtures/watchDirDelete'
+		after ->
+			nofs.removeP tmp
+
+		nofs.copyP 'test/fixtures/watchDir', tmp
+		.then ->
+			nofs.watchDir {
+				dir: tmp
+				handler: (type, path) ->
+					shouldDeepEqualDone tdone, { type, path }, {
+						type: 'delete'
+						path: npath.join(tmp, 'dir0/c')
+					}
+			}
+		.then ->
+			nofs.removeP npath.join(tmp, 'dir0/c')

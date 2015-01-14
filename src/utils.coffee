@@ -45,3 +45,5 @@ module.exports =
 	isFunction: (val) -> typeof val == 'Function'
 
 	isRegExp: (val) -> val instanceof RegExp
+
+	keys: (val) -> Object.keys val
