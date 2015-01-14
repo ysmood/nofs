@@ -188,7 +188,6 @@ _.extend nofs, {
 	 * @param  {String} from Source path.
 	 * @param  {String} to Destination path.
 	 * @param  {Object} opts Extends the options of `eachDir`.
-	 * But the `isCacheStats` is fixed with `true`.
 	 * Defaults:
 	 * ```coffee
 	 * {
@@ -652,7 +651,6 @@ _.extend nofs, {
 	 * nofs.mapDirP(
 	 * 	'from'
 	 * 	'to'
-	 * 	{ isCacheStats: true }
 	 * 	(src, dest, fileInfo) ->
 	 * 		return if fileInfo.isDir
 	 * 		nofs.readFileP(src).then (buf) ->
@@ -731,7 +729,6 @@ _.extend nofs, {
 	 * @param  {String} from Source path.
 	 * @param  {String} to   Destination path.
 	 * @param  {Object} opts Extends the options of `eachDir`.
-	 * But the `isCacheStats` is fixed with `true`.
 	 * Defaults:
 	 * ```coffee
 	 * {
@@ -745,8 +742,6 @@ _.extend nofs, {
 		_.defaults opts, {
 			isForce: false
 		}
-
-		opts.isCacheStats = true
 
 		moveFile = (src, dest) ->
 			if opts.isForce
@@ -781,8 +776,6 @@ _.extend nofs, {
 		_.defaults opts, {
 			isForce: false
 		}
-
-		opts.isCacheStats = true
 
 		moveFile = (src, dest) ->
 			if opts.isForce
@@ -896,8 +889,7 @@ _.extend nofs, {
 	 * }
 	 * ```
 	 * The key is the entity path, the value is the `nofs.Stats` object.
-	 * @return {Promise} Resolves an path array. Every directory path will ends
-	 * with `/` (Unix) or `\` (Windows).
+	 * @return {Promise} Resolves an path array.
 	 * @example
 	 * ```coffee
 	 * # Basic
@@ -1057,13 +1049,9 @@ _.extend nofs, {
 	removeP: (path, opts = {}) ->
 		opts.isReverse = true
 
-		nofs.statP(path).then (stats) ->
-			if stats.isDirectory()
-				nofs.eachDirP path, opts, ({ path, isDir }) ->
-					if isDir
-						nofs.rmdirP path
-					else
-						nofs.unlinkP path
+		nofs.eachDirP path, opts, ({ path, isDir }) ->
+			if isDir
+				nofs.rmdirP path
 			else
 				nofs.unlinkP path
 		.catch (err) ->
@@ -1077,15 +1065,11 @@ _.extend nofs, {
 		opts.isReverse = true
 
 		try
-			stats = nofs.statSync(path)
-			if stats.isDirectory()
-				nofs.eachDirSync path, opts, ({ path, isDir }) ->
-					if isDir
-						nofs.rmdirSync path
-					else
-						nofs.unlinkSync path
-			else
-				nofs.unlinkSync path
+			nofs.eachDirSync path, opts, ({ path, isDir }) ->
+				if isDir
+					nofs.rmdirSync path
+				else
+					nofs.unlinkSync path
 		catch err
 			if err.code != 'ENOENT'
 				throw err
