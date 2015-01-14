@@ -321,7 +321,7 @@ _.extend nofs, {
 	 * ```
 	 * @param  {Function} fn `(fileInfo) -> Promise | Any`.
 	 * The `fileInfo` object has these properties: `{ path, isDir, children, stats }`.
-	 * If the `fn` is `(c) -> c`, the directory object array may look like:
+	 * Assume the `fn` is `(f) -> f`, the directory object array may look like:
 	 * ```coffee
 	 * {
 	 * 	path: 'dir/path'
@@ -884,7 +884,7 @@ _.extend nofs, {
 	 * 	isCacheStats: false
 	 * }
 	 * ```
-	 * If `isCacheStats` is set true, the return list array
+	 * If `isCacheStats` is set true, the returned list array
 	 * will have an extra property `statsCache`, it is something like:
 	 * ```coffee
 	 * {
