@@ -1198,6 +1198,119 @@ _.extend nofs, {
 				nofs.watchFile path, handler
 
 	###*
+	 * Watch directory and all the files in it.
+	 * It supports three types of change: create, modify, move, delete.
+	 * It is build on the top of `nofs.watchFile`.
+	 * @param  {Object} opts Defaults:
+	 * ```coffee
+	 * {
+	 * 	dir: '.'
+	 * 	pattern: '**' # minimatch, string or array
+	 *
+	 * 	# Whether to watch POSIX hidden file.
+	 * 	dot: false
+	 *
+	 * 	# If the "path" ends with '/' it's a directory, else a file.
+	 * 	handler: (type, path, oldPath) ->
+	 *
+	 * 	# The minimatch options.
+	 * 	minimatch: {}
+	 * }
+	 * ```
+	 * @return {Promise}
+	 * @example
+	 * ```coffee
+	 * # Only current folder, and only watch js and css file.
+	 * nofs.watchDir {
+	 * 	dir: 'lib'
+	 * 	pattern: '*.+(js|css)'
+	 * 	handler: (type, path) ->
+	 * 		console.log type
+	 * 		console.log path
+	 * }
+	 * ```
+	###
+	watchDir: (opts = {}) ->
+		_.defaults opts, {
+			dir: '.'
+			pattern: '**'
+			minimatch: {}
+			all: false
+			handler: (type, path, oldPath) ->
+			error: (err) ->
+				console.error err
+		}
+
+		opts.minimatch.dot = opts.all
+
+		watchedList = {}
+		deletedList = {}
+
+		isSameFile = (statsA, statsB) ->
+			# On Unix just "ino" will do the trick, but on Windows
+			# "ino" is always zero.
+			if statsA.ctime.ino != 0 and statsA.ctime.ino == statsB.ctime.ino
+				return true
+
+			# Since "size" for Windows is always zero, and the unit of "time"
+			# is second, the code below is not reliable.
+			statsA.mtime.getTime() == statsB.mtime.getTime() and
+			statsA.ctime.getTime() == statsB.ctime.getTime() and
+			statsA.size == statsB.size
+
+		match = (path, pattern) ->
+			nofs.minimatch path, pattern, opts.minimatch
+
+		fileHandler = (path, curr, prev, isDelete) ->
+			if isDelete
+				deletedList[path] = prev
+				opts.handler 'delete', path
+			else
+				opts.handler 'modify', path
+
+		dirHandler = (dir, curr, prev, isDelete) ->
+			# Possible Event Order
+			# 1. modify event: file modify -> parent modify.
+			# 2. delete event: file delete -> parent modify.
+			# 3. create event: parent modify -> file create.
+			# 4.   move event: file create -> file delete -> parent modify.
+			# 5.  touch event: file touch.
+
+			if isDelete
+				deletedList[dir] = prev
+				opts.handler 'delete', path
+				return
+
+			pattern = npath.join dir, opts.pattern
+
+			currPaths = []
+
+			opts.handler 'modify', dir if curr
+
+			nofs.eachDirP dir, {
+				all: opts.all
+			}, (fileInfo) ->
+				path = fileInfo.path
+				if watchedList[path]
+					return
+
+				opts.handler 'create', path if curr
+
+				watchedList[path] =
+				if fileInfo.isDir
+					currPaths.push path
+					nofs.watchFile path, dirHandler
+				else
+					if match path, pattern
+						currPaths.push path
+						nofs.watchFile path, fileHandler
+
+				path
+			.then (tree) ->
+
+		dirHandler opts.dir
+
+	###*
 	 * A `writeFile` shim for `< Node v0.10`.
 	 * @param  {String} path
 	 * @param  {String | Buffer} data
