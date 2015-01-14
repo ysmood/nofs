@@ -1248,6 +1248,7 @@ _.extend nofs, {
 
 		watchedList = {}
 
+		# TODO: move event
 		isSameFile = (statsA, statsB) ->
 			# On Unix just "ino" will do the trick, but on Windows
 			# "ino" is always zero.
