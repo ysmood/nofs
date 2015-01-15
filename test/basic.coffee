@@ -1,3 +1,5 @@
+process.env.force_unix_sep = 'on'
+
 nofs = require '../src/main'
 { Promise } = require '../src/utils'
 npath = require 'path'

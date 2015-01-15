@@ -411,9 +411,6 @@ _.extend nofs, {
 			if not opts.all and fileInfo.name[0] == '.'
 				return
 
-			if opts.isForceUnixSep
-				fileInfo.path = fileInfo.path.replace regWinSep, '/'
-
 			fn fileInfo if opts.filter fileInfo
 
 		decideNext = (dir, name) ->
@@ -422,6 +419,10 @@ _.extend nofs, {
 			stat(resolve path).then (stats) ->
 				isDir = stats.isDirectory()
 				fileInfo = { path, name, isDir, stats }
+
+				if opts.isForceUnixSep
+					fileInfo.path = fileInfo.path.replace regWinSep, '/'
+
 				if isDir
 					return if not opts.searchFilter fileInfo
 
@@ -468,6 +469,7 @@ _.extend nofs, {
 			isIncludeRoot: true
 			isFollowLink: true
 			isReverse: false
+			isForceUnixSep: isWin and process.env.force_unix_sep == 'on'
 		}
 
 		if _.isRegExp opts.filter
@@ -495,6 +497,10 @@ _.extend nofs, {
 			stats = stat(resolve path)
 			isDir = stats.isDirectory()
 			fileInfo = { path, name, isDir, stats }
+
+			if opts.isForceUnixSep
+				fileInfo.path = fileInfo.path.replace regWinSep, '/'
+
 			if isDir
 				return if not opts.searchFilter fileInfo
 
