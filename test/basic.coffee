@@ -401,7 +401,7 @@ describe 'Watch:', ->
 				handler: (type, path) ->
 					shouldDeepEqualDone tdone, { type, path }, {
 						type: 'create'
-						path: tmp + '/dir0/d')
+						path: tmp + '/dir0/d'
 					}
 			}
 		.then ->
