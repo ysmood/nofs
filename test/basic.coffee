@@ -387,7 +387,7 @@ describe 'Watch:', ->
 					}
 			}
 		.then ->
-			nofs.outputFileP(tmp + '/dir0/c'), 'ok'
+			nofs.outputFileP tmp + '/dir0/c', 'ok'
 
 	it 'watchDir create', (tdone) ->
 		tmp = 'test/fixtures/watchDirCreate'
@@ -405,7 +405,7 @@ describe 'Watch:', ->
 					}
 			}
 		.then ->
-			nofs.outputFileP(tmp + '/dir0/d'), 'ok'
+			nofs.outputFileP tmp + '/dir0/d', 'ok'
 
 	it 'watchDir delete', (tdone) ->
 		tmp = 'test/fixtures/watchDirDelete'
@@ -423,4 +423,4 @@ describe 'Watch:', ->
 					}
 			}
 		.then ->
-			nofs.removeP tmp + '/dir0 + c'
+			nofs.removeP tmp + '/dir0/c'
