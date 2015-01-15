@@ -30,7 +30,7 @@
     "nokit": "*"
   },
   "dependencies": {
-    "bluebird": "2.6.2",
+    "bluebird": "2.6.4",
     "graceful-fs": "3.0.5",
     "minimatch": "2.0.1"
   }
