@@ -400,8 +400,9 @@ _.extend nofs, {
 
 		if _.isString opts.filter
 			pattern = opts.filter
+			mm = new nofs.minimatch.Minimatch(pattern)
 			opts.filter = (fileInfo) ->
-				nofs.minimatch fileInfo.path, pattern
+				mm.match fileInfo.path
 
 		stat = if opts.isFollowLink then nofs.lstatP else nofs.statP
 
@@ -478,8 +479,9 @@ _.extend nofs, {
 
 		if _.isString opts.filter
 			pattern = opts.filter
+			mm = new nofs.minimatch.Minimatch(pattern)
 			opts.filter = (fileInfo) ->
-				nofs.minimatch fileInfo.path, pattern
+				mm.match fileInfo.path
 
 		stat = if opts.isFollowLink then nofs.lstatSync else nofs.statSync
 
@@ -560,6 +562,15 @@ _.extend nofs, {
 	 * @param  {String | Array} pattern The minimatch pattern.
 	 * @param {Object} opts Extends the options of `eachDir`.
 	 * But the `filter` property will be fixed with the pattern.
+	 * Defaults:
+	 * ```coffee
+	 * {
+	 * 	all: false
+	 *
+	 * 	# The minimatch option object.
+	 * 	minimatch: {}
+	 * }
+	 * ```
 	 * @param {Function} fn `(fileInfo, list) -> Promise | Any`.
 	 * It will be called after each match. By default it is:
 	 * `(fileInfo, list) -> list.push fileInfo.path`
@@ -585,6 +596,13 @@ _.extend nofs, {
 			fn = opts
 			opts = {}
 
+		_.defaults opts, {
+			minimatch: {}
+			all: false
+		}
+
+		opts.minimatch.dot = opts.all
+
 		if _.isString patterns
 			patterns = [patterns]
 
@@ -603,6 +621,18 @@ _.extend nofs, {
 			pattern.replace /^!/, ''
 
 		glob = (pattern) ->
+			mm = new nofs.minimatch.Minimatch(pattern, opts.minimatch)
+
+			filter = (fileInfo) ->
+				mm.match fileInfo.path
+
+			searchFilter = (fileInfo) ->
+				# Hot fix for minimatch, it should match '**' to '.'.
+				if fileInfo.path == '.'
+					return mm.match '', true
+
+				mm.match fileInfo.path, true
+
 			# If a pattern is a plain path, return it directly.
 			nofs.existsP pattern
 			.then (exists) ->
@@ -610,9 +640,7 @@ _.extend nofs, {
 					return list.push pattern
 
 				getDirPath(cleanPrefix pattern).then (dir) ->
-					subOpts = _.defaults {
-						filter: pattern
-					}, opts
+					subOpts = _.defaults { filter, searchFilter }, opts
 					nofs.eachDirP dir, subOpts, (fileInfo) ->
 						fn fileInfo, list
 
@@ -627,6 +655,13 @@ _.extend nofs, {
 		if _.isFunction opts
 			fn = opts
 			opts = {}
+
+		_.defaults opts, {
+			minimatch: {}
+			all: false
+		}
+
+		opts.minimatch.dot = opts.all
 
 		if _.isString patterns
 			patterns = [patterns]
@@ -645,14 +680,24 @@ _.extend nofs, {
 			pattern.replace /^!/, ''
 
 		glob = (pattern) ->
+			mm = new nofs.minimatch.Minimatch(pattern, opts.minimatch)
+
+			filter = (fileInfo) ->
+				mm.match fileInfo.path
+
+			searchFilter = (fileInfo) ->
+				# Hot fix for minimatch, it should match '**' to '.'.
+				if fileInfo.path == '.'
+					return mm.match '', true
+
+				mm.match fileInfo.path, true
+
 			# If a pattern is a plain path, return it directly.
 			if nofs.existsSync pattern
 				return list.push pattern
 
 			dir = getDirPath(cleanPrefix pattern)
-			subOpts = _.defaults {
-				filter: pattern
-			}, opts
+			subOpts = _.defaults { filter, searchFilter }, opts
 			nofs.eachDirSync dir, subOpts, (fileInfo) ->
 				fn fileInfo, list
 
