@@ -51,6 +51,7 @@ option, therefore `readDirs` also has a `filter` option.
 ## Quick Start
 
 ```coffee
+# You can replace "require('fs')" with "require('nofs')"
 fs = require 'nofs'
 
 # Callback

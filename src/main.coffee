@@ -603,12 +603,18 @@ _.extend nofs, {
 			pattern.replace /^!/, ''
 
 		glob = (pattern) ->
-			getDirPath(cleanPrefix pattern).then (dir) ->
-				subOpts = _.defaults {
-					filter: pattern
-				}, opts
-				nofs.eachDirP dir, subOpts, (fileInfo) ->
-					fn fileInfo, list
+			# If a pattern is a plain path, return it directly.
+			nofs.existsP pattern
+			.then (exists) ->
+				if exists
+					return list.push pattern
+
+				getDirPath(cleanPrefix pattern).then (dir) ->
+					subOpts = _.defaults {
+						filter: pattern
+					}, opts
+					nofs.eachDirP dir, subOpts, (fileInfo) ->
+						fn fileInfo, list
 
 		Promise.all patterns.map glob
 		.then -> list
@@ -639,6 +645,10 @@ _.extend nofs, {
 			pattern.replace /^!/, ''
 
 		glob = (pattern) ->
+			# If a pattern is a plain path, return it directly.
+			if nofs.existsSync pattern
+				return list.push pattern
+
 			dir = getDirPath(cleanPrefix pattern)
 			subOpts = _.defaults {
 				filter: pattern
