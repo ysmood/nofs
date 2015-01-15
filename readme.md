@@ -51,6 +51,7 @@ option, therefore `readDirs` also has a `filter` option.
 ## Quick Start
 
 ```coffee
+# You can replace "require('fs')" with "require('nofs')"
 fs = require 'nofs'
 
 # Callback
@@ -303,7 +304,7 @@ __No native `fs` funtion will be listed.__
     	console.log path
     ```
 
-- #### <a href="src/main.coffee?source#L459" target="_blank"><b>eachDirSync</b></a>
+- #### <a href="src/main.coffee?source#L460" target="_blank"><b>eachDirSync</b></a>
 
   See `eachDirP`.
 
@@ -312,7 +313,7 @@ __No native `fs` funtion will be listed.__
     A tree data structure that
     represents the files recursively.
 
-- #### <a href="src/main.coffee?source#L542" target="_blank"><b>fileExistsP</b></a>
+- #### <a href="src/main.coffee?source#L544" target="_blank"><b>fileExistsP</b></a>
 
   Check if a path exists, and if it is a file.
 
@@ -322,7 +323,7 @@ __No native `fs` funtion will be listed.__
 
     Resolves a boolean value.
 
-- #### <a href="src/main.coffee?source#L552" target="_blank"><b>fileExistsSync</b></a>
+- #### <a href="src/main.coffee?source#L554" target="_blank"><b>fileExistsSync</b></a>
 
   Check if a path exists, and if it is a file.
 
@@ -330,7 +331,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _boolean_ }
 
-- #### <a href="src/main.coffee?source#L583" target="_blank"><b>globP</b></a>
+- #### <a href="src/main.coffee?source#L594" target="_blank"><b>globP</b></a>
 
   Get files by patterns.
 
@@ -342,6 +343,15 @@ __No native `fs` funtion will be listed.__
 
     Extends the options of `eachDir`.
     But the `filter` property will be fixed with the pattern.
+    Defaults:
+    ```coffee
+    {
+    	all: false
+    
+    	# The minimatch option object.
+    	minimatch: {}
+    }
+    ```
 
   - **<u>param</u>**: `fn` { _Function_ }
 
@@ -370,7 +380,7 @@ __No native `fs` funtion will be listed.__
     	console.log paths
     ```
 
-- #### <a href="src/main.coffee?source#L620" target="_blank"><b>globSync</b></a>
+- #### <a href="src/main.coffee?source#L654" target="_blank"><b>globSync</b></a>
 
   See `globP`.
 
@@ -378,7 +388,7 @@ __No native `fs` funtion will be listed.__
 
     The list array.
 
-- #### <a href="src/main.coffee?source#L679" target="_blank"><b>mapDirP</b></a>
+- #### <a href="src/main.coffee?source#L734" target="_blank"><b>mapDirP</b></a>
 
   Map file from a directory to another recursively with a
   callback.
@@ -422,7 +432,7 @@ __No native `fs` funtion will be listed.__
     )
     ```
 
-- #### <a href="src/main.coffee?source#L695" target="_blank"><b>mapDirSync</b></a>
+- #### <a href="src/main.coffee?source#L750" target="_blank"><b>mapDirSync</b></a>
 
   See `mapDirP`.
 
@@ -430,7 +440,7 @@ __No native `fs` funtion will be listed.__
 
     A tree object.
 
-- #### <a href="src/main.coffee?source#L713" target="_blank"><b>minimatch</b></a>
+- #### <a href="src/main.coffee?source#L768" target="_blank"><b>minimatch</b></a>
 
   The `minimatch` lib.
   [Documentation](https://github.com/isaacs/minimatch)
@@ -438,7 +448,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>type</u>**:  { _Funtion_ }
 
-- #### <a href="src/main.coffee?source#L721" target="_blank"><b>mkdirsP</b></a>
+- #### <a href="src/main.coffee?source#L776" target="_blank"><b>mkdirsP</b></a>
 
   Recursively create directory path, like `mkdir -p`.
 
@@ -450,11 +460,11 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L735" target="_blank"><b>mkdirsSync</b></a>
+- #### <a href="src/main.coffee?source#L790" target="_blank"><b>mkdirsSync</b></a>
 
   See `mkdirsP`.
 
-- #### <a href="src/main.coffee?source#L758" target="_blank"><b>moveP</b></a>
+- #### <a href="src/main.coffee?source#L813" target="_blank"><b>moveP</b></a>
 
   Moves a file or directory. Also works between partitions.
   Behaves like the Unix `mv`.
@@ -482,11 +492,11 @@ __No native `fs` funtion will be listed.__
     It will resolve a boolean value which indicates
     whether this action is taken between two partitions.
 
-- #### <a href="src/main.coffee?source#L792" target="_blank"><b>moveSync</b></a>
+- #### <a href="src/main.coffee?source#L847" target="_blank"><b>moveSync</b></a>
 
   See `moveP`.
 
-- #### <a href="src/main.coffee?source#L829" target="_blank"><b>outputFileP</b></a>
+- #### <a href="src/main.coffee?source#L884" target="_blank"><b>outputFileP</b></a>
 
   Almost the same as `writeFile`, except that if its parent
   directories do not exist, they will be created.
@@ -501,11 +511,11 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L841" target="_blank"><b>outputFileSync</b></a>
+- #### <a href="src/main.coffee?source#L896" target="_blank"><b>outputFileSync</b></a>
 
   See `outputFileP`.
 
-- #### <a href="src/main.coffee?source#L864" target="_blank"><b>outputJsonP</b></a>
+- #### <a href="src/main.coffee?source#L919" target="_blank"><b>outputJsonP</b></a>
 
   Write a object to a file, if its parent directory doesn't
   exists, it will be created.
@@ -529,11 +539,11 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L878" target="_blank"><b>outputJsonSync</b></a>
+- #### <a href="src/main.coffee?source#L933" target="_blank"><b>outputJsonSync</b></a>
 
   See `outputJSONP`.
 
-- #### <a href="src/main.coffee?source#L928" target="_blank"><b>readDirsP</b></a>
+- #### <a href="src/main.coffee?source#L983" target="_blank"><b>readDirsP</b></a>
 
   Read directory recursively.
 
@@ -586,7 +596,7 @@ __No native `fs` funtion will be listed.__
     	console.log paths.statsCache['path/a']
     ```
 
-- #### <a href="src/main.coffee?source#L955" target="_blank"><b>readDirsSync</b></a>
+- #### <a href="src/main.coffee?source#L1010" target="_blank"><b>readDirsSync</b></a>
 
   See `readDirsP`.
 
@@ -594,7 +604,7 @@ __No native `fs` funtion will be listed.__
 
     Path string array.
 
-- #### <a href="src/main.coffee?source#L989" target="_blank"><b>readJsonP</b></a>
+- #### <a href="src/main.coffee?source#L1044" target="_blank"><b>readJsonP</b></a>
 
   Read A Json file and parse it to a object.
 
@@ -615,7 +625,7 @@ __No native `fs` funtion will be listed.__
     	console.log obj.name, obj.age
     ```
 
-- #### <a href="src/main.coffee?source#L1000" target="_blank"><b>readJsonSync</b></a>
+- #### <a href="src/main.coffee?source#L1055" target="_blank"><b>readJsonSync</b></a>
 
   See `readJSONP`.
 
@@ -623,7 +633,7 @@ __No native `fs` funtion will be listed.__
 
     The parsed object.
 
-- #### <a href="src/main.coffee?source#L1028" target="_blank"><b>reduceDirP</b></a>
+- #### <a href="src/main.coffee?source#L1083" target="_blank"><b>reduceDirP</b></a>
 
   Walk through directory recursively with a callback.
 
@@ -660,7 +670,7 @@ __No native `fs` funtion will be listed.__
     	console.log ret
     ```
 
-- #### <a href="src/main.coffee?source#L1047" target="_blank"><b>reduceDirSync</b></a>
+- #### <a href="src/main.coffee?source#L1102" target="_blank"><b>reduceDirSync</b></a>
 
   See `reduceDirP`
 
@@ -668,7 +678,7 @@ __No native `fs` funtion will be listed.__
 
     Final value.
 
-- #### <a href="src/main.coffee?source#L1066" target="_blank"><b>removeP</b></a>
+- #### <a href="src/main.coffee?source#L1121" target="_blank"><b>removeP</b></a>
 
   Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -681,11 +691,11 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L1081" target="_blank"><b>removeSync</b></a>
+- #### <a href="src/main.coffee?source#L1136" target="_blank"><b>removeSync</b></a>
 
   See `removeP`.
 
-- #### <a href="src/main.coffee?source#L1108" target="_blank"><b>touchP</b></a>
+- #### <a href="src/main.coffee?source#L1163" target="_blank"><b>touchP</b></a>
 
   Change file access and modification times.
   If the file does not exist, it is created.
@@ -707,7 +717,7 @@ __No native `fs` funtion will be listed.__
 
     If new file created, resolves true.
 
-- #### <a href="src/main.coffee?source#L1127" target="_blank"><b>touchSync</b></a>
+- #### <a href="src/main.coffee?source#L1182" target="_blank"><b>touchSync</b></a>
 
   See `touchP`.
 
@@ -715,7 +725,7 @@ __No native `fs` funtion will be listed.__
 
     Whether a new file is created or not.
 
-- #### <a href="src/main.coffee?source#L1166" target="_blank"><b>watchFile</b></a>
+- #### <a href="src/main.coffee?source#L1221" target="_blank"><b>watchFile</b></a>
 
   Watch a file. If the file changes, the handler will be invoked.
   You can change the polling interval by using `process.env.pollingWatch`.
@@ -754,7 +764,7 @@ __No native `fs` funtion will be listed.__
     		console.log path
     ```
 
-- #### <a href="src/main.coffee?source#L1196" target="_blank"><b>watchFiles</b></a>
+- #### <a href="src/main.coffee?source#L1251" target="_blank"><b>watchFiles</b></a>
 
   Watch files, when file changes, the handler will be invoked.
   It is build on the top of `nofs.watchFile`.
@@ -777,7 +787,7 @@ __No native `fs` funtion will be listed.__
     	console.log path
     ```
 
-- #### <a href="src/main.coffee?source#L1237" target="_blank"><b>watchDir</b></a>
+- #### <a href="src/main.coffee?source#L1292" target="_blank"><b>watchDir</b></a>
 
   Watch directory and all the files in it.
   It supports three types of change: create, modify, move, delete.
@@ -820,7 +830,7 @@ __No native `fs` funtion will be listed.__
     }
     ```
 
-- #### <a href="src/main.coffee?source#L1317" target="_blank"><b>writeFileP</b></a>
+- #### <a href="src/main.coffee?source#L1372" target="_blank"><b>writeFileP</b></a>
 
   A `writeFile` shim for `< Node v0.10`.
 
@@ -832,7 +842,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L1342" target="_blank"><b>writeFileSync</b></a>
+- #### <a href="src/main.coffee?source#L1397" target="_blank"><b>writeFileSync</b></a>
 
   See `writeFileP`
 
