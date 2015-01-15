@@ -30,6 +30,9 @@ for k of nofs
 		continue if nofs[pname]
 		nofs[pname] = _.promisify nofs[name]
 
+regWinSep = /\\/g
+isWin = process.platform == 'win32'
+
 _.extend nofs, {
 
 	###*
@@ -316,6 +319,10 @@ _.extend nofs, {
 	 * 	# still be itered. But when `searchFilter` returns false, children
 	 * 	# won't be itered by the fn.
 	 * 	searchFilter: (fileInfo) -> true
+	 *
+	 * 	# Such as force `C:\test\path` to `C:/test/path`.
+	 * 	# This option only works on Windows.
+	 * 	isForceUnixSep: process.env.force_unix_sep == 'on'
 	 * }
 	 * ```
 	 * @param  {Function} fn `(fileInfo) -> Promise | Any`.
@@ -384,6 +391,7 @@ _.extend nofs, {
 			isIncludeRoot: true
 			isFollowLink: true
 			isReverse: false
+			isForceUnixSep: process.env.force_unix_sep == 'on'
 		}
 
 		if _.isRegExp opts.filter
@@ -402,6 +410,9 @@ _.extend nofs, {
 		execFn = (fileInfo) ->
 			if not opts.all and fileInfo.name[0] == '.'
 				return
+
+			if isWin and opts.isForceUnixSep
+				fileInfo.path = fileInfo.path.replace regWinSep, '/'
 
 			fn fileInfo if opts.filter fileInfo
 

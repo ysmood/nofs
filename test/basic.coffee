@@ -31,13 +31,10 @@ shouldDeepEqualDone = (done, args...) ->
 		done err
 
 normalizePath = (val) ->
-	rep = (str) -> str.replace ///#{'\\' + npath.sep}///g, '/'
 	if val instanceof Array
-		for el, i in val
-			val[i] = rep el
 		val.sort()
 	else if typeof val == 'string'
-		rep val
+		val
 
 describe 'Basic:', ->
 	it 'existsP', ->
