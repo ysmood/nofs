@@ -385,11 +385,11 @@ describe 'Watch:', ->
 				handler: (type, path) ->
 					shouldDeepEqualDone tdone, { type, path }, {
 						type: 'modify'
-						path: npath.join(tmp, 'dir0', 'c')
+						path: tmp + '/dir0/c'
 					}
 			}
 		.then ->
-			nofs.outputFileP npath.join(tmp, 'dir0', 'c'), 'ok'
+			nofs.outputFileP(tmp + '/dir0/c'), 'ok'
 
 	it 'watchDir create', (tdone) ->
 		tmp = 'test/fixtures/watchDirCreate'
@@ -403,11 +403,11 @@ describe 'Watch:', ->
 				handler: (type, path) ->
 					shouldDeepEqualDone tdone, { type, path }, {
 						type: 'create'
-						path: npath.join(tmp, 'dir0', 'd')
+						path: tmp + '/dir0/d')
 					}
 			}
 		.then ->
-			nofs.outputFileP npath.join(tmp, 'dir0', 'd'), 'ok'
+			nofs.outputFileP(tmp + '/dir0/d'), 'ok'
 
 	it 'watchDir delete', (tdone) ->
 		tmp = 'test/fixtures/watchDirDelete'
@@ -421,8 +421,8 @@ describe 'Watch:', ->
 				handler: (type, path) ->
 					shouldDeepEqualDone tdone, { type, path }, {
 						type: 'delete'
-						path: npath.join(tmp, 'dir0', 'c')
+						path: tmp + '/dir0/c'
 					}
 			}
 		.then ->
-			nofs.removeP npath.join(tmp, 'dir0', 'c')
+			nofs.removeP tmp + '/dir0 + c'
