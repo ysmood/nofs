@@ -469,7 +469,7 @@ _.extend nofs, {
 			isIncludeRoot: true
 			isFollowLink: true
 			isReverse: false
-			isForceUnixSep: isWin and process.env.force_unix_sep == 'on'
+			isForceUnixSep: isWin and process.env.force_unix_sep != 'off'
 		}
 
 		if _.isRegExp opts.filter
@@ -1333,6 +1333,8 @@ _.extend nofs, {
 				new Buffer('' + data, encoding)
 			pos = if flag.indexOf('a') > -1 then null else 0
 			nofs.writeP fd, buf, 0, buf.length, pos
+			.then ->
+				nofs.closeP fd
 
 	###*
 	 * See `writeFileP`
@@ -1356,6 +1358,7 @@ _.extend nofs, {
 			new Buffer('' + data, encoding)
 		pos = if flag.indexOf('a') > -1 then null else 0
 		nofs.writeSync fd, buf, 0, buf.length, pos
+		nofs.closeSync fd
 
 }
 
