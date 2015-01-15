@@ -4,6 +4,8 @@ npath = require 'path'
 
 assert = require 'assert'
 
+isWin = process.platform == 'win32'
+
 shouldEqual = (args...) ->
 	try
 		assert.strictEqual.apply assert, args
@@ -35,6 +37,17 @@ normalizePath = (val) ->
 		val.sort()
 	else if typeof val == 'string'
 		val
+
+wait = (time) ->
+	time ?= if isWin
+		500
+	else
+		10
+
+	new Promise (resolve) ->
+		setTimeout ->
+			resolve()
+		, time
 
 describe 'Basic:', ->
 	it 'existsP', ->
@@ -369,7 +382,8 @@ describe 'Watch:', ->
 		nofs.watchFile path, ->
 			tdone()
 
-		nofs.outputFileSync path, 'test'
+		wait().then ->
+			nofs.outputFileSync path, 'test'
 
 	it 'watchDir modify', (tdone) ->
 		tmp = 'test/fixtures/watchDirModify'
@@ -386,6 +400,7 @@ describe 'Watch:', ->
 						path: tmp + '/dir0/c'
 					}
 			}
+			wait()
 		.then ->
 			nofs.outputFileP tmp + '/dir0/c', 'ok'
 
@@ -404,6 +419,7 @@ describe 'Watch:', ->
 						path: tmp + '/dir0/d'
 					}
 			}
+			wait()
 		.then ->
 			nofs.outputFileP tmp + '/dir0/d', 'ok'
 
@@ -422,5 +438,6 @@ describe 'Watch:', ->
 						path: tmp + '/dir0/c'
 					}
 			}
+			wait()
 		.then ->
 			nofs.removeP tmp + '/dir0/c'
