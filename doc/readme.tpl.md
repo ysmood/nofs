@@ -23,6 +23,10 @@ npm install nofs
 
 ## API Convention
 
+### Unix Path Separator
+
+When the system is Windows and `process.env.force_unix_sep != 'off'`, nofs  will force all the path separator to `/`, such as `C:\a\b` will be transformed to `C:/a/b`.
+
 ### Promise, Sync and Callback
 
 Any function that has a `Sync` version will has a promise version that ends with `P`.

@@ -322,7 +322,7 @@ _.extend nofs, {
 	 *
 	 * 	# Such as force `C:\test\path` to `C:/test/path`.
 	 * 	# This option only works on Windows.
-	 * 	isForceUnixSep: isWin and process.env.force_unix_sep == 'on'
+	 * 	isForceUnixSep: isWin and process.env.force_unix_sep == 'off'
 	 * }
 	 * ```
 	 * @param  {Function} fn `(fileInfo) -> Promise | Any`.
@@ -391,7 +391,7 @@ _.extend nofs, {
 			isIncludeRoot: true
 			isFollowLink: true
 			isReverse: false
-			isForceUnixSep: isWin and process.env.force_unix_sep == 'on'
+			isForceUnixSep: isWin and process.env.force_unix_sep != 'off'
 		}
 
 		if _.isRegExp opts.filter
