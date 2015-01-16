@@ -402,7 +402,7 @@ describe 'Watch:', ->
 		.then ->
 			wait()
 		.then ->
-			nofs.outputFileP tmp + '/dir0/c', 'ok'
+			nofs.outputFileSync tmp + '/dir0/c', 'ok'
 
 	it 'watchDirP create', (tdone) ->
 		tmp = 'test/fixtures/watchDirCreate'
@@ -422,7 +422,7 @@ describe 'Watch:', ->
 		.then ->
 			wait()
 		.then ->
-			nofs.outputFileP tmp + '/dir0/d', 'ok'
+			nofs.outputFileSync tmp + '/dir0/d', 'ok'
 
 	it 'watchDirP delete', (tdone) ->
 		tmp = 'test/fixtures/watchDirDelete'
@@ -441,4 +441,4 @@ describe 'Watch:', ->
 			}
 			wait()
 		.then ->
-			nofs.removeP tmp + '/dir0/c'
+			nofs.removeSync tmp + '/dir0/c'
