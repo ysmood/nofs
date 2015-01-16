@@ -372,27 +372,27 @@ describe 'Basic:', ->
 		shouldDeepEqual normalizePath(ls), ['test/fixtures/sample.txt']
 
 describe 'Watch:', ->
-	it 'watchFile', (tdone) ->
+	it 'watchFileP', (tdone) ->
 		path = 'test/fixtures/watchFile.txt'
 		origin = nofs.readFileSync path
 
 		after ->
 			nofs.outputFileSync path, origin
 
-		nofs.watchFile path, ->
+		nofs.watchFileP path, ->
 			tdone()
 
 		wait().then ->
 			nofs.outputFileSync path, 'test'
 
-	it 'watchDir modify', (tdone) ->
+	it 'watchDirP modify', (tdone) ->
 		tmp = 'test/fixtures/watchDirModify'
 		after ->
 			nofs.removeSync tmp
 
 		nofs.copyP 'test/fixtures/watchDir', tmp
 		.then ->
-			nofs.watchDir {
+			nofs.watchDirP {
 				dir: tmp
 				handler: (type, path) ->
 					shouldDeepEqualDone tdone, { type, path }, {
@@ -400,18 +400,19 @@ describe 'Watch:', ->
 						path: tmp + '/dir0/c'
 					}
 			}
+		.then ->
 			wait()
 		.then ->
 			nofs.outputFileP tmp + '/dir0/c', 'ok'
 
-	it 'watchDir create', (tdone) ->
+	it 'watchDirP create', (tdone) ->
 		tmp = 'test/fixtures/watchDirCreate'
 		after ->
 			nofs.removeP tmp
 
 		nofs.copyP 'test/fixtures/watchDir', tmp
 		.then ->
-			nofs.watchDir {
+			nofs.watchDirP {
 				dir: tmp
 				handler: (type, path) ->
 					shouldDeepEqualDone tdone, { type, path }, {
@@ -419,18 +420,19 @@ describe 'Watch:', ->
 						path: tmp + '/dir0/d'
 					}
 			}
+		.then ->
 			wait()
 		.then ->
 			nofs.outputFileP tmp + '/dir0/d', 'ok'
 
-	it 'watchDir delete', (tdone) ->
+	it 'watchDirP delete', (tdone) ->
 		tmp = 'test/fixtures/watchDirDelete'
 		after ->
 			nofs.removeP tmp
 
 		nofs.copyP 'test/fixtures/watchDir', tmp
 		.then ->
-			nofs.watchDir {
+			nofs.watchDirP {
 				dir: tmp
 				handler: (type, path) ->
 					shouldDeepEqualDone tdone, { type, path }, {

@@ -1209,16 +1209,16 @@ _.extend nofs, {
 	 * - if its a deletion
 	 * @param {Boolean} autoUnwatch Auto unwatch the file while file deletion.
 	 * Default is true.
-	 * @return {Function} The wrapped watch listeners.
+	 * @return {Promise} It resolves the wrapped watch listener.
 	 * @example
 	 * ```coffee
 	 * process.env.watchPersistent = 'off'
-	 * nofs.watchFile 'a.js', (path, curr, prev, isDeletion) ->
+	 * nofs.watchFileP 'a.js', (path, curr, prev, isDeletion) ->
 	 * 	if curr.mtime != prev.mtime
 	 * 		console.log path
 	 * ```
 	###
-	watchFile: (path, handler, autoUnwatch = true) ->
+	watchFileP: (path, handler, autoUnwatch = true) ->
 		listener = (curr, prev) ->
 			isDeletion = curr.mtime.getTime() == 0
 			handler(path, curr, prev, isDeletion)
@@ -1233,11 +1233,12 @@ _.extend nofs, {
 			}
 			listener
 		)
-		listener
+
+		Promise.resolve listener
 
 	###*
 	 * Watch files, when file changes, the handler will be invoked.
-	 * It is build on the top of `nofs.watchFile`.
+	 * It is build on the top of `nofs.watchFileP`.
 	 * @param  {Array} patterns String array with minimatch syntax.
 	 * Such as `['*\/**.css', 'lib\/**\/*.js']`.
 	 * @param  {Function} handler
@@ -1248,16 +1249,16 @@ _.extend nofs, {
 	 * 	console.log path
 	 * ```
 	###
-	watchFiles: (patterns, handler) ->
+	watchFilesP: (patterns, handler) ->
 		nofs.globP(patterns).then (paths) ->
 			paths.map (path) ->
-				nofs.watchFile path, handler
+				nofs.watchFileP path, handler
 
 	###*
 	 * Watch directory and all the files in it.
 	 * It supports three types of change: create, modify, move, delete.
 	 * By default, `move` event is disabled.
-	 * It is build on the top of `nofs.watchFile`.
+	 * It is build on the top of `nofs.watchFileP`.
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
 	 * {
@@ -1276,7 +1277,8 @@ _.extend nofs, {
 	 * 	isEnableMoveEvent: false
 	 * }
 	 * ```
-	 * @return {Promise}
+	 * @return {Promise} Resolves a object that keys are paths,
+	 * values are listeners.
 	 * @example
 	 * ```coffee
 	 * # Only current folder, and only watch js and css file.
@@ -1289,7 +1291,7 @@ _.extend nofs, {
 	 * }
 	 * ```
 	###
-	watchDir: (opts = {}) ->
+	watchDirP: (opts = {}) ->
 		_.defaults opts, {
 			dir: '.'
 			pattern: '**'
@@ -1351,16 +1353,17 @@ _.extend nofs, {
 				if watchedList[path]
 					return
 
-				watchedList[path] =
-				if fileInfo.isDir
+				(if fileInfo.isDir
 					opts.handler 'create', dirPath(path) if curr
-					nofs.watchFile path, dirHandler
+					nofs.watchFileP path, dirHandler
 				else
 					if match path, pattern
 						opts.handler 'create', path if curr
-						nofs.watchFile path, fileHandler
+						nofs.watchFileP path, fileHandler
+				).then (listener) ->
+					watchedList[path] = listener
 
-		dirHandler opts.dir
+		dirHandler(opts.dir).then -> watchedList
 
 	###*
 	 * A `writeFile` shim for `< Node v0.10`.

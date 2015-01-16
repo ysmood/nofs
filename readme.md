@@ -725,7 +725,7 @@ __No native `fs` funtion will be listed.__
 
     Whether a new file is created or not.
 
-- #### <a href="src/main.coffee?source#L1221" target="_blank"><b>watchFile</b></a>
+- #### <a href="src/main.coffee?source#L1221" target="_blank"><b>watchFileP</b></a>
 
   Watch a file. If the file changes, the handler will be invoked.
   You can change the polling interval by using `process.env.pollingWatch`.
@@ -751,23 +751,23 @@ __No native `fs` funtion will be listed.__
     Auto unwatch the file while file deletion.
     Default is true.
 
-  - **<u>return</u>**:  { _Function_ }
+  - **<u>return</u>**:  { _Promise_ }
 
-    The wrapped watch listeners.
+    It resolves the wrapped watch listener.
 
   - **<u>example</u>**:
 
     ```coffee
     process.env.watchPersistent = 'off'
-    nofs.watchFile 'a.js', (path, curr, prev, isDeletion) ->
+    nofs.watchFileP 'a.js', (path, curr, prev, isDeletion) ->
     	if curr.mtime != prev.mtime
     		console.log path
     ```
 
-- #### <a href="src/main.coffee?source#L1251" target="_blank"><b>watchFiles</b></a>
+- #### <a href="src/main.coffee?source#L1252" target="_blank"><b>watchFilesP</b></a>
 
   Watch files, when file changes, the handler will be invoked.
-  It is build on the top of `nofs.watchFile`.
+  It is build on the top of `nofs.watchFileP`.
 
   - **<u>param</u>**: `patterns` { _Array_ }
 
@@ -787,12 +787,12 @@ __No native `fs` funtion will be listed.__
     	console.log path
     ```
 
-- #### <a href="src/main.coffee?source#L1292" target="_blank"><b>watchDir</b></a>
+- #### <a href="src/main.coffee?source#L1294" target="_blank"><b>watchDirP</b></a>
 
   Watch directory and all the files in it.
   It supports three types of change: create, modify, move, delete.
   By default, `move` event is disabled.
-  It is build on the top of `nofs.watchFile`.
+  It is build on the top of `nofs.watchFileP`.
 
   - **<u>param</u>**: `opts` { _Object_ }
 
@@ -817,6 +817,9 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
+    Resolves a object that keys are paths,
+    values are listeners.
+
   - **<u>example</u>**:
 
     ```coffee
@@ -830,7 +833,7 @@ __No native `fs` funtion will be listed.__
     }
     ```
 
-- #### <a href="src/main.coffee?source#L1372" target="_blank"><b>writeFileP</b></a>
+- #### <a href="src/main.coffee?source#L1375" target="_blank"><b>writeFileP</b></a>
 
   A `writeFile` shim for `< Node v0.10`.
 
@@ -842,7 +845,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L1397" target="_blank"><b>writeFileSync</b></a>
+- #### <a href="src/main.coffee?source#L1400" target="_blank"><b>writeFileSync</b></a>
 
   See `writeFileP`
 
