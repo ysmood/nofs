@@ -211,7 +211,7 @@ __No native `fs` funtion will be listed.__
     ```coffee
     {
     	# Include entries whose names begin with a dot (.).
-    	all: false
+    	all: true
     
     	# To filter paths. It can also be a RegExp or a glob pattern string.
     	# When it's a string, it extends the Minimatch's options.
@@ -543,7 +543,7 @@ __No native `fs` funtion will be listed.__
 
   See `outputJSONP`.
 
-- #### <a href="src/main.coffee?source#L994" target="_blank"><b>readDirsP</b></a>
+- #### <a href="src/main.coffee?source#L996" target="_blank"><b>readDirsP</b></a>
 
   Read directory recursively.
 
@@ -558,6 +558,8 @@ __No native `fs` funtion will be listed.__
     	isIncludeRoot: false
     
     	isCacheStats: false
+    
+    	all: false
     }
     ```
     If `isCacheStats` is set true, the returned list array
@@ -596,7 +598,7 @@ __No native `fs` funtion will be listed.__
     	console.log paths.statsCache['path/a']
     ```
 
-- #### <a href="src/main.coffee?source#L1021" target="_blank"><b>readDirsSync</b></a>
+- #### <a href="src/main.coffee?source#L1024" target="_blank"><b>readDirsSync</b></a>
 
   See `readDirsP`.
 
@@ -604,7 +606,7 @@ __No native `fs` funtion will be listed.__
 
     Path string array.
 
-- #### <a href="src/main.coffee?source#L1055" target="_blank"><b>readJsonP</b></a>
+- #### <a href="src/main.coffee?source#L1059" target="_blank"><b>readJsonP</b></a>
 
   Read A Json file and parse it to a object.
 
@@ -625,7 +627,7 @@ __No native `fs` funtion will be listed.__
     	console.log obj.name, obj.age
     ```
 
-- #### <a href="src/main.coffee?source#L1066" target="_blank"><b>readJsonSync</b></a>
+- #### <a href="src/main.coffee?source#L1070" target="_blank"><b>readJsonSync</b></a>
 
   See `readJSONP`.
 
@@ -633,7 +635,7 @@ __No native `fs` funtion will be listed.__
 
     The parsed object.
 
-- #### <a href="src/main.coffee?source#L1094" target="_blank"><b>reduceDirP</b></a>
+- #### <a href="src/main.coffee?source#L1098" target="_blank"><b>reduceDirP</b></a>
 
   Walk through directory recursively with a callback.
 
@@ -670,7 +672,7 @@ __No native `fs` funtion will be listed.__
     	console.log ret
     ```
 
-- #### <a href="src/main.coffee?source#L1113" target="_blank"><b>reduceDirSync</b></a>
+- #### <a href="src/main.coffee?source#L1117" target="_blank"><b>reduceDirSync</b></a>
 
   See `reduceDirP`
 
@@ -678,7 +680,7 @@ __No native `fs` funtion will be listed.__
 
     Final value.
 
-- #### <a href="src/main.coffee?source#L1132" target="_blank"><b>removeP</b></a>
+- #### <a href="src/main.coffee?source#L1136" target="_blank"><b>removeP</b></a>
 
   Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -691,11 +693,11 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L1147" target="_blank"><b>removeSync</b></a>
+- #### <a href="src/main.coffee?source#L1151" target="_blank"><b>removeSync</b></a>
 
   See `removeP`.
 
-- #### <a href="src/main.coffee?source#L1174" target="_blank"><b>touchP</b></a>
+- #### <a href="src/main.coffee?source#L1178" target="_blank"><b>touchP</b></a>
 
   Change file access and modification times.
   If the file does not exist, it is created.
@@ -717,7 +719,7 @@ __No native `fs` funtion will be listed.__
 
     If new file created, resolves true.
 
-- #### <a href="src/main.coffee?source#L1193" target="_blank"><b>touchSync</b></a>
+- #### <a href="src/main.coffee?source#L1197" target="_blank"><b>touchSync</b></a>
 
   See `touchP`.
 
@@ -725,7 +727,7 @@ __No native `fs` funtion will be listed.__
 
     Whether a new file is created or not.
 
-- #### <a href="src/main.coffee?source#L1232" target="_blank"><b>watchFileP</b></a>
+- #### <a href="src/main.coffee?source#L1236" target="_blank"><b>watchFileP</b></a>
 
   Watch a file. If the file changes, the handler will be invoked.
   You can change the polling interval by using `process.env.pollingWatch`.
@@ -764,7 +766,7 @@ __No native `fs` funtion will be listed.__
     		console.log path
     ```
 
-- #### <a href="src/main.coffee?source#L1263" target="_blank"><b>watchFilesP</b></a>
+- #### <a href="src/main.coffee?source#L1267" target="_blank"><b>watchFilesP</b></a>
 
   Watch files, when file changes, the handler will be invoked.
   It is build on the top of `nofs.watchFileP`.
@@ -787,7 +789,7 @@ __No native `fs` funtion will be listed.__
     	console.log path
     ```
 
-- #### <a href="src/main.coffee?source#L1305" target="_blank"><b>watchDirP</b></a>
+- #### <a href="src/main.coffee?source#L1309" target="_blank"><b>watchDirP</b></a>
 
   Watch directory and all the files in it.
   It supports three types of change: create, modify, move, delete.
@@ -833,7 +835,7 @@ __No native `fs` funtion will be listed.__
     }
     ```
 
-- #### <a href="src/main.coffee?source#L1386" target="_blank"><b>writeFileP</b></a>
+- #### <a href="src/main.coffee?source#L1390" target="_blank"><b>writeFileP</b></a>
 
   A `writeFile` shim for `< Node v0.10`.
 
@@ -845,7 +847,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L1411" target="_blank"><b>writeFileSync</b></a>
+- #### <a href="src/main.coffee?source#L1415" target="_blank"><b>writeFileSync</b></a>
 
   See `writeFileP`
 
