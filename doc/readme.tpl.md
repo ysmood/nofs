@@ -11,7 +11,7 @@ to make your functional programming experience better.
 ## Features
 
 - Introduce `map` and `reduce` to folders.
-- Recursive `move`, `copy`, `remove`, etc.
+- Recursive `glob`, `move`, `copy`, `remove`, etc.
 - **Promise** by default.
 - Unified API. Support **Promise**, **Sync** and **Callback** paradigms.
 
