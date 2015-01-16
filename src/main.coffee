@@ -775,6 +775,12 @@ _.extend nofs, {
 	###
 	mkdirsP: (path, mode = 0o777 & ~process.umask()) ->
 		makedir = (path) ->
+			# ys TODO:
+			# Sometimes I think this async operation is
+			# useless, since during the next process tick, the
+			# dir may be created.
+			# We may use dirExistsSync to avoid this bug, but
+			# for the sake of pure async, I leave it still.
 			nofs.dirExistsP(path).then (exists) ->
 				if exists
 					Promise.resolve()
@@ -782,6 +788,9 @@ _.extend nofs, {
 					parentPath = npath.dirname path
 					makedir(parentPath).then ->
 						nofs.mkdirP path, mode
+						.catch (err) ->
+							if err.code != 'EEXIST'
+								Promise.reject err
 		makedir path
 
 	###*
