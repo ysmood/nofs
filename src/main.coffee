@@ -294,7 +294,7 @@ _.extend nofs, {
 	 * ```coffee
 	 * {
 	 * 	# Include entries whose names begin with a dot (.).
-	 * 	all: false
+	 * 	all: true
 	 *
 	 * 	# To filter paths. It can also be a RegExp or a glob pattern string.
 	 * 	# When it's a string, it extends the Minimatch's options.
@@ -385,7 +385,7 @@ _.extend nofs, {
 			opts = {}
 
 		_.defaults opts, {
-			all: false
+			all: true
 			filter: -> true
 			searchFilter: -> true
 			cwd: ''
@@ -464,7 +464,7 @@ _.extend nofs, {
 			opts = {}
 
 		_.defaults opts, {
-			all: false
+			all: true
 			filter: -> true
 			searchFilter: -> true
 			cwd: ''
@@ -958,6 +958,8 @@ _.extend nofs, {
 	 * 	isIncludeRoot: false
 	 *
 	 * 	isCacheStats: false
+	 *
+	 * 	all: false
 	 * }
 	 * ```
 	 * If `isCacheStats` is set true, the returned list array
@@ -995,6 +997,7 @@ _.extend nofs, {
 		_.defaults opts, {
 			isCacheStats: false
 			isIncludeRoot: false
+			all: false
 		}
 
 		list = []
@@ -1022,6 +1025,7 @@ _.extend nofs, {
 		_.defaults opts, {
 			isCacheStats: false
 			isIncludeRoot: false
+			all: false
 		}
 
 		list = []

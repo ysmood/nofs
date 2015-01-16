@@ -83,7 +83,7 @@ describe 'Basic:', ->
 		}, (sum, { path, isDir }) ->
 			if isDir then sum else sum += path.slice(-1)
 		.then (v) ->
-			shouldEqual v.split('').sort().join(''), 'abcd'
+			shouldEqual v.split('').sort().join(''), 'abcde'
 
 	it 'reduceDirSync', ->
 		v = nofs.reduceDirSync 'test/fixtures/dir', {
@@ -91,11 +91,12 @@ describe 'Basic:', ->
 		}, (sum, { path, isDir }) ->
 			if isDir then sum else sum += path.slice(-1)
 
-		shouldEqual v.split('').sort().join(''), 'abcd'
+		shouldEqual v.split('').sort().join(''), 'abcde'
 
 	it 'eachDirP searchFilter', ->
 		ls = []
 		nofs.eachDirP 'test/fixtures/dir', {
+			all: false
 			searchFilter: ({ path }) ->
 				normalizePath(path) != 'test/fixtures/dir/test0'
 		}, (fileInfo) ->
@@ -110,7 +111,7 @@ describe 'Basic:', ->
 				normalizePath(path) != 'test/fixtures/dir/test0'
 		}, (fileInfo) ->
 			ls.push fileInfo.name
-		shouldDeepEqual normalizePath(ls), ["a", "d", "dir", "test2"]
+		shouldDeepEqual normalizePath(ls), [".e", "a", "d", "dir", "test2"]
 
 	it 'readDirsP', ->
 		nofs.readDirsP 'test/fixtures/dir'
