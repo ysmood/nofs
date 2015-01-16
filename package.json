@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ysmood/fs-more.git"
+    "url": "https://github.com/ysmood/nofs.git"
   },
   "keywords": [
     "fs",
@@ -20,9 +20,9 @@
   "author": "http://ysmood.org",
   "license": "BSD",
   "bugs": {
-    "url": "https://github.com/ysmood/fs-more/issues"
+    "url": "https://github.com/ysmood/nofs/issues"
   },
-  "homepage": "https://github.com/ysmood/fs-more",
+  "homepage": "https://github.com/ysmood/nofs",
   "devDependencies": {
     "coffee-script": "*",
     "mocha": "*",

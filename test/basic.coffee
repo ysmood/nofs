@@ -205,18 +205,6 @@ describe 'Basic:', ->
 					"test0/test1/c", "test2", "test2/d"
 				]
 
-	it 'copyP moveP a file', ->
-		after ->
-			nofs.removeP 'test/fixtures/copySample2'
-
-		nofs.copyP 'test/fixtures/sample.txt', 'test/fixtures/copySample'
-		.then ->
-			nofs.moveP 'test/fixtures/copySample', 'test/fixtures/copySample2'
-		.then ->
-			nofs.fileExistsP 'test/fixtures/copySample2'
-			.then (exists) ->
-				shouldEqual exists, true
-
 	it 'removeSync copySync moveSync', ->
 		after ->
 			nofs.removeSync 'test/fixtures/dirMV-sync'
@@ -232,15 +220,29 @@ describe 'Basic:', ->
 			"test0/test1/c", "test2", "test2/d"
 		]
 
+	it 'copyP moveP a file', ->
+		after ->
+			nofs.removeSync 'test/fixtures/copySample'
+			nofs.removeSync 'test/fixtures/copySample2'
+
+		nofs.copyP 'test/fixtures/sample.txt', 'test/fixtures/copySample/sample'
+		.then ->
+			nofs.moveP 'test/fixtures/copySample/sample', 'test/fixtures/copySample2/sample'
+		.then ->
+			nofs.fileExistsP 'test/fixtures/copySample2/sample'
+			.then (exists) ->
+				shouldEqual exists, true
+
 	it 'copySync moveSync a file', ->
 		after ->
-			nofs.removeP 'test/fixtures/copySampleSync2'
+			nofs.removeSync 'test/fixtures/copySampleSync'
+			nofs.removeSync 'test/fixtures/copySampleSync2'
 
-		nofs.copyP 'test/fixtures/sample.txt', 'test/fixtures/copySampleSync'
+		nofs.copyP 'test/fixtures/sample.txt', 'test/fixtures/copySampleSync/sample'
 		.then ->
-			nofs.moveP 'test/fixtures/copySampleSync', 'test/fixtures/copySampleSync2'
+			nofs.moveP 'test/fixtures/copySampleSync/sample', 'test/fixtures/copySampleSync2/sample'
 		.then ->
-			nofs.fileExistsP 'test/fixtures/copySampleSync2'
+			nofs.fileExistsP 'test/fixtures/copySampleSync2/sample'
 			.then (exists) ->
 				shouldEqual exists, true
 

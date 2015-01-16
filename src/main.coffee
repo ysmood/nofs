@@ -217,16 +217,17 @@ _.extend nofs, {
 			else
 				nofs.copyFileP src, dest, opts
 
-		nofs.statP(from).then (stats) ->
+		nofs.dirExistsP(to).then (exists) ->
+			if exists
+				to = npath.join to, npath.basename(from)
+			else
+				nofs.mkdirsP npath.dirname(to)
+		.then ->
+			nofs.statP(from)
+		.then (stats) ->
 			isDir = stats.isDirectory()
 			if isDir
-				nofs.dirExistsP(to).then (exists) ->
-					if exists
-						to = npath.join to, npath.basename(from)
-					else
-						nofs.mkdirsP npath.dirname(to)
-				.then ->
-					nofs.mapDirP from, to, opts, copy
+				nofs.mapDirP from, to, opts, copy
 			else
 				copy from, to, { isDir, stats }
 
@@ -250,14 +251,14 @@ _.extend nofs, {
 			else
 				nofs.copyFileSync src, dest, opts
 
+		if nofs.dirExistsSync to
+			to = npath.join to, npath.basename(from)
+		else
+			nofs.mkdirsSync npath.dirname(to)
+
 		stats = nofs.statSync from
 		isDir = stats.isDirectory()
 		if isDir
-			if nofs.dirExistsSync to
-				to = npath.join to, npath.basename(from)
-			else
-				nofs.mkdirsSync npath.dirname(to)
-
 			nofs.mapDirSync from, to, opts, copy
 		else
 			copy from, to, { isDir, stats }
@@ -832,16 +833,16 @@ _.extend nofs, {
 					nofs.unlinkP src
 
 		nofs.statP(from).then (stats) ->
-			if stats.isDirectory()
-				nofs.dirExistsP(to).then (exists) ->
-					if exists
-						to = npath.join to, npath.basename(from)
-					else
-						nofs.mkdirsP npath.dirname(to)
-				.then ->
+			nofs.dirExistsP(to).then (exists) ->
+				if exists
+					to = npath.join to, npath.basename(from)
+				else
+					nofs.mkdirsP npath.dirname(to)
+			.then ->
+				if stats.isDirectory()
 					nofs.renameP from, to
-			else
-				moveFile from, to
+				else
+					moveFile from, to
 		.catch (err) ->
 			if err.code == 'EXDEV'
 				nofs.copyP from, to, opts
@@ -865,13 +866,14 @@ _.extend nofs, {
 				nofs.linkSync(src, dest).then ->
 					nofs.unlinkSync src
 
-		stats = nofs.statSync(from)
 		try
+			if nofs.dirExistsSync to
+				to = npath.join to, npath.basename(from)
+			else
+				nofs.mkdirsSync npath.dirname(to)
+
+			stats = nofs.statSync(from)
 			if stats.isDirectory()
-				if nofs.dirExistsSync to
-					to = npath.join to, npath.basename(from)
-				else
-					nofs.mkdirsSync npath.dirname(to)
 				nofs.renameSync from, to
 			else
 				moveFile from, to
