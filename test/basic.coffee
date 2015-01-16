@@ -38,12 +38,7 @@ normalizePath = (val) ->
 	else if typeof val == 'string'
 		val
 
-wait = (time) ->
-	time ?= if isWin
-		500
-	else
-		10
-
+wait = (time = 500) ->
 	new Promise (resolve) ->
 		setTimeout ->
 			resolve()
