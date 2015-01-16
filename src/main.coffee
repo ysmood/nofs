@@ -483,7 +483,7 @@ _.extend nofs, {
 			opts.filter = (fileInfo) ->
 				mm.match fileInfo.path
 
-		stat = if opts.isFollowLink then nofs.statP else nofs.lstatP
+		stat = if opts.isFollowLink then nofs.statSync else nofs.lstatSync
 
 		resolve = (path) -> npath.join opts.cwd, path
 
