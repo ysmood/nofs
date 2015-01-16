@@ -368,16 +368,18 @@ describe 'Basic:', ->
 
 describe 'Watch:', ->
 	it 'watchFileP', (tdone) ->
-		path = 'test/fixtures/watchFile.txt'
-		origin = nofs.readFileSync path
+		path = 'test/fixtures/watchFileTmp.txt'
 
 		after ->
-			nofs.outputFileSync path, origin
+			nofs.removeSync path
 
-		nofs.watchFileP path, ->
-			tdone()
-
-		wait().then ->
+		nofs.copyP 'test/fixtures/watchFile.txt', path
+		.then ->
+			nofs.watchFileP path, ->
+				tdone()
+		.then ->
+			wait()
+		.then ->
 			nofs.outputFileSync path, 'test'
 
 	it 'watchDirP modify', (tdone) ->
