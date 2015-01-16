@@ -1,8 +1,9 @@
 # Changelog
 
-- v0.2.4
+- v0.2.5
 
   - Fix the async exists bug of `mkDirs`.
+  - Fix a bug when move a single file to a non-exists deep path.
 
 - v0.2.0
 
