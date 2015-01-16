@@ -375,7 +375,9 @@ describe 'Watch:', ->
 
 		nofs.copyP 'test/fixtures/watchFile.txt', path
 		.then ->
-			nofs.watchFileP path, ->
+			nofs.watchFileP path, (p, curr, prev, isDelete) ->
+				assert.equal p, path
+				return if isDelete
 				tdone()
 		.then ->
 			wait()
