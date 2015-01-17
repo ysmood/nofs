@@ -1274,17 +1274,14 @@ _.extend nofs, {
 	 * It supports three types of change: create, modify, move, delete.
 	 * By default, `move` event is disabled.
 	 * It is build on the top of `nofs.watchFileP`.
+	 * @param {String} root
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
 	 * {
-	 * 	dir: '.'
 	 * 	pattern: '**' # minimatch, string or array
 	 *
 	 * 	# Whether to watch POSIX hidden file.
-	 * 	dot: false
-	 *
-	 * 	# If the "path" ends with '/' it's a directory, else a file.
-	 * 	handler: (type, path, oldPath) ->
+	 * 	all: false
 	 *
 	 * 	# The minimatch options.
 	 * 	minimatch: {}
@@ -1292,6 +1289,8 @@ _.extend nofs, {
 	 * 	isEnableMoveEvent: false
 	 * }
 	 * ```
+	 * @param {Function} fn `(type, path, oldPath) ->`.
+	 * If the "path" ends with '/' it's a directory, else a file.
 	 * @return {Promise} Resolves a object that keys are paths,
 	 * values are listeners.
 	 * @example
@@ -1306,13 +1305,15 @@ _.extend nofs, {
 	 * }
 	 * ```
 	###
-	watchDirP: (opts = {}) ->
+	watchDirP: (root, opts = {}, fn) ->
+		if _.isFunction opts
+			fn = opts
+			opts = {}
+
 		_.defaults opts, {
-			dir: '.'
 			pattern: '**'
 			minimatch: {}
 			all: false
-			handler: (type, path, oldPath) ->
 			error: (err) ->
 				console.error err
 		}
@@ -1341,9 +1342,10 @@ _.extend nofs, {
 
 		fileHandler = (path, curr, prev, isDelete) ->
 			if isDelete
-				opts.handler 'delete', path
+				fn 'delete', path
+				delete watchedList[path]
 			else
-				opts.handler 'modify', path
+				fn 'modify', path
 
 		dirHandler = (dir, curr, prev, isDelete) ->
 			# Possible Event Order
@@ -1353,7 +1355,8 @@ _.extend nofs, {
 			# 4.   move event: file delete -> parent modify -> file create.
 
 			if isDelete
-				opts.handler 'delete', dirPath(dir)
+				fn 'delete', dirPath(dir)
+				delete watchedList[dir]
 				return
 
 			pattern = npath.join dir, opts.pattern
@@ -1369,16 +1372,16 @@ _.extend nofs, {
 					return
 
 				(if fileInfo.isDir
-					opts.handler 'create', dirPath(path) if curr
+					fn 'create', dirPath(path) if curr
 					nofs.watchFileP path, dirHandler
 				else
 					if match path, pattern
-						opts.handler 'create', path if curr
+						fn 'create', path if curr
 						nofs.watchFileP path, fileHandler
 				).then (listener) ->
 					watchedList[path] = listener
 
-		dirHandler(opts.dir).then -> watchedList
+		dirHandler(root).then -> watchedList
 
 	###*
 	 * A `writeFile` shim for `< Node v0.10`.
@@ -1438,7 +1441,7 @@ _.extend nofs, {
 for k of nofs
 	if k.slice(-1) == 'P'
 		name = k[0...-1]
-		continue if nofs[name]
+		continue if nofs[name] or not nofs[name + 'Sync']
 		nofs[name] = _.callbackify nofs[k]
 
 require('./alias')(nofs)

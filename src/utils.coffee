@@ -42,7 +42,7 @@ module.exports =
 
 	isString: (val) -> typeof val == 'string'
 
-	isFunction: (val) -> typeof val == 'Function'
+	isFunction: (val) -> typeof val == 'function'
 
 	isRegExp: (val) -> val instanceof RegExp
 

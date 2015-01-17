@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.2.6
+
+  - **API CHANGE** `watchDirP`.
+  - Fix a memory leak issue of `watchDirP`.
+
 - v0.2.5
 
   - Fix the async exists bug of `mkDirs`.

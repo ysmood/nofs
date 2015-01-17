@@ -394,14 +394,11 @@ describe 'Watch:', ->
 
 		nofs.copyP 'test/fixtures/watchDir', tmp
 		.then ->
-			nofs.watchDirP {
-				dir: tmp
-				handler: (type, path) ->
-					shouldDeepEqualDone tdone, { type, path }, {
-						type: 'modify'
-						path: tmp + '/dir0/c'
-					}
-			}
+			nofs.watchDirP tmp, (type, path) ->
+				shouldDeepEqualDone tdone, { type, path }, {
+					type: 'modify'
+					path: tmp + '/dir0/c'
+				}
 		.then ->
 			wait()
 		.then ->
@@ -414,14 +411,11 @@ describe 'Watch:', ->
 
 		nofs.copyP 'test/fixtures/watchDir', tmp
 		.then ->
-			nofs.watchDirP {
-				dir: tmp
-				handler: (type, path) ->
-					shouldDeepEqualDone tdone, { type, path }, {
-						type: 'create'
-						path: tmp + '/dir0/d'
-					}
-			}
+			nofs.watchDirP tmp, (type, path) ->
+				shouldDeepEqualDone tdone, { type, path }, {
+					type: 'create'
+					path: tmp + '/dir0/d'
+				}
 		.then ->
 			wait()
 		.then ->
@@ -434,14 +428,11 @@ describe 'Watch:', ->
 
 		nofs.copyP 'test/fixtures/watchDir', tmp
 		.then ->
-			nofs.watchDirP {
-				dir: tmp
-				handler: (type, path) ->
-					shouldDeepEqualDone tdone, { type, path }, {
-						type: 'delete'
-						path: tmp + '/dir0/c'
-					}
-			}
+			nofs.watchDirP tmp, (type, path) ->
+				shouldDeepEqualDone tdone, { type, path }, {
+					type: 'delete'
+					path: tmp + '/dir0/c'
+				}
 			wait()
 		.then ->
 			nofs.removeSync tmp + '/dir0/c'
