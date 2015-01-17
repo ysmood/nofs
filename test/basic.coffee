@@ -374,7 +374,7 @@ describe 'Watch:', ->
 		path = 'test/fixtures/watchFileTmp.txt'
 
 		after ->
-			nofs.removeSync path
+			nofs.removeP path
 
 		nofs.copyP 'test/fixtures/watchFile.txt', path
 		.then ->
@@ -390,7 +390,7 @@ describe 'Watch:', ->
 	it 'watchDirP modify', (tdone) ->
 		tmp = 'test/fixtures/watchDirModify'
 		after ->
-			nofs.removeSync tmp
+			nofs.removeP tmp
 
 		nofs.copyP 'test/fixtures/watchDir', tmp
 		.then ->
@@ -435,4 +435,4 @@ describe 'Watch:', ->
 				}
 			wait()
 		.then ->
-			nofs.removeSync tmp + '/dir0/c'
+			nofs.removeP tmp + '/dir0/c'
