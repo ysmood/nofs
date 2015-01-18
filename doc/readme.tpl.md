@@ -76,7 +76,7 @@ fs.mkdirsP 'deep/dir/path'
 .then (list) ->
     console.log list
 .then ->
-    fs.removeP 'deep'
+    fs.removeP 'deep', { filter: '**/*.js' }
 ```
 
 ## Changelog

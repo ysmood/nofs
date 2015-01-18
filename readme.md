@@ -72,11 +72,11 @@ fs.mkdirsP 'deep/dir/path'
     fs.copyP 'b.txt', 'c.js'
 .then ->
     # Get all txt files.
-    fs.readDirsP 'deep', { filter: /\.txt$/ }
+    fs.globP 'deep/**'
 .then (list) ->
     console.log list
 .then ->
-    fs.removeP 'deep'
+    fs.removeP 'deep', { filter: '**/*.js' }
 ```
 
 ## Changelog
@@ -789,26 +789,24 @@ __No native `fs` funtion will be listed.__
     	console.log path
     ```
 
-- #### <a href="src/main.coffee?source#L1309" target="_blank"><b>watchDirP</b></a>
+- #### <a href="src/main.coffee?source#L1308" target="_blank"><b>watchDirP</b></a>
 
   Watch directory and all the files in it.
   It supports three types of change: create, modify, move, delete.
   By default, `move` event is disabled.
   It is build on the top of `nofs.watchFileP`.
 
+  - **<u>param</u>**: `root` { _String_ }
+
   - **<u>param</u>**: `opts` { _Object_ }
 
     Defaults:
     ```coffee
     {
-    	dir: '.'
     	pattern: '**' # minimatch, string or array
     
     	# Whether to watch POSIX hidden file.
-    	dot: false
-    
-    	# If the "path" ends with '/' it's a directory, else a file.
-    	handler: (type, path, oldPath) ->
+    	all: false
     
     	# The minimatch options.
     	minimatch: {}
@@ -816,6 +814,11 @@ __No native `fs` funtion will be listed.__
     	isEnableMoveEvent: false
     }
     ```
+
+  - **<u>param</u>**: `fn` { _Function_ }
+
+    `(type, path, oldPath) ->`.
+    If the "path" ends with '/' it's a directory, else a file.
 
   - **<u>return</u>**:  { _Promise_ }
 
@@ -835,7 +838,7 @@ __No native `fs` funtion will be listed.__
     }
     ```
 
-- #### <a href="src/main.coffee?source#L1390" target="_blank"><b>writeFileP</b></a>
+- #### <a href="src/main.coffee?source#L1393" target="_blank"><b>writeFileP</b></a>
 
   A `writeFile` shim for `< Node v0.10`.
 
@@ -847,7 +850,7 @@ __No native `fs` funtion will be listed.__
 
   - **<u>return</u>**:  { _Promise_ }
 
-- #### <a href="src/main.coffee?source#L1415" target="_blank"><b>writeFileSync</b></a>
+- #### <a href="src/main.coffee?source#L1418" target="_blank"><b>writeFileSync</b></a>
 
   See `writeFileP`
 
