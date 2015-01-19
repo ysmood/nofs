@@ -119,11 +119,11 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[copyDirSync](src/main.coffee?source#L76)**
+- #### **[copyDirSync](src/main.coffee?source#L75)**
 
     See `copyDirP`.
 
-- #### **[copyFileP](src/main.coffee?source#L113)**
+- #### **[copyFileP](src/main.coffee?source#L110)**
 
     Copy a single file.
 
@@ -142,11 +142,11 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[copyFileSync](src/main.coffee?source#L150)**
+- #### **[copyFileSync](src/main.coffee?source#L153)**
 
     See `copyDirP`.
 
-- #### **[copyP](src/main.coffee?source#L203)**
+- #### **[copyP](src/main.coffee?source#L213)**
 
     Like `cp -r`.
 
@@ -171,11 +171,11 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[copySync](src/main.coffee?source#L237)**
+- #### **[copySync](src/main.coffee?source#L245)**
 
     See `copyP`.
 
-- #### **[dirExistsP](src/main.coffee?source#L271)**
+- #### **[dirExistsP](src/main.coffee?source#L277)**
 
     Check if a path exists, and if it is a directory.
 
@@ -185,7 +185,7 @@ __No native `fs` funtion will be listed.__
 
         Resolves a boolean value.
 
-- #### **[dirExistsSync](src/main.coffee?source#L281)**
+- #### **[dirExistsSync](src/main.coffee?source#L287)**
 
     Check if a path exists, and if it is a directory.
 
@@ -193,7 +193,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _boolean_ }
 
-- #### **[eachDirP](src/main.coffee?source#L382)**
+- #### **[eachDirP](src/main.coffee?source#L388)**
 
     Walk through a path recursively with a callback. The callback
     can return a Promise to continue the sequence. The resolving order
@@ -303,7 +303,7 @@ __No native `fs` funtion will be listed.__
         	console.log path
         ```
 
-- #### **[eachDirSync](src/main.coffee?source#L472)**
+- #### **[eachDirSync](src/main.coffee?source#L482)**
 
     See `eachDirP`.
 
@@ -312,7 +312,7 @@ __No native `fs` funtion will be listed.__
         A tree data structure that
         represents the files recursively.
 
-- #### **[fileExistsP](src/main.coffee?source#L567)**
+- #### **[fileExistsP](src/main.coffee?source#L581)**
 
     Check if a path exists, and if it is a file.
 
@@ -322,7 +322,7 @@ __No native `fs` funtion will be listed.__
 
         Resolves a boolean value.
 
-- #### **[fileExistsSync](src/main.coffee?source#L577)**
+- #### **[fileExistsSync](src/main.coffee?source#L591)**
 
     Check if a path exists, and if it is a file.
 
@@ -330,7 +330,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _boolean_ }
 
-- #### **[globP](src/main.coffee?source#L617)**
+- #### **[globP](src/main.coffee?source#L631)**
 
     Get files by patterns.
 
@@ -379,7 +379,7 @@ __No native `fs` funtion will be listed.__
         	console.log paths
         ```
 
-- #### **[globSync](src/main.coffee?source#L667)**
+- #### **[globSync](src/main.coffee?source#L681)**
 
     See `globP`.
 
@@ -387,7 +387,7 @@ __No native `fs` funtion will be listed.__
 
         The list array.
 
-- #### **[mapDirP](src/main.coffee?source#L737)**
+- #### **[mapDirP](src/main.coffee?source#L751)**
 
     Map file from a directory to another recursively with a
     callback.
@@ -431,7 +431,7 @@ __No native `fs` funtion will be listed.__
         )
         ```
 
-- #### **[mapDirSync](src/main.coffee?source#L753)**
+- #### **[mapDirSync](src/main.coffee?source#L767)**
 
     See `mapDirP`.
 
@@ -439,7 +439,7 @@ __No native `fs` funtion will be listed.__
 
         A tree object.
 
-- #### **[minimatch](src/main.coffee?source#L771)**
+- #### **[minimatch](src/main.coffee?source#L785)**
 
     The `minimatch` lib.
     [Documentation](https://github.com/isaacs/minimatch)
@@ -447,7 +447,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>type</u>**: { _Funtion_ }
 
-- #### **[mkdirsP](src/main.coffee?source#L779)**
+- #### **[mkdirsP](src/main.coffee?source#L793)**
 
     Recursively create directory path, like `mkdir -p`.
 
@@ -459,11 +459,11 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[mkdirsSync](src/main.coffee?source#L802)**
+- #### **[mkdirsSync](src/main.coffee?source#L816)**
 
     See `mkdirsP`.
 
-- #### **[moveP](src/main.coffee?source#L825)**
+- #### **[moveP](src/main.coffee?source#L839)**
 
     Moves a file or directory. Also works between partitions.
     Behaves like the Unix `mv`.
@@ -491,11 +491,11 @@ __No native `fs` funtion will be listed.__
         It will resolve a boolean value which indicates
         whether this action is taken between two partitions.
 
-- #### **[moveSync](src/main.coffee?source#L859)**
+- #### **[moveSync](src/main.coffee?source#L871)**
 
     See `moveP`.
 
-- #### **[outputFileP](src/main.coffee?source#L897)**
+- #### **[outputFileP](src/main.coffee?source#L907)**
 
     Almost the same as `writeFile`, except that if its parent
     directories do not exist, they will be created.
@@ -510,11 +510,11 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[outputFileSync](src/main.coffee?source#L909)**
+- #### **[outputFileSync](src/main.coffee?source#L919)**
 
     See `outputFileP`.
 
-- #### **[outputJsonP](src/main.coffee?source#L932)**
+- #### **[outputJsonP](src/main.coffee?source#L942)**
 
     Write a object to a file, if its parent directory doesn't
     exists, it will be created.
@@ -538,11 +538,11 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[outputJsonSync](src/main.coffee?source#L946)**
+- #### **[outputJsonSync](src/main.coffee?source#L956)**
 
     See `outputJSONP`.
 
-- #### **[readJsonP](src/main.coffee?source#L964)**
+- #### **[readJsonP](src/main.coffee?source#L974)**
 
     Read A Json file and parse it to a object.
 
@@ -563,7 +563,7 @@ __No native `fs` funtion will be listed.__
         	console.log obj.name, obj.age
         ```
 
-- #### **[readJsonSync](src/main.coffee?source#L975)**
+- #### **[readJsonSync](src/main.coffee?source#L985)**
 
     See `readJSONP`.
 
@@ -571,7 +571,7 @@ __No native `fs` funtion will be listed.__
 
         The parsed object.
 
-- #### **[reduceDirP](src/main.coffee?source#L1003)**
+- #### **[reduceDirP](src/main.coffee?source#L1013)**
 
     Walk through directory recursively with a callback.
 
@@ -608,7 +608,7 @@ __No native `fs` funtion will be listed.__
         	console.log ret
         ```
 
-- #### **[reduceDirSync](src/main.coffee?source#L1022)**
+- #### **[reduceDirSync](src/main.coffee?source#L1032)**
 
     See `reduceDirP`
 
@@ -616,7 +616,7 @@ __No native `fs` funtion will be listed.__
 
         Final value.
 
-- #### **[removeP](src/main.coffee?source#L1041)**
+- #### **[removeP](src/main.coffee?source#L1051)**
 
     Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -629,11 +629,11 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[removeSync](src/main.coffee?source#L1056)**
+- #### **[removeSync](src/main.coffee?source#L1066)**
 
     See `removeP`.
 
-- #### **[touchP](src/main.coffee?source#L1083)**
+- #### **[touchP](src/main.coffee?source#L1093)**
 
     Change file access and modification times.
     If the file does not exist, it is created.
@@ -655,7 +655,7 @@ __No native `fs` funtion will be listed.__
 
         If new file created, resolves true.
 
-- #### **[touchSync](src/main.coffee?source#L1102)**
+- #### **[touchSync](src/main.coffee?source#L1112)**
 
     See `touchP`.
 
@@ -663,7 +663,7 @@ __No native `fs` funtion will be listed.__
 
         Whether a new file is created or not.
 
-- #### **[watchFileP](src/main.coffee?source#L1141)**
+- #### **[watchFileP](src/main.coffee?source#L1151)**
 
     Watch a file. If the file changes, the handler will be invoked.
     You can change the polling interval by using `process.env.pollingWatch`.
@@ -702,7 +702,7 @@ __No native `fs` funtion will be listed.__
         		console.log path
         ```
 
-- #### **[watchFilesP](src/main.coffee?source#L1172)**
+- #### **[watchFilesP](src/main.coffee?source#L1182)**
 
     Watch files, when file changes, the handler will be invoked.
     It is build on the top of `nofs.watchFileP`.
@@ -725,7 +725,7 @@ __No native `fs` funtion will be listed.__
         	console.log path
         ```
 
-- #### **[watchDirP](src/main.coffee?source#L1213)**
+- #### **[watchDirP](src/main.coffee?source#L1223)**
 
     Watch directory and all the files in it.
     It supports three types of change: create, modify, move, delete.
@@ -774,7 +774,7 @@ __No native `fs` funtion will be listed.__
         }
         ```
 
-- #### **[writeFileP](src/main.coffee?source#L1298)**
+- #### **[writeFileP](src/main.coffee?source#L1308)**
 
     A `writeFile` shim for `< Node v0.10`.
 
@@ -786,7 +786,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[writeFileSync](src/main.coffee?source#L1323)**
+- #### **[writeFileSync](src/main.coffee?source#L1333)**
 
     See `writeFileP`
 
