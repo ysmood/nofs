@@ -1,3 +1,5 @@
+process.env.pollingWatch = 30
+
 nofs = require '../src/main'
 { Promise } = require '../src/utils'
 npath = require 'path'
@@ -38,7 +40,7 @@ normalizePath = (val) ->
 	else if typeof val == 'string'
 		val
 
-wait = (time = 500) ->
+wait = (time = 100) ->
 	new Promise (resolve) ->
 		setTimeout ->
 			resolve()
@@ -317,6 +319,7 @@ describe 'Watch:', ->
 				assert.equal p, path
 				return if isDelete
 				tdone()
+		.then -> wait()
 		.then ->
 			nofs.outputFileSync path, 'test'
 
@@ -332,6 +335,7 @@ describe 'Watch:', ->
 					type: 'modify'
 					path: tmp + '/dir0/c'
 				}
+		.then -> wait()
 		.then ->
 			nofs.outputFileSync tmp + '/dir0/c', 'ok'
 
@@ -347,6 +351,7 @@ describe 'Watch:', ->
 					type: 'create'
 					path: tmp + '/dir0/d'
 				}
+		.then -> wait()
 		.then ->
 			nofs.outputFileSync tmp + '/dir0/d', 'ok'
 
@@ -362,5 +367,6 @@ describe 'Watch:', ->
 					type: 'delete'
 					path: tmp + '/dir0/c'
 				}
+		.then -> wait()
 		.then ->
 			nofs.removeSync tmp + '/dir0/c'
