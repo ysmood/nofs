@@ -291,6 +291,10 @@ describe 'Basic:', ->
 		.then (ls) ->
 			shouldDeepEqual normalizePath(ls), ["test/fixtures/dir/test2/.e","test/fixtures/dir/test2/d"]
 
+	it 'globSync all', ->
+		ls = nofs.globSync 'test/fixtures/dir/test2/**', { all: true }
+		shouldDeepEqual normalizePath(ls), ["test/fixtures/dir/test2/.e","test/fixtures/dir/test2/d"]
+
 	it 'globP a file', ->
 		nofs.globP 'test/fixtures/sample.txt'
 		.then (ls) ->

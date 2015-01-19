@@ -399,11 +399,22 @@ _.extend nofs, {
 			reg = opts.filter
 			opts.filter = (fileInfo) -> reg.test fileInfo.path
 
-		if _.isString opts.filter
-			pattern = opts.filter
-			mm = new nofs.minimatch.Minimatch(pattern)
+		# Auto handle minimatch.
+		mm = null
+		if _.isString(opts.filter)
+			mm = new nofs.minimatch.Minimatch(opts.filter)
+		if opts.filter instanceof nofs.minimatch.Minimatch
+			mm = opts.filter
+		if mm
 			opts.filter = (fileInfo) ->
 				mm.match fileInfo.path
+
+			opts.searchFilter = (fileInfo) ->
+				# Hot fix for minimatch, it should match '**' to '.'.
+				if fileInfo.path == '.'
+					return mm.match '', true
+
+				mm.match fileInfo.path, true
 
 		stat = if opts.isFollowLink then nofs.statP else nofs.lstatP
 
@@ -478,11 +489,22 @@ _.extend nofs, {
 			reg = opts.filter
 			opts.filter = (fileInfo) -> reg.test fileInfo.path
 
-		if _.isString opts.filter
-			pattern = opts.filter
-			mm = new nofs.minimatch.Minimatch(pattern)
+		# Auto handle minimatch.
+		mm = null
+		if _.isString(opts.filter)
+			mm = new nofs.minimatch.Minimatch(opts.filter)
+		if opts.filter instanceof nofs.minimatch.Minimatch
+			mm = opts.filter
+		if mm
 			opts.filter = (fileInfo) ->
 				mm.match fileInfo.path
+
+			opts.searchFilter = (fileInfo) ->
+				# Hot fix for minimatch, it should match '**' to '.'.
+				if fileInfo.path == '.'
+					return mm.match '', true
+
+				mm.match fileInfo.path, true
 
 		stat = if opts.isFollowLink then nofs.statSync else nofs.lstatSync
 
@@ -622,17 +644,7 @@ _.extend nofs, {
 			pattern.replace /^!/, ''
 
 		glob = (pattern) ->
-			mm = new nofs.minimatch.Minimatch(pattern, opts.minimatch)
-
-			filter = (fileInfo) ->
-				mm.match fileInfo.path
-
-			searchFilter = (fileInfo) ->
-				# Hot fix for minimatch, it should match '**' to '.'.
-				if fileInfo.path == '.'
-					return mm.match '', true
-
-				mm.match fileInfo.path, true
+			mm = new nofs.minimatch.Minimatch pattern, opts.minimatch
 
 			# If a pattern is a plain path, return it directly.
 			nofs.existsP pattern
@@ -641,7 +653,7 @@ _.extend nofs, {
 					return list.push pattern
 
 				getDirPath(cleanPrefix pattern).then (dir) ->
-					subOpts = _.defaults { filter, searchFilter }, opts
+					subOpts = _.defaults { filter: mm }, opts
 					nofs.eachDirP dir, subOpts, (fileInfo) ->
 						fn fileInfo, list
 
@@ -681,24 +693,14 @@ _.extend nofs, {
 			pattern.replace /^!/, ''
 
 		glob = (pattern) ->
-			mm = new nofs.minimatch.Minimatch(pattern, opts.minimatch)
-
-			filter = (fileInfo) ->
-				mm.match fileInfo.path
-
-			searchFilter = (fileInfo) ->
-				# Hot fix for minimatch, it should match '**' to '.'.
-				if fileInfo.path == '.'
-					return mm.match '', true
-
-				mm.match fileInfo.path, true
+			mm = new nofs.minimatch.Minimatch pattern, opts.minimatch
 
 			# If a pattern is a plain path, return it directly.
 			if nofs.existsSync pattern
 				return list.push pattern
 
 			dir = getDirPath(cleanPrefix pattern)
-			subOpts = _.defaults { filter, searchFilter }, opts
+			subOpts = _.defaults { filter: mm }, opts
 			nofs.eachDirSync dir, subOpts, (fileInfo) ->
 				fn fileInfo, list
 
