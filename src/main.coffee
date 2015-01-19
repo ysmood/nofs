@@ -218,9 +218,7 @@ _.extend nofs, {
 				nofs.copyFileP src, dest, opts
 
 		nofs.dirExistsP(to).then (exists) ->
-			if exists
-				to = npath.join to, npath.basename(from)
-			else
+			if not exists
 				nofs.mkdirsP npath.dirname(to)
 		.then ->
 			nofs.statP(from)
@@ -251,9 +249,7 @@ _.extend nofs, {
 			else
 				nofs.copyFileSync src, dest, opts
 
-		if nofs.dirExistsSync to
-			to = npath.join to, npath.basename(from)
-		else
+		if not nofs.dirExistsSync to
 			nofs.mkdirsSync npath.dirname(to)
 
 		stats = nofs.statSync from
@@ -836,9 +832,7 @@ _.extend nofs, {
 
 		nofs.statP(from).then (stats) ->
 			nofs.dirExistsP(to).then (exists) ->
-				if exists
-					to = npath.join to, npath.basename(from)
-				else
+				if not exists
 					nofs.mkdirsP npath.dirname(to)
 			.then ->
 				if stats.isDirectory()
@@ -869,9 +863,7 @@ _.extend nofs, {
 					nofs.unlinkSync src
 
 		try
-			if nofs.dirExistsSync to
-				to = npath.join to, npath.basename(from)
-			else
+			if not nofs.dirExistsSync to
 				nofs.mkdirsSync npath.dirname(to)
 
 			stats = nofs.statSync(from)
