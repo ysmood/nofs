@@ -8,7 +8,6 @@ module.exports = (fs) ->
 		readJson:   ['readJSON']
 		remove:     ['delete']
 		writeJson:  ['writeJSON']
-		readDirs:   ['readdirs']
 	}
 
 	# Thus `nofs.touch` is the same with the `nofs.ensureFile`,

@@ -113,80 +113,6 @@ describe 'Basic:', ->
 			ls.push fileInfo.name
 		shouldDeepEqual normalizePath(ls), [".e", "a", "d", "dir", "test2"]
 
-	it 'readDirsP', ->
-		nofs.readDirsP 'test/fixtures/dir'
-		.then (ls) ->
-			shouldDeepEqual normalizePath(ls), [
-				'test/fixtures/dir/a'
-				'test/fixtures/dir/test0'
-				'test/fixtures/dir/test0/b'
-				'test/fixtures/dir/test0/test1'
-				'test/fixtures/dir/test0/test1/c'
-				'test/fixtures/dir/test2'
-				'test/fixtures/dir/test2/d'
-			]
-
-	it 'readDirsSync', ->
-		ls = nofs.readDirsSync 'test/fixtures/dir'
-		shouldDeepEqual normalizePath(ls), [
-			'test/fixtures/dir/a'
-			'test/fixtures/dir/test0'
-			'test/fixtures/dir/test0/b'
-			'test/fixtures/dir/test0/test1'
-			'test/fixtures/dir/test0/test1/c'
-			'test/fixtures/dir/test2'
-			'test/fixtures/dir/test2/d'
-		]
-
-	it 'readDirsP all', ->
-		nofs.readDirsP '', {
-			all: true
-			cwd: 'test/fixtures/dir'
-		}
-		.then (ls) ->
-			shouldDeepEqual normalizePath(ls), [
-				"a","test0","test0/b","test0/test1"
-				"test0/test1/c","test2","test2/.e","test2/d"
-			]
-
-	it 'readDirsSync all', ->
-		ls = nofs.readDirsSync '', {
-			all: true
-			cwd: 'test/fixtures/dir'
-		}
-		shouldDeepEqual normalizePath(ls), [
-			"a","test0","test0/b","test0/test1"
-			"test0/test1/c","test2","test2/.e","test2/d"
-		]
-
-	it 'readDirsP cwd filter', ->
-		nofs.readDirsP '', {
-			cwd: 'test/fixtures/dir'
-			filter: /[a-z]{1}$/
-		}
-		.then (ls) ->
-			shouldDeepEqual normalizePath(ls), [
-				"a", "test0/b", "test0/test1/c", "test2/d"
-			]
-
-	it 'readDirsSync cwd filter', ->
-		ls = nofs.readDirsSync '', {
-			cwd: 'test/fixtures/dir'
-			filter: /[a-z]{1}$/
-		}
-		shouldDeepEqual normalizePath(ls), [
-			"a", "test0/b", "test0/test1/c", "test2/d"
-		]
-
-	it 'readDirsSync cwd minimatch', ->
-		ls = nofs.readDirsSync '', {
-			cwd: 'test/fixtures/dir'
-			filter: '**/{a,b,c}'
-		}
-		shouldDeepEqual normalizePath(ls), [
-			"a", "test0/b", "test0/test1/c"
-		]
-
 	it 'removeP copyP moveP', ->
 		after ->
 			nofs.removeP 'test/fixtures/dirMV-p'
@@ -197,7 +123,7 @@ describe 'Basic:', ->
 		.then ->
 			nofs.moveP 'test/fixtures/dirCP-p', 'test/fixtures/dirMV-p'
 		.then ->
-			nofs.readDirsP '', {
+			nofs.globP '**', {
 				cwd: 'test/fixtures/dirMV-p'
 			}
 			.then (ls) ->
@@ -213,7 +139,7 @@ describe 'Basic:', ->
 		nofs.removeSync 'test/fixtures/dirCP-sync'
 		nofs.copySync 'test/fixtures/dir', 'test/fixtures/dirCP-sync'
 		nofs.moveSync 'test/fixtures/dirCP-sync', 'test/fixtures/dirMV-sync'
-		ls = nofs.readDirsSync '', {
+		ls = nofs.globSync '**', {
 			cwd: 'test/fixtures/dirMV-sync'
 		}
 		shouldDeepEqual normalizePath(ls), [
@@ -359,6 +285,11 @@ describe 'Basic:', ->
 		shouldDeepEqual normalizePath(ls), [
 			"a","test0","test0/b","test0/test1","test0/test1/c","test2","test2/d"
 		]
+
+	it 'globP all', ->
+		nofs.globP 'test/fixtures/dir/test2/**', { all: true }
+		.then (ls) ->
+			shouldDeepEqual normalizePath(ls), ["test/fixtures/dir/test2/.e","test/fixtures/dir/test2/d"]
 
 	it 'globP a file', ->
 		nofs.globP 'test/fixtures/sample.txt'

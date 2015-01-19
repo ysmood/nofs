@@ -4,6 +4,7 @@
 
   - **API CHANGE** `watchDirP`.
   - Fix a memory leak issue of `watchDirP`.
+  - **API CHANGE** `readDirs` removed.
 
 - v0.2.5
 
