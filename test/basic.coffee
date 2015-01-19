@@ -318,8 +318,6 @@ describe 'Watch:', ->
 				return if isDelete
 				tdone()
 		.then ->
-			wait()
-		.then ->
 			nofs.outputFileSync path, 'test'
 
 	it 'watchDirP modify', (tdone) ->
@@ -334,8 +332,6 @@ describe 'Watch:', ->
 					type: 'modify'
 					path: tmp + '/dir0/c'
 				}
-		.then ->
-			wait()
 		.then ->
 			nofs.outputFileSync tmp + '/dir0/c', 'ok'
 
@@ -352,8 +348,6 @@ describe 'Watch:', ->
 					path: tmp + '/dir0/d'
 				}
 		.then ->
-			wait()
-		.then ->
 			nofs.outputFileSync tmp + '/dir0/d', 'ok'
 
 	it 'watchDirP delete', (tdone) ->
@@ -368,6 +362,5 @@ describe 'Watch:', ->
 					type: 'delete'
 					path: tmp + '/dir0/c'
 				}
-			wait()
 		.then ->
-			nofs.removeP tmp + '/dir0/c'
+			nofs.removeSync tmp + '/dir0/c'
