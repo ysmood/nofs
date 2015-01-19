@@ -35,7 +35,7 @@ For example the `fs.remove` will have `fs.removeSync` for sync IO, and `fs.remov
 ### `eachDir`
 
 It is the core function for directory manipulation. Other abstract functions
-like `mapDir`, `reduceDir`, `readDirs` are built on top of it. You can play
+like `mapDir`, `reduceDir`, `glob` are built on top of it. You can play
 with it if you don't like other functions.
 
 ### `nofs` vs Node Native `fs`
@@ -45,8 +45,8 @@ still call `nofs.readFile` as easy as pie.
 
 ### Inheritance of Options
 
-A Function's options may inherit other function's, especially the functions it calls internally. Such as the `readDirs` extends the `eachDir`'s
-option, therefore `readDirs` also has a `filter` option.
+A Function's options may inherit other function's, especially the functions it calls internally. Such as the `glob` extends the `eachDir`'s
+option, therefore `glob` also has a `filter` option.
 
 ## Quick Start
 
@@ -76,6 +76,7 @@ fs.mkdirsP 'deep/dir/path'
 .then (list) ->
     console.log list
 .then ->
+    # Remove with glob.
     fs.removeP 'deep', { filter: '**/*.js' }
 ```
 
