@@ -1,8 +1,9 @@
 # Changelog
 
-- v0.2.7
+- v0.2.8
 
   - Fix filter behavior of `copy`.
+  - Add `isFnFileOnly` option to `eachDir`.
 
 - v0.2.6
 

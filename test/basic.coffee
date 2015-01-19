@@ -82,16 +82,16 @@ describe 'Basic:', ->
 	it 'reduceDirP', ->
 		nofs.reduceDirP 'test/fixtures/dir', {
 			init: '', isReverse: true
-		}, (sum, { path, isDir }) ->
-			if isDir then sum else sum += path.slice(-1)
+		}, (sum, { path }) ->
+			sum += path.slice(-1)
 		.then (v) ->
 			shouldEqual v.split('').sort().join(''), 'abcde'
 
 	it 'reduceDirSync', ->
 		v = nofs.reduceDirSync 'test/fixtures/dir', {
 			init: '', isReverse: true
-		}, (sum, { path, isDir }) ->
-			if isDir then sum else sum += path.slice(-1)
+		}, (sum, { path }) ->
+			sum += path.slice(-1)
 
 		shouldEqual v.split('').sort().join(''), 'abcde'
 
