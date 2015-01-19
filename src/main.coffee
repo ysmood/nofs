@@ -206,6 +206,7 @@ _.extend nofs, {
 	 * {
 	 * 	# Overwrite file if exists.
 	 * 	isForce: false
+	 * 	isFnFileOnly: false
 	 * }
 	 * ```
 	 * @return {Promise}
@@ -213,6 +214,7 @@ _.extend nofs, {
 	copyP: (from, to, opts = {}) ->
 		_.defaults opts, {
 			isForce: false
+			isFnFileOnly: false
 		}
 
 		flags = if opts.isForce then 'w' else 'wx'
@@ -245,6 +247,7 @@ _.extend nofs, {
 	copySync: (from, to, opts = {}) ->
 		_.defaults opts, {
 			isForce: false
+			isFnFileOnly: false
 		}
 
 		flags = if opts.isForce then 'w' else 'wx'
@@ -308,6 +311,9 @@ _.extend nofs, {
 	 *
 	 * 	# The current working directory to search.
 	 * 	cwd: ''
+	 *
+	 * 	# Call fn only when it is a file.
+	 * 	isFnFileOnly: false
 	 *
 	 * 	# Whether to include the root directory or not.
 	 * 	isIncludeRoot: true
@@ -395,6 +401,7 @@ _.extend nofs, {
 			filter: -> true
 			searchFilter: -> true
 			cwd: ''
+			isFnFileOnly: false
 			isIncludeRoot: true
 			isFollowLink: true
 			isReverse: false
@@ -431,8 +438,9 @@ _.extend nofs, {
 		resolve = (path) -> npath.join opts.cwd, path
 
 		execFn = (fileInfo) ->
-			if not opts.all and fileInfo.name[0] == '.'
-				return
+			return if not opts.all and fileInfo.name[0] == '.'
+
+			return if opts.isFnFileOnly and fileInfo.isDir
 
 			fn fileInfo if opts.filter fileInfo
 
@@ -489,6 +497,7 @@ _.extend nofs, {
 			filter: -> true
 			searchFilter: -> true
 			cwd: ''
+			isFnFileOnly: false
 			isIncludeRoot: true
 			isFollowLink: true
 			isReverse: false
@@ -525,8 +534,9 @@ _.extend nofs, {
 		resolve = (path) -> npath.join opts.cwd, path
 
 		execFn = (fileInfo) ->
-			if not opts.all and fileInfo.name[0] == '.'
-				return
+			return if not opts.all and fileInfo.name[0] == '.'
+
+			return if opts.isFnFileOnly and fileInfo.isDir
 
 			fn fileInfo if opts.filter fileInfo
 
@@ -728,7 +738,12 @@ _.extend nofs, {
 	 * @param  {String}   from The root directory to start with.
 	 * @param  {String}   to This directory can be a non-exists path.
 	 * @param  {Object}   opts Extends the options of `eachDir`. But `cwd` is
-	 * fixed with the same as the `from` parameter.
+	 * fixed with the same as the `from` parameter. Defaults:
+	 * ```coffee
+	 * {
+	 * 	isFnFileOnly: true
+	 * }
+	 * ```
 	 * @param  {Function} fn `(src, dest, fileInfo) -> Promise | Any` The callback
 	 * will be called with each path. The callback can return a `Promise` to
 	 * keep the async sequence go on.
@@ -740,11 +755,10 @@ _.extend nofs, {
 	 * nofs.mapDirP(
 	 * 	'from'
 	 * 	'to'
-	 * 	(src, dest, fileInfo) ->
-	 * 		return if fileInfo.isDir
+	 * 	(src, dest) ->
 	 * 		nofs.readFileP(src).then (buf) ->
 	 * 			buf += 'License MIT\n' + buf
-	 * 			nofs.writeFileP dest, buf
+	 * 			nofs.outputFileP dest, buf
 	 * )
 	 * ```
 	###
@@ -752,6 +766,10 @@ _.extend nofs, {
 		if _.isFunction opts
 			fn = opts
 			opts = {}
+
+		_.defaults opts, {
+			isFnFileOnly: true
+		}
 
 		opts.cwd = from
 
@@ -768,6 +786,10 @@ _.extend nofs, {
 		if _.isFunction opts
 			fn = opts
 			opts = {}
+
+		_.defaults opts, {
+			isFnFileOnly: true
+		}
 
 		opts.cwd = from
 
@@ -995,6 +1017,8 @@ _.extend nofs, {
 	 * {
 	 * 	# The init value of the walk.
 	 * 	init: undefined
+	 *
+	 * 	isFnFileOnly: true
 	 * }
 	 * ```
 	 * @param  {Function} fn `(prev, path, isDir, stats) -> Promise`
@@ -1002,9 +1026,8 @@ _.extend nofs, {
 	 * @example
 	 * ```coffee
 	 * # Concat all files.
-	 * nofs.reduceDirP 'dir/path', { init: '' }, (val, info) ->
-	 * 	return val if info.isDir
-	 * 	nofs.readFileP(info.path).then (str) ->
+	 * nofs.reduceDirP 'dir/path', { init: '' }, (val, { path }) ->
+	 * 	nofs.readFileP(path).then (str) ->
 	 * 		val += str + '\n'
 	 * .then (ret) ->
 	 * 	console.log ret
@@ -1014,6 +1037,10 @@ _.extend nofs, {
 		if _.isFunction opts
 			fn = opts
 			opts = {}
+
+		_.defaults opts, {
+			isFnFileOnly: true
+		}
 
 		prev = Promise.resolve opts.init
 
@@ -1033,6 +1060,10 @@ _.extend nofs, {
 		if _.isFunction opts
 			fn = opts
 			opts = {}
+
+		_.defaults opts, {
+			isFnFileOnly: true
+		}
 
 		prev = opts.init
 

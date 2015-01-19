@@ -76,8 +76,24 @@ fs.mkdirsP 'deep/dir/path'
 .then (list) ->
     console.log list
 .then ->
-    # Remove with glob.
+    # Remove only js files.
     fs.removeP 'deep', { filter: '**/*.js' }
+
+# Concat all css files.
+fs.reduceDirP 'dir/path', {
+    init: '/* Concated by nofs */\n'
+    filter: '**/*.css'
+}, (sum, { path }) ->
+    fs.readFileP(path).then (str) ->
+        sum += str + '\n'
+.then (concated) ->
+    console.log concated
+
+# Compile files from on place to another.
+fs.mapDirP 'from', 'to', (src, dest) ->
+    fs.readFileP(src, 'utf8').then (str) ->
+        compiled = '/* Compiled by nofs */\n' + str
+        fs.outputFileP dest, compiled
 ```
 
 ## Changelog
