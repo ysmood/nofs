@@ -40,7 +40,7 @@ normalizePath = (val) ->
 	else if typeof val == 'string'
 		val
 
-wait = (time = 100) ->
+wait = (time = 1000) ->
 	new Promise (resolve) ->
 		setTimeout ->
 			resolve()
