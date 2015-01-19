@@ -55,11 +55,10 @@ _.extend nofs, {
 
 		copy = ->
 			if opts.isForce
-				nofs.rmdirP(dest).catch (err) ->
-					if err.code != 'ENOENT'
+				nofs.mkdirP dest, opts.mode
+				.catch (err) ->
+					if err.code != 'EEXIST'
 						Promise.reject err
-				.then ->
-					nofs.mkdirP dest, opts.mode
 			else
 				nofs.mkdirP dest, opts.mode
 
@@ -81,12 +80,10 @@ _.extend nofs, {
 		copy = ->
 			if opts.isForce
 				try
-					nofs.rmdirSync dest
+					nofs.mkdirSync dest, opts.mode
 				catch err
-					if err.code != 'ENOENT'
+					if err.code != 'EEXIST'
 						throw err
-
-				nofs.mkdirSync dest, opts.mode
 			else
 				nofs.mkdirSync dest, opts.mode
 
@@ -128,7 +125,7 @@ _.extend nofs, {
 				sSrc.pipe sDest
 
 		copy = ->
-			if opts.isForce
+			(if opts.isForce
 				nofs.unlinkP(dest).catch (err) ->
 					if err.code != 'ENOENT'
 						Promise.reject err
@@ -136,6 +133,12 @@ _.extend nofs, {
 					copyFile()
 			else
 				copyFile()
+			).catch (err) ->
+				if err.code == 'ENOENT'
+					nofs.mkdirsP npath.dirname(dest)
+					.then copyFile
+				else
+					Promise.reject err
 
 		if opts.mode
 			copy()
@@ -169,15 +172,22 @@ _.extend nofs, {
 			nofs.closeSync fdw
 
 		copy = ->
-			if opts.isForce
-				try
-					nofs.unlinkSync dest
-				catch err
-					if err.code != 'ENOENT'
-						throw err
-				copyFile()
-			else
-				copyFile()
+			try
+				if opts.isForce
+					try
+						nofs.unlinkSync dest
+					catch err
+						if err.code != 'ENOENT'
+							throw err
+					copyFile()
+				else
+					copyFile()
+			catch err
+				if err.code == 'ENOENT'
+					nofs.mkdirsSync npath.dirname(dest)
+					copyFile()
+				else
+					throw err
 
 		if opts.mode
 			copy()
@@ -403,6 +413,10 @@ _.extend nofs, {
 			mm = opts.filter
 		if mm
 			opts.filter = (fileInfo) ->
+				# Hot fix for minimatch, it should match '**' to '.'.
+				if fileInfo.path == '.'
+					return mm.match ''
+
 				mm.match fileInfo.path
 
 			opts.searchFilter = (fileInfo) ->
@@ -493,6 +507,10 @@ _.extend nofs, {
 			mm = opts.filter
 		if mm
 			opts.filter = (fileInfo) ->
+				# Hot fix for minimatch, it should match '**' to '.'.
+				if fileInfo.path == '.'
+					return mm.match ''
+
 				mm.match fileInfo.path
 
 			opts.searchFilter = (fileInfo) ->

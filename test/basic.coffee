@@ -175,6 +175,30 @@ describe 'Basic:', ->
 			.then (exists) ->
 				shouldEqual exists, true
 
+	it 'copyP filter', ->
+		dir = 'test/fixtures/copyFilter'
+		after ->
+			nofs.removeP dir
+
+		nofs.copyP 'test/fixtures/dir', dir, { filter: '**/b' }
+		.then ->
+			nofs.globP dir + '/**'
+		.then (ls) ->
+			shouldDeepEqual normalizePath(ls), [
+				"test/fixtures/copyFilter/test0","test/fixtures/copyFilter/test0/b"
+			]
+
+	it 'copySync filter', ->
+		dir = 'test/fixtures/copyFilter'
+		after ->
+			nofs.removeP dir
+
+		nofs.copySync 'test/fixtures/dir', dir, { filter: '**/b' }
+		ls = nofs.globSync dir + '/**'
+		shouldDeepEqual normalizePath(ls), [
+			"test/fixtures/copyFilter/test0","test/fixtures/copyFilter/test0/b"
+		]
+
 	it 'touchP time', ->
 		after ->
 			nofs.removeSync 'test/fixtures/touchP'

@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.2.7
+
+  - Fix filter behavior of `copy`.
+
 - v0.2.6
 
   - **API CHANGE** `watchDirP`.
