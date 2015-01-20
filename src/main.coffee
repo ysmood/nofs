@@ -826,6 +826,14 @@ _.extend nofs, {
 	 * The `minimatch` lib.
 	 * [Documentation](https://github.com/isaacs/minimatch)
 	 * [Offline Documentation](?gotoDoc=minimatch/readme.md)
+	 *
+	 * It has two extra methods:
+	 * - `isPmatch(String | Object) -> Pmatch | undefined`
+	 *     It helps to detect if a string or an object is a minimatch.
+	 *
+	 * - `getPlainPath(Pmatch) -> String`
+	 *     Helps to get the plain root path of a pattern. Such as `src/js/*.js`
+	 *     will get `src/js`
 	 * @type {Funtion}
 	###
 	pmatch: require './pmatch'
@@ -1005,6 +1013,19 @@ _.extend nofs, {
 
 		str = JSON.stringify obj, opts.replacer, opts.space
 		nofs.outputFileSync path, str, opts
+
+	###*
+	 * What promise this lib is using.
+	 * @type {Bluebird}
+	###
+	Promise: Promise
+
+	###*
+	 * A callback style to promise helper.
+	 * It doesn't depends on Bluebird.
+	 * @type {Function}
+	###
+	promisify: _.promisify
 
 	###*
 	 * Read A Json file and parse it to a object.

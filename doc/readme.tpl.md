@@ -13,7 +13,8 @@ to make your functional programming experience better.
 - Introduce `map` and `reduce` to folders.
 - Recursive `glob`, `move`, `copy`, `remove`, etc.
 - **Promise** by default.
-- Unified intuitive API. Support **Promise**, **Sync** and **Callback** paradigms.
+- Unified intuitive API. Support **Promise**, **Sync** and **Callback**paradigms.
+- Lighter than [gulp](https://github.com/gulpjs/gulp), but much more flexible.
 
 ## Install
 
@@ -59,27 +60,30 @@ option, therefore `glob` also has a `filter` option.
 fs = require 'nofs'
 
 
-
+###
 # Callback
+###
 fs.outputFile 'x.txt', 'test', (err) ->
     console.log 'done'
 
 
-
+###
 # Sync
+###
 fs.readFileSync 'x.txt'
 fs.copySync 'dir/a', 'dir/b'
 
 
-
+###
 # Promise
+###
 fs.mkdirsP 'deep/dir/path'
 .then ->
     fs.outputFileP 'a.txt', 'hello world'
 .then ->
-    fs.moveP 'path/**/*.js', 'other'
+    fs.moveP 'dir/path', 'other'
 .then ->
-    fs.copyP 'one', 'two'
+    fs.copyP 'one/**/*.js', 'two'
 .then ->
     # Get all txt files.
     fs.globP 'deep/**'
@@ -90,8 +94,9 @@ fs.mkdirsP 'deep/dir/path'
     fs.removeP 'deep/**/*.js'
 
 
-
+###
 # Concat all css files.
+###
 fs.reduceDirP 'dir/**/*.css', {
     init: '/* Concated by nofs */\n'
 }, (sum, { path }) ->
@@ -101,8 +106,9 @@ fs.reduceDirP 'dir/**/*.css', {
     console.log concated
 
 
-
+###
 # Compile files from on place to another.
+###
 fs.mapDirP 'from', 'to', (src, dest) ->
     fs.readFileP(src, 'utf8').then (str) ->
         compiled = '/* Compiled by nofs */\n' + str
@@ -110,8 +116,10 @@ fs.mapDirP 'from', 'to', (src, dest) ->
 
 
 
+###
 # Play with the low level api.
 # Filter all the ignored files with high performance.
+###
 patterns = fs.readFileSync('.gitignore', 'utf8').split '\n'
 
 filter = ({ path }) ->
@@ -131,19 +139,65 @@ fs.eachDirP('.', {
     console.log tree
 ```
 
+
+## VS Gulp
+
+- If you know Promise, no learning curve.
+- Will works great with ES7 `async / await`.
+- Error handling is more unified and flexible, since it is just Promise.
+- Async sequence chainning is also more unified and flexible.
+
+```coffee
+# coffee plugin
+coffee = (path) ->
+    fs.readFileP path, 'utf8'
+    .then (coffee) ->
+        # Unlike pipe, you can still control all the details esaily.
+        '/* Add Lisence Info */\n\n' + coffee
+
+# writer plugin: A simple curried function.
+writer = (path) -> (js) ->
+    fs.outputFileP path, js
+
+# minify plugin
+minify = (js) ->
+    uglify = require 'uglify-js'
+    uglify.minify js, { fromString: true }
+
+# Use the plugins.
+jsTask = ->
+    # All files will be compiled concurrently.
+    fs.mapDirP 'src/**/*.coffee', 'dist', (src, dest) ->
+        # Here's the work flow, simple yet readable.
+        coffee src
+        .then minify
+        .then writer(dest)
+
+cssTask = -> # ...
+
+cleanTask = -> # ...
+
+# Run all tasks concurrently, and sequence groups.
+compileGroup = [jsTask(), cssTask()]
+fs.Promise.all compileGroup
+.then cleanTask # The clean will work after all compilers are settled.
+.then ->
+    console.log 'All Done!'
+```
+
 ## Changelog
 
 Goto [changelog](doc/changelog.md)
+
+## Function Alias
+
+For some naming convention reasons, `nofs` also uses some common alias for fucntions. See [src/alias.coffee](src/alias.coffee).
 
 ## API
 
 __No native `fs` funtion will be listed.__
 
 <%= api %>
-
-## Function Alias
-
-For some naming convention reasons, `nofs` also uses some common alias for fucntions. See [src/alias.coffee](src/alias.coffee).
 
 ## Benckmark
 

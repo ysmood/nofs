@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.2.9
+
+  - Now pattern path is supported by almost every function.
+
 - v0.2.8
 
   - Fix filter behavior of `copy`.
