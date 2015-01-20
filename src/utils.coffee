@@ -47,3 +47,10 @@ module.exports =
 	isRegExp: (val) -> val instanceof RegExp
 
 	keys: (val) -> Object.keys val
+
+	all: (arr, fn) ->
+		for el, i in arr
+			if fn(el, i) == false
+				return false
+
+		return true

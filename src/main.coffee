@@ -233,6 +233,11 @@ _.extend nofs, {
 			if not exists
 				nofs.mkdirsP npath.dirname(to)
 		.then ->
+			if pm = nofs.pmatch.isPmatch(from)
+				from = nofs.pmatch.getPlainPath pm
+				pm = npath.relative from, pm.pattern
+				opts.filter = pm
+
 			nofs.statP(from)
 		.then (stats) ->
 			isDir = stats.isDirectory()
@@ -264,6 +269,11 @@ _.extend nofs, {
 
 		if not nofs.dirExistsSync to
 			nofs.mkdirsSync npath.dirname(to)
+
+		if pm = nofs.pmatch.isPmatch(from)
+			from = nofs.pmatch.getPlainPath pm
+			pm = npath.relative from, pm.pattern
+			opts.filter = pm
 
 		stats = nofs.statSync from
 		isDir = stats.isDirectory()
@@ -302,6 +312,9 @@ _.extend nofs, {
 	 * @param  {Object} opts Optional. <a id='eachDirP-opts'></a> Defaults:
 	 * ```coffee
 	 * {
+	 * 	# Auto check if the spath is a minimatch pattern.
+	 * 	isAutoMimimatch: true
+	 *
 	 * 	# Include entries whose names begin with a dot (.).
 	 * 	all: true
 	 *
@@ -397,6 +410,7 @@ _.extend nofs, {
 			opts = {}
 
 		_.defaults opts, {
+			isAutoMimimatch: true
 			all: true
 			filter: -> true
 			searchFilter: -> true
@@ -408,32 +422,39 @@ _.extend nofs, {
 			isForceUnixSep: isWin and process.env.force_unix_sep != 'off'
 		}
 
-		if _.isRegExp opts.filter
-			reg = opts.filter
-			opts.filter = (fileInfo) -> reg.test fileInfo.path
-
-		# Auto handle minimatch.
-		mm = null
-		if _.isString(opts.filter)
-			mm = new nofs.minimatch.Minimatch(opts.filter)
-		if opts.filter instanceof nofs.minimatch.Minimatch
-			mm = opts.filter
-		if mm
-			opts.filter = (fileInfo) ->
-				# Hot fix for minimatch, it should match '**' to '.'.
-				if fileInfo.path == '.'
-					return mm.match ''
-
-				mm.match fileInfo.path
-
-			opts.searchFilter = (fileInfo) ->
-				# Hot fix for minimatch, it should match '**' to '.'.
-				if fileInfo.path == '.'
-					return mm.match '', true
-
-				mm.match fileInfo.path, true
-
 		stat = if opts.isFollowLink then nofs.statP else nofs.lstatP
+
+		handleSpath = ->
+			if opts.isAutoMimimatch and
+			pm = nofs.pmatch.isPmatch(spath)
+				opts.filter = pm
+				spath = nofs.pmatch.getPlainPath pm
+
+		handleFilter = ->
+			if _.isRegExp opts.filter
+				reg = opts.filter
+				opts.filter = (fileInfo) -> reg.test fileInfo.path
+				return
+
+			pm = null
+			if _.isString(opts.filter)
+				pm = new nofs.pmatch.Minimatch(opts.filter)
+			if opts.filter instanceof nofs.pmatch.Minimatch
+				pm = opts.filter
+			if pm
+				opts.filter = (fileInfo) ->
+					# Hot fix for minimatch, it should match '**' to '.'.
+					if fileInfo.path == '.'
+						return pm.match ''
+
+					pm.match fileInfo.path
+
+				opts.searchFilter = (fileInfo) ->
+					# Hot fix for minimatch, it should match '**' to '.'.
+					if fileInfo.path == '.'
+						return pm.match '', true
+
+					pm.match fileInfo.path, true
 
 		resolve = (path) -> npath.join opts.cwd, path
 
@@ -446,7 +467,6 @@ _.extend nofs, {
 
 		decideNext = (dir, name) ->
 			path = npath.join dir, name
-
 			stat(resolve path).then (stats) ->
 				isDir = stats.isDirectory()
 				fileInfo = { path, name, isDir, stats }
@@ -477,6 +497,9 @@ _.extend nofs, {
 				Promise.all names.map (name) ->
 					decideNext dir, name
 
+		handleSpath()
+		handleFilter()
+
 		if opts.isIncludeRoot
 			decideNext npath.dirname(spath), npath.basename(spath)
 		else
@@ -493,6 +516,7 @@ _.extend nofs, {
 			opts = {}
 
 		_.defaults opts, {
+			isAutoMimimatch: true
 			all: true
 			filter: -> true
 			searchFilter: -> true
@@ -504,32 +528,39 @@ _.extend nofs, {
 			isForceUnixSep: isWin and process.env.force_unix_sep != 'off'
 		}
 
-		if _.isRegExp opts.filter
-			reg = opts.filter
-			opts.filter = (fileInfo) -> reg.test fileInfo.path
-
-		# Auto handle minimatch.
-		mm = null
-		if _.isString(opts.filter)
-			mm = new nofs.minimatch.Minimatch(opts.filter)
-		if opts.filter instanceof nofs.minimatch.Minimatch
-			mm = opts.filter
-		if mm
-			opts.filter = (fileInfo) ->
-				# Hot fix for minimatch, it should match '**' to '.'.
-				if fileInfo.path == '.'
-					return mm.match ''
-
-				mm.match fileInfo.path
-
-			opts.searchFilter = (fileInfo) ->
-				# Hot fix for minimatch, it should match '**' to '.'.
-				if fileInfo.path == '.'
-					return mm.match '', true
-
-				mm.match fileInfo.path, true
-
 		stat = if opts.isFollowLink then nofs.statSync else nofs.lstatSync
+
+		handleSpath = ->
+			if opts.isAutoMimimatch and
+			pm = nofs.pmatch.isPmatch(spath)
+				opts.filter = pm
+				spath = nofs.pmatch.getPlainPath pm
+
+		handleFilter = ->
+			if _.isRegExp opts.filter
+				reg = opts.filter
+				opts.filter = (fileInfo) -> reg.test fileInfo.path
+				return
+
+			pm = null
+			if _.isString(opts.filter)
+				pm = new nofs.pmatch.Minimatch(opts.filter)
+			if opts.filter instanceof nofs.pmatch.Minimatch
+				pm = opts.filter
+			if pm
+				opts.filter = (fileInfo) ->
+					# Hot fix for minimatch, it should match '**' to '.'.
+					if fileInfo.path == '.'
+						return pm.match ''
+
+					pm.match fileInfo.path
+
+				opts.searchFilter = (fileInfo) ->
+					# Hot fix for minimatch, it should match '**' to '.'.
+					if fileInfo.path == '.'
+						return pm.match '', true
+
+					pm.match fileInfo.path, true
 
 		resolve = (path) -> npath.join opts.cwd, path
 
@@ -570,6 +601,9 @@ _.extend nofs, {
 			names = nofs.readdirSync(resolve dir)
 			names.map (name) ->
 				decideNext dir, name
+
+		handleSpath()
+		handleFilter()
 
 		if opts.isIncludeRoot
 			decideNext npath.dirname(spath), npath.basename(spath)
@@ -615,7 +649,9 @@ _.extend nofs, {
 	 * 	all: false
 	 *
 	 * 	# The minimatch option object.
-	 * 	minimatch: {}
+	 * 	pmatch: {}
+	 *
+	 * 	isIncludeRoot: false
 	 * }
 	 * ```
 	 * @param {Function} fn `(fileInfo, list) -> Promise | Any`.
@@ -644,11 +680,12 @@ _.extend nofs, {
 			opts = {}
 
 		_.defaults opts, {
-			minimatch: {}
+			pmatch: {}
 			all: false
+			isIncludeRoot: false
 		}
 
-		opts.minimatch.dot = opts.all
+		opts.pmatch.dot = opts.all
 
 		if _.isString patterns
 			patterns = [patterns]
@@ -657,29 +694,16 @@ _.extend nofs, {
 
 		fn ?= (fileInfo, list) -> list.push fileInfo.path
 
-		getDirPath = (dir) ->
-			nofs.dirExistsP(dir).then (exists) ->
-				if exists
-					dir
-				else
-					getDirPath npath.dirname(dir)
-
-		cleanPrefix = (pattern) ->
-			pattern.replace /^!/, ''
-
 		glob = (pattern) ->
-			mm = new nofs.minimatch.Minimatch pattern, opts.minimatch
-
 			# If a pattern is a plain path, return it directly.
 			nofs.existsP pattern
 			.then (exists) ->
 				if exists
 					return list.push pattern
 
-				getDirPath(cleanPrefix pattern).then (dir) ->
-					subOpts = _.defaults { filter: mm }, opts
-					nofs.eachDirP dir, subOpts, (fileInfo) ->
-						fn fileInfo, list
+				pm = new nofs.pmatch.Minimatch pattern, opts.pmatch
+				nofs.eachDirP pm, opts, (fileInfo) ->
+					fn fileInfo, list
 
 		Promise.all patterns.map glob
 		.then -> list
@@ -694,11 +718,12 @@ _.extend nofs, {
 			opts = {}
 
 		_.defaults opts, {
-			minimatch: {}
+			pmatch: {}
 			all: false
+			isIncludeRoot: false
 		}
 
-		opts.minimatch.dot = opts.all
+		opts.pmatch.dot = opts.all
 
 		if _.isString patterns
 			patterns = [patterns]
@@ -707,25 +732,13 @@ _.extend nofs, {
 
 		fn ?= (fileInfo, list) -> list.push fileInfo.path
 
-		getDirPath = (dir) ->
-			if nofs.dirExistsSync dir
-				dir
-			else
-				getDirPath npath.dirname(dir)
-
-		cleanPrefix = (pattern) ->
-			pattern.replace /^!/, ''
-
 		glob = (pattern) ->
-			mm = new nofs.minimatch.Minimatch pattern, opts.minimatch
-
 			# If a pattern is a plain path, return it directly.
 			if nofs.existsSync pattern
 				return list.push pattern
 
-			dir = getDirPath(cleanPrefix pattern)
-			subOpts = _.defaults { filter: mm }, opts
-			nofs.eachDirSync dir, subOpts, (fileInfo) ->
+			pm = new nofs.pmatch.Minimatch pattern, opts.pmatch
+			nofs.eachDirSync pm, opts, (fileInfo) ->
 				fn fileInfo, list
 
 		patterns.map glob
@@ -804,7 +817,7 @@ _.extend nofs, {
 	 * [Offline Documentation](?gotoDoc=minimatch/readme.md)
 	 * @type {Funtion}
 	###
-	minimatch: require 'minimatch'
+	pmatch: require './pmatch'
 
 	###*
 	 * Recursively create directory path, like `mkdir -p`.
@@ -848,8 +861,7 @@ _.extend nofs, {
 	 * Behaves like the Unix `mv`.
 	 * @param  {String} from Source path.
 	 * @param  {String} to   Destination path.
-	 * @param  {Object} opts Extends the options of [eachDir](#eachDirP-opts).
-	 * Defaults:
+	 * @param  {Object} opts Defaults:
 	 * ```coffee
 	 * {
 	 * 	isForce: false
@@ -1232,7 +1244,7 @@ _.extend nofs, {
 	 * 	all: false
 	 *
 	 * 	# The minimatch options.
-	 * 	minimatch: {}
+	 * 	pmatch: {}
 	 *
 	 * 	isEnableMoveEvent: false
 	 * }
@@ -1260,13 +1272,13 @@ _.extend nofs, {
 
 		_.defaults opts, {
 			pattern: '**'
-			minimatch: {}
+			pmatch: {}
 			all: false
 			error: (err) ->
 				console.error err
 		}
 
-		opts.minimatch.dot = opts.all
+		opts.pmatch.dot = opts.all
 
 		watchedList = {}
 
@@ -1284,7 +1296,7 @@ _.extend nofs, {
 			statsA.size == statsB.size
 
 		match = (path, pattern) ->
-			nofs.minimatch path, pattern, opts.minimatch
+			nofs.pmatch path, pattern, opts.pmatch
 
 		dirPath = (dir) -> npath.join dir, '/'
 

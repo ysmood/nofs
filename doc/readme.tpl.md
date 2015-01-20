@@ -13,7 +13,7 @@ to make your functional programming experience better.
 - Introduce `map` and `reduce` to folders.
 - Recursive `glob`, `move`, `copy`, `remove`, etc.
 - **Promise** by default.
-- Unified API. Support **Promise**, **Sync** and **Callback** paradigms.
+- Unified intuitive API. Support **Promise**, **Sync** and **Callback** paradigms.
 
 ## Install
 
@@ -22,6 +22,10 @@ npm install nofs
 ```
 
 ## API Convention
+
+### Path & Pattern
+
+Any path that can be a pattern it will do.
 
 ### Unix Path Separator
 
@@ -54,22 +58,28 @@ option, therefore `glob` also has a `filter` option.
 # You can replace "require('fs')" with "require('nofs')"
 fs = require 'nofs'
 
+
+
 # Callback
 fs.outputFile 'x.txt', 'test', (err) ->
     console.log 'done'
 
+
+
 # Sync
 fs.readFileSync 'x.txt'
 fs.copySync 'dir/a', 'dir/b'
+
+
 
 # Promise
 fs.mkdirsP 'deep/dir/path'
 .then ->
     fs.outputFileP 'a.txt', 'hello world'
 .then ->
-    fs.moveP 'a.txt', 'b.txt'
+    fs.moveP 'path/**/*.js', 'other'
 .then ->
-    fs.copyP 'b.txt', 'c.js'
+    fs.copyP 'one', 'two'
 .then ->
     # Get all txt files.
     fs.globP 'deep/**'
@@ -77,23 +87,48 @@ fs.mkdirsP 'deep/dir/path'
     console.log list
 .then ->
     # Remove only js files.
-    fs.removeP 'deep', { filter: '**/*.js' }
+    fs.removeP 'deep/**/*.js'
+
+
 
 # Concat all css files.
-fs.reduceDirP 'dir/path', {
+fs.reduceDirP 'dir/**/*.css', {
     init: '/* Concated by nofs */\n'
-    filter: '**/*.css'
 }, (sum, { path }) ->
     fs.readFileP(path).then (str) ->
         sum += str + '\n'
 .then (concated) ->
     console.log concated
 
+
+
 # Compile files from on place to another.
 fs.mapDirP 'from', 'to', (src, dest) ->
     fs.readFileP(src, 'utf8').then (str) ->
         compiled = '/* Compiled by nofs */\n' + str
         fs.outputFileP dest, compiled
+
+
+
+# Play with the low level api.
+# Filter all the ignored files with high performance.
+patterns = fs.readFileSync('.gitignore', 'utf8').split '\n'
+
+filter = ({ path }) ->
+    for ptn in patterns
+        if fs.pmatch.minimath path, ptn
+            return false
+    return true
+
+fs.eachDirP('.', {
+    searchFilter: filter # Ensure subdirectory won't be searched.
+    filter: filter
+}, (info) ->
+    info  # Directly return the file info object.
+).then (tree) ->
+    # Instead a list as usual,
+    # here we get a file tree for further usage.
+    console.log tree
 ```
 
 ## Changelog
