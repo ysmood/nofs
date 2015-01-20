@@ -54,13 +54,18 @@ _.extend nofs, {
 		}
 
 		copy = ->
-			if opts.isForce
+			(if opts.isForce
 				nofs.mkdirP dest, opts.mode
 				.catch (err) ->
 					if err.code != 'EEXIST'
 						Promise.reject err
 			else
 				nofs.mkdirP dest, opts.mode
+			).catch (err) ->
+				if err.code == 'ENOENT'
+					nofs.mkdirsP dest
+				else
+					Promise.reject err
 
 		if opts.mode
 			copy()
@@ -78,14 +83,20 @@ _.extend nofs, {
 		}
 
 		copy = ->
-			if opts.isForce
-				try
+			try
+				if opts.isForce
+					try
+						nofs.mkdirSync dest, opts.mode
+					catch err
+						if err.code != 'EEXIST'
+							throw err
+				else
 					nofs.mkdirSync dest, opts.mode
-				catch err
-					if err.code != 'EEXIST'
-						throw err
-			else
-				nofs.mkdirSync dest, opts.mode
+			catch err
+				if err.code == 'ENOENT'
+					nofs.mkdirsSync dest
+				else
+					throw err
 
 		if opts.mode
 			copy()
@@ -452,7 +463,7 @@ _.extend nofs, {
 				opts.searchFilter = (fileInfo) ->
 					# Hot fix for minimatch, it should match '**' to '.'.
 					if fileInfo.path == '.'
-						return pm.match '', true
+						return true
 
 					pm.match fileInfo.path, true
 
@@ -558,7 +569,7 @@ _.extend nofs, {
 				opts.searchFilter = (fileInfo) ->
 					# Hot fix for minimatch, it should match '**' to '.'.
 					if fileInfo.path == '.'
-						return pm.match '', true
+						return true
 
 					pm.match fileInfo.path, true
 

@@ -115,18 +115,78 @@ describe 'Basic:', ->
 			ls.push fileInfo.name
 		shouldDeepEqual normalizePath(ls), [".e", "a", "d", "dir", "test2"]
 
-	it 'removeP copyP moveP', ->
+	it 'copyP', ->
+		dir = 'test/fixtures/dir-copyP'
 		after ->
-			nofs.removeP 'test/fixtures/dirMV-p'
+			nofs.removeP dir
 
-		nofs.removeP 'test/fixtures/dirCP-p'
-		.then ->
-			nofs.copyP 'test/fixtures/dir', 'test/fixtures/dirCP-p'
-		.then ->
-			nofs.moveP 'test/fixtures/dirCP-p', 'test/fixtures/dirMV-p'
+		nofs.copyP 'test/fixtures/dir', dir
 		.then ->
 			nofs.globP '**', {
-				cwd: 'test/fixtures/dirMV-p'
+				cwd: dir
+			}
+		.then (ls) ->
+			shouldDeepEqual normalizePath(ls), [
+				"a", "test0", "test0/b", "test0/test1"
+				"test0/test1/c", "test2", "test2/d"
+			]
+
+	it 'copySync', ->
+		dir = 'test/fixtures/dir-copySync'
+		after ->
+			nofs.removeP dir
+
+		nofs.copySync 'test/fixtures/dir', dir
+		ls = nofs.globSync '**', {
+			cwd: dir
+		}
+		shouldDeepEqual normalizePath(ls), [
+			"a", "test0", "test0/b", "test0/test1"
+			"test0/test1/c", "test2", "test2/d"
+		]
+
+	it 'copyP pattern', ->
+		dir = 'test/fixtures/dir-copyP-pattern'
+		after ->
+			nofs.removeP dir
+
+		nofs.copyP 'test/fixtures/dir/*0/**', dir
+		.then ->
+			nofs.globP '**', {
+				cwd: dir
+			}
+		.then (ls) ->
+			shouldDeepEqual normalizePath(ls), [
+				"test0", "test0/b", "test0/test1"
+				"test0/test1/c"
+			]
+
+	it 'copySync pattern', ->
+		dir = 'test/fixtures/dir-copySync-pattern'
+		after ->
+			nofs.removeP dir
+
+		nofs.copySync 'test/fixtures/dir/*0/**', dir
+		ls = nofs.globSync '**', {
+			cwd: dir
+		}
+		shouldDeepEqual normalizePath(ls), [
+			"test0", "test0/b", "test0/test1"
+			"test0/test1/c"
+		]
+
+	it 'moveP', ->
+		dir = 'test/fixtures/dir-moveP'
+		dir2 = dir + '2'
+		after ->
+			nofs.removeP dir2
+
+		nofs.copyP 'test/fixtures/dir', dir
+		.then ->
+			nofs.moveP dir, dir2
+		.then ->
+			nofs.globP '**', {
+				cwd: dir2
 			}
 			.then (ls) ->
 				shouldDeepEqual normalizePath(ls), [
@@ -134,15 +194,16 @@ describe 'Basic:', ->
 					"test0/test1/c", "test2", "test2/d"
 				]
 
-	it 'removeSync copySync moveSync', ->
+	it 'moveSync', ->
+		dir = 'test/fixtures/dir-moveSync'
+		dir2 = dir + '2'
 		after ->
-			nofs.removeSync 'test/fixtures/dirMV-sync'
+			nofs.removeP dir2
 
-		nofs.removeSync 'test/fixtures/dirCP-sync'
-		nofs.copySync 'test/fixtures/dir', 'test/fixtures/dirCP-sync'
-		nofs.moveSync 'test/fixtures/dirCP-sync', 'test/fixtures/dirMV-sync'
+		nofs.copySync 'test/fixtures/dir', dir
+		nofs.moveSync dir, dir2
 		ls = nofs.globSync '**', {
-			cwd: 'test/fixtures/dirMV-sync'
+			cwd: dir2
 		}
 		shouldDeepEqual normalizePath(ls), [
 			"a", "test0", "test0/b", "test0/test1"
