@@ -200,7 +200,7 @@ _.extend nofs, {
 	 * Like `cp -r`.
 	 * @param  {String} from Source path.
 	 * @param  {String} to Destination path.
-	 * @param  {Object} opts Extends the options of `eachDir`.
+	 * @param  {Object} opts Extends the options of [eachDir](#eachDirP-opts).
 	 * Defaults:
 	 * ```coffee
 	 * {
@@ -299,7 +299,7 @@ _.extend nofs, {
 	 * is also recursive, a directory path resolves after all its children
 	 * are resolved.
 	 * @param  {String} spath The path may point to a directory or a file.
-	 * @param  {Object}   opts Optional. Defaults:
+	 * @param  {Object} opts Optional. <a id='eachDirP-opts'></a> Defaults:
 	 * ```coffee
 	 * {
 	 * 	# Include entries whose names begin with a dot (.).
@@ -607,7 +607,7 @@ _.extend nofs, {
 	###*
 	 * Get files by patterns.
 	 * @param  {String | Array} pattern The minimatch pattern.
-	 * @param {Object} opts Extends the options of `eachDir`.
+	 * @param {Object} opts Extends the options of [eachDir](#eachDirP-opts).
 	 * But the `filter` property will be fixed with the pattern.
 	 * Defaults:
 	 * ```coffee
@@ -737,7 +737,7 @@ _.extend nofs, {
 	 * callback.
 	 * @param  {String}   from The root directory to start with.
 	 * @param  {String}   to This directory can be a non-exists path.
-	 * @param  {Object}   opts Extends the options of `eachDir`. But `cwd` is
+	 * @param  {Object}   opts Extends the options of [eachDir](#eachDirP-opts). But `cwd` is
 	 * fixed with the same as the `from` parameter. Defaults:
 	 * ```coffee
 	 * {
@@ -848,7 +848,7 @@ _.extend nofs, {
 	 * Behaves like the Unix `mv`.
 	 * @param  {String} from Source path.
 	 * @param  {String} to   Destination path.
-	 * @param  {Object} opts Extends the options of `eachDir`.
+	 * @param  {Object} opts Extends the options of [eachDir](#eachDirP-opts).
 	 * Defaults:
 	 * ```coffee
 	 * {
@@ -923,7 +923,8 @@ _.extend nofs, {
 	 * directories do not exist, they will be created.
 	 * @param  {String} path
 	 * @param  {String | Buffer} data
-	 * @param  {String | Object} opts Same with the `nofs.writeFile`.
+	 * @param  {String | Object} opts <a id="outputFileP-opts"></a>
+	 * Same with the [writeFile](#writeFile-opts).
 	 * @return {Promise}
 	###
 	outputFileP: (path, data, opts = {}) ->
@@ -951,7 +952,7 @@ _.extend nofs, {
 	 * exists, it will be created.
 	 * @param  {String} path
 	 * @param  {Any} obj  The data object to save.
-	 * @param  {Object | String} opts Extends the options of `outputFileP`.
+	 * @param  {Object | String} opts Extends the options of [outputFileP](#outputFileP-opts).
 	 * Defaults:
 	 * ```coffee
 	 * {
@@ -1011,7 +1012,7 @@ _.extend nofs, {
 	###*
 	 * Walk through directory recursively with a callback.
 	 * @param  {String}   path
-	 * @param  {Object}   opts Extends the options of `eachDir`,
+	 * @param  {Object}   opts Extends the options of [eachDir](#eachDirP-opts),
 	 * with some extra options:
 	 * ```coffee
 	 * {
@@ -1075,7 +1076,7 @@ _.extend nofs, {
 	###*
 	 * Remove a file or directory peacefully, same with the `rm -rf`.
 	 * @param  {String} path
-	 * @param {Object} opts Extends the options of `eachDir`. But
+	 * @param {Object} opts Extends the options of [eachDir](#eachDirP-opts). But
 	 * the `isReverse` is fixed with `true`.
 	 * @return {Promise}
 	###
@@ -1156,6 +1157,7 @@ _.extend nofs, {
 		not exists
 
 	###*
+	 * <a id="writeFile-opts"></a>
 	 * Watch a file. If the file changes, the handler will be invoked.
 	 * You can change the polling interval by using `process.env.pollingWatch`.
 	 * Use `process.env.watchPersistent = 'off'` to disable the persistent.

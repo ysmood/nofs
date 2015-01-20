@@ -176,7 +176,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-        Extends the options of `eachDir`.
+        Extends the options of [eachDir](#eachDirP-opts).
         Defaults:
         ```coffee
         {
@@ -223,7 +223,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-        Optional. Defaults:
+        Optional. <a id='eachDirP-opts'></a> Defaults:
         ```coffee
         {
         	# Include entries whose names begin with a dot (.).
@@ -360,7 +360,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-        Extends the options of `eachDir`.
+        Extends the options of [eachDir](#eachDirP-opts).
         But the `filter` property will be fixed with the pattern.
         Defaults:
         ```coffee
@@ -422,7 +422,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-        Extends the options of `eachDir`. But `cwd` is
+        Extends the options of [eachDir](#eachDirP-opts). But `cwd` is
         fixed with the same as the `from` parameter. Defaults:
         ```coffee
         {
@@ -502,7 +502,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-        Extends the options of `eachDir`.
+        Extends the options of [eachDir](#eachDirP-opts).
         Defaults:
         ```coffee
         {
@@ -519,7 +519,7 @@ __No native `fs` funtion will be listed.__
 
     See `moveP`.
 
-- #### **[outputFileP](src/main.coffee?source#L929)**
+- #### **[outputFileP](src/main.coffee?source#L930)**
 
     Almost the same as `writeFile`, except that if its parent
     directories do not exist, they will be created.
@@ -530,15 +530,16 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _String | Object_ }
 
-        Same with the `nofs.writeFile`.
+        <a id="outputFileP-opts"></a>
+        Same with the [writeFile](#writeFile-opts).
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[outputFileSync](src/main.coffee?source#L941)**
+- #### **[outputFileSync](src/main.coffee?source#L942)**
 
     See `outputFileP`.
 
-- #### **[outputJsonP](src/main.coffee?source#L964)**
+- #### **[outputJsonP](src/main.coffee?source#L965)**
 
     Write a object to a file, if its parent directory doesn't
     exists, it will be created.
@@ -551,7 +552,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object | String_ }
 
-        Extends the options of `outputFileP`.
+        Extends the options of [outputFileP](#outputFileP-opts).
         Defaults:
         ```coffee
         {
@@ -562,11 +563,11 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[outputJsonSync](src/main.coffee?source#L978)**
+- #### **[outputJsonSync](src/main.coffee?source#L979)**
 
     See `outputJSONP`.
 
-- #### **[readJsonP](src/main.coffee?source#L996)**
+- #### **[readJsonP](src/main.coffee?source#L997)**
 
     Read A Json file and parse it to a object.
 
@@ -587,7 +588,7 @@ __No native `fs` funtion will be listed.__
         	console.log obj.name, obj.age
         ```
 
-- #### **[readJsonSync](src/main.coffee?source#L1007)**
+- #### **[readJsonSync](src/main.coffee?source#L1008)**
 
     See `readJSONP`.
 
@@ -595,7 +596,7 @@ __No native `fs` funtion will be listed.__
 
         The parsed object.
 
-- #### **[reduceDirP](src/main.coffee?source#L1036)**
+- #### **[reduceDirP](src/main.coffee?source#L1037)**
 
     Walk through directory recursively with a callback.
 
@@ -603,7 +604,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-        Extends the options of `eachDir`,
+        Extends the options of [eachDir](#eachDirP-opts),
         with some extra options:
         ```coffee
         {
@@ -633,7 +634,7 @@ __No native `fs` funtion will be listed.__
         	console.log ret
         ```
 
-- #### **[reduceDirSync](src/main.coffee?source#L1059)**
+- #### **[reduceDirSync](src/main.coffee?source#L1060)**
 
     See `reduceDirP`
 
@@ -641,7 +642,7 @@ __No native `fs` funtion will be listed.__
 
         Final value.
 
-- #### **[removeP](src/main.coffee?source#L1082)**
+- #### **[removeP](src/main.coffee?source#L1083)**
 
     Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -649,16 +650,16 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-        Extends the options of `eachDir`. But
+        Extends the options of [eachDir](#eachDirP-opts). But
         the `isReverse` is fixed with `true`.
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[removeSync](src/main.coffee?source#L1097)**
+- #### **[removeSync](src/main.coffee?source#L1098)**
 
     See `removeP`.
 
-- #### **[touchP](src/main.coffee?source#L1124)**
+- #### **[touchP](src/main.coffee?source#L1125)**
 
     Change file access and modification times.
     If the file does not exist, it is created.
@@ -680,7 +681,7 @@ __No native `fs` funtion will be listed.__
 
         If new file created, resolves true.
 
-- #### **[touchSync](src/main.coffee?source#L1143)**
+- #### **[touchSync](src/main.coffee?source#L1144)**
 
     See `touchP`.
 
@@ -688,8 +689,9 @@ __No native `fs` funtion will be listed.__
 
         Whether a new file is created or not.
 
-- #### **[watchFileP](src/main.coffee?source#L1182)**
+- #### **[watchFileP](src/main.coffee?source#L1184)**
 
+    <a id="writeFile-opts"></a>
     Watch a file. If the file changes, the handler will be invoked.
     You can change the polling interval by using `process.env.pollingWatch`.
     Use `process.env.watchPersistent = 'off'` to disable the persistent.
@@ -727,7 +729,7 @@ __No native `fs` funtion will be listed.__
         		console.log path
         ```
 
-- #### **[watchFilesP](src/main.coffee?source#L1213)**
+- #### **[watchFilesP](src/main.coffee?source#L1215)**
 
     Watch files, when file changes, the handler will be invoked.
     It is build on the top of `nofs.watchFileP`.
@@ -750,7 +752,7 @@ __No native `fs` funtion will be listed.__
         	console.log path
         ```
 
-- #### **[watchDirP](src/main.coffee?source#L1254)**
+- #### **[watchDirP](src/main.coffee?source#L1256)**
 
     Watch directory and all the files in it.
     It supports three types of change: create, modify, move, delete.
@@ -799,7 +801,7 @@ __No native `fs` funtion will be listed.__
         }
         ```
 
-- #### **[writeFileP](src/main.coffee?source#L1339)**
+- #### **[writeFileP](src/main.coffee?source#L1341)**
 
     A `writeFile` shim for `< Node v0.10`.
 
@@ -811,7 +813,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[writeFileSync](src/main.coffee?source#L1364)**
+- #### **[writeFileSync](src/main.coffee?source#L1366)**
 
     See `writeFileP`
 
