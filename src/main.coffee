@@ -792,22 +792,6 @@ _.extend nofs, {
 			fn src, dest, fileInfo
 
 	###*
-	 * The `minimatch` lib.
-	 * [Documentation](https://github.com/isaacs/minimatch)
-	 * [Offline Documentation](?gotoDoc=minimatch/readme.md)
-	 *
-	 * It has two extra methods:
-	 * - `isPmatch(String | Object) -> Pmatch | undefined`
-	 *     It helps to detect if a string or an object is a minimatch.
-	 *
-	 * - `getPlainPath(Pmatch) -> String`
-	 *     Helps to get the plain root path of a pattern. Such as `src/js/*.js`
-	 *     will get `src/js`
-	 * @type {Funtion}
-	###
-	pmatch: require './pmatch'
-
-	###*
 	 * Recursively create directory path, like `mkdir -p`.
 	 * @param  {String} path
 	 * @param  {String} mode Defaults: `0o777 & ~process.umask()`
@@ -970,6 +954,21 @@ _.extend nofs, {
 
 		str = JSON.stringify obj, opts.replacer, opts.space
 		nofs.outputFileSync path, str, opts
+
+	###*
+	 * The `minimatch` lib. It has two extra methods:
+	 * - `isPmatch(String | Object) -> Pmatch | undefined`
+	 *     It helps to detect if a string or an object is a minimatch.
+	 *
+	 * - `getPlainPath(Pmatch) -> String`
+	 *     Helps to get the plain root path of a pattern. Such as `src/js/*.js`
+	 *     will get `src/js`
+	 *
+	 * [Documentation](https://github.com/isaacs/minimatch)
+	 *
+	 * [Offline Documentation](?gotoDoc=minimatch/readme.md)
+	###
+	pmatch: require './pmatch'
 
 	###*
 	 * What promise this lib is using.
