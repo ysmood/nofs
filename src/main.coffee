@@ -315,10 +315,11 @@ _.extend nofs, {
 			false
 
 	###*
-	 * Walk through a path recursively with a callback. The callback
-	 * can return a Promise to continue the sequence. The resolving order
-	 * is also recursive, a directory path resolves after all its children
-	 * are resolved.
+	 * <a name='eachDirP'></a>
+	 * Concurrently walks through a path recursively with a callback.
+	 * The callback can return a Promise to continue the sequence.
+	 * The resolving order is also recursive, a directory path resolves
+	 * after all its children are resolved.
 	 * @param  {String} spath The path may point to a directory or a file.
 	 * @param  {Object} opts Optional. <a id='eachDirP-opts'></a> Defaults:
 	 * ```coffee
@@ -359,7 +360,7 @@ _.extend nofs, {
 	 *
 	 * 	# Such as force `C:\test\path` to `C:/test/path`.
 	 * 	# This option only works on Windows.
-	 * 	isForceUnixSep: isWin and process.env.force_unix_sep == 'off'
+	 * 	isForceUnixSep: isWin and process.env.isForceUnixSep != 'off'
 	 * }
 	 * ```
 	 * @param  {Function} fn `(fileInfo) -> Promise | Any`.
@@ -430,7 +431,7 @@ _.extend nofs, {
 			isIncludeRoot: true
 			isFollowLink: true
 			isReverse: false
-			isForceUnixSep: isWin and process.env.force_unix_sep != 'off'
+			isForceUnixSep: isWin and process.env.isForceUnixSep != 'off'
 		}
 
 		stat = if opts.isFollowLink then nofs.statP else nofs.lstatP
@@ -536,7 +537,7 @@ _.extend nofs, {
 			isIncludeRoot: true
 			isFollowLink: true
 			isReverse: false
-			isForceUnixSep: isWin and process.env.force_unix_sep != 'off'
+			isForceUnixSep: isWin and process.env.isForceUnixSep != 'off'
 		}
 
 		stat = if opts.isFollowLink then nofs.statSync else nofs.lstatSync
@@ -1288,13 +1289,10 @@ _.extend nofs, {
 	 * @example
 	 * ```coffee
 	 * # Only current folder, and only watch js and css file.
-	 * nofs.watchDir {
-	 * 	dir: 'lib'
+	 * nofs.watchDir 'lib', {
 	 * 	pattern: '*.+(js|css)'
-	 * 	handler: (type, path) ->
-	 * 		console.log type
-	 * 		console.log path
-	 * }
+	 * }, (type, path) ->
+	 * 		console.log type, path
 	 * ```
 	###
 	watchDirP: (root, opts = {}, fn) ->

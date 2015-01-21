@@ -3,7 +3,8 @@
 ## Overview
 
 `nofs` extends Node's native `fs` module with some useful methods. It tries
-to make your functional programming experience better.
+to make your functional programming experience better. It's one of the core
+lib of [nokit][].
 
 [![NPM version](https://badge.fury.io/js/nofs.svg)](http://badge.fury.io/js/nofs) [![Build Status](https://travis-ci.org/ysmood/nofs.svg)](https://travis-ci.org/ysmood/nofs) [![Build status](https://ci.appveyor.com/api/projects/status/11ddy1j4wofdhal7?svg=true)](https://ci.appveyor.com/project/ysmood/nofs)
  [![Deps Up to Date](https://david-dm.org/ysmood/nofs.svg?style=flat)](https://david-dm.org/ysmood/nofs)
@@ -14,7 +15,7 @@ to make your functional programming experience better.
 - Recursive `glob`, `move`, `copy`, `remove`, etc.
 - **Promise** by default.
 - Unified intuitive API. Support **Promise**, **Sync** and **Callback**paradigms.
-- Lighter than [gulp](https://github.com/gulpjs/gulp), but much more flexible.
+- Much lighter than [gulp](https://github.com/gulpjs/gulp), but much more flexible.
 
 ## Install
 
@@ -37,13 +38,13 @@ When the system is Windows and `process.env.force_unix_sep != 'off'`, nofs  will
 Any function that has a `Sync` version will has a promise version that ends with `P`.
 For example the `fs.remove` will have `fs.removeSync` for sync IO, and `fs.removeP` for Promise.
 
-### `eachDir`
+### [eachDir](#eachDirP)
 
 It is the core function for directory manipulation. Other abstract functions
 like `mapDir`, `reduceDir`, `glob` are built on top of it. You can play
 with it if you don't like other functions.
 
-### `nofs` vs Node Native `fs`
+### nofs & Node Native fs
 
 `nofs` only extends the native module, no pollution will be found. You can
 still call `nofs.readFile` as easy as pie.
@@ -107,7 +108,7 @@ fs.reduceDirP 'dir/**/*.css', {
 
 
 ###
-# Compile files from on place to another.
+# Compile files from one place to another.
 ###
 fs.mapDirP 'from', 'to', (src, dest) ->
     fs.readFileP(src, 'utf8').then (str) ->
@@ -143,11 +144,14 @@ fs.eachDirP('.', {
 ## VS Gulp
 
 - If you know Promise, no learning curve.
-- Will works great with ES7 `async / await`.
+- If you use it with [nokit][] `spawn`, you can esaily take advantage of multi-core cpu, and compile much faster.
 - Error handling is more unified and flexible, since it is just Promise.
 - Async sequence chainning is also more unified and flexible.
+- Will works great with ES7 `async / await`.
 
 ```coffee
+fs = require 'nofs'
+
 # coffee plugin
 coffee = (path) ->
     fs.readFileP path, 'utf8'
@@ -167,6 +171,7 @@ minify = (js) ->
 # Use the plugins.
 jsTask = ->
     # All files will be compiled concurrently.
+    # Unlike Gulp, you don't have to wait glob finished to compile a file.
     fs.mapDirP 'src/**/*.coffee', 'dist', (src, dest) ->
         # Here's the work flow, simple yet readable.
         coffee src
@@ -206,3 +211,6 @@ __No native `fs` funtion will be listed.__
 ## Lisence
 
 MIT
+
+
+[nokit]: https://github.com/ysmood/nokit
