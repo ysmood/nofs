@@ -74,9 +74,6 @@ _.extend nofs, {
 				opts.mode = mode
 				copy()
 
-	###*
-	 * See `copyDirP`.
-	###
 	copyDirSync: (src, dest, opts) ->
 		_.defaults opts, {
 			isForce: false
@@ -158,9 +155,6 @@ _.extend nofs, {
 				opts.mode = mode
 				copy()
 
-	###*
-	 * See `copyDirP`.
-	###
 	copyFileSync: (src, dest, opts) ->
 		_.defaults opts, {
 			isForce: false
@@ -257,9 +251,6 @@ _.extend nofs, {
 			else
 				copy from, to, { isDir, stats }
 
-	###*
-	 * See `copyP`.
-	###
 	copySync: (from, to, opts = {}) ->
 		_.defaults opts, {
 			isForce: false
@@ -303,11 +294,6 @@ _.extend nofs, {
 			stats.isDirectory()
 		.catch -> false
 
-	###*
-	 * Check if a path exists, and if it is a directory.
-	 * @param  {String}  path
-	 * @return {boolean}
-	###
 	dirExistsSync: (path) ->
 		if nofs.existsSync(path)
 			nofs.statSync(path).isDirectory()
@@ -517,11 +503,6 @@ _.extend nofs, {
 		else
 			readdir spath
 
-	###*
-	 * See `eachDirP`.
-	 * @return {Object | Array} A tree data structure that
-	 * represents the files recursively.
-	###
 	eachDirSync: (spath, opts, fn) ->
 		if _.isFunction opts
 			fn = opts
@@ -639,11 +620,6 @@ _.extend nofs, {
 			stats.isFile()
 		.catch -> false
 
-	###*
-	 * Check if a path exists, and if it is a file.
-	 * @param  {String}  path
-	 * @return {boolean}
-	###
 	fileExistsSync: (path) ->
 		if nofs.existsSync path
 			nofs.statSync(path).isFile()
@@ -720,10 +696,6 @@ _.extend nofs, {
 		Promise.all patterns.map glob
 		.then -> list
 
-	###*
-	 * See `globP`.
-	 * @return {Array} The list array.
-	###
 	globSync: (patterns, opts = {}, fn) ->
 		if _.isFunction opts
 			fn = opts
@@ -803,10 +775,6 @@ _.extend nofs, {
 			dest = npath.join to, fileInfo.path
 			fn src, dest, fileInfo
 
-	###*
-	 * See `mapDirP`.
-	 * @return {Object | Array} A tree object.
-	###
 	mapDirSync: (from, to, opts = {}, fn) ->
 		if _.isFunction opts
 			fn = opts
@@ -865,9 +833,6 @@ _.extend nofs, {
 								Promise.reject err
 		makedir path
 
-	###*
-	 * See `mkdirsP`.
-	###
 	mkdirsSync: (path, mode = 0o777 & ~process.umask()) ->
 		makedir = (path) ->
 			if not nofs.dirExistsSync path
@@ -919,9 +884,6 @@ _.extend nofs, {
 			else
 				Promise.reject err
 
-	###*
-	 * See `moveP`.
-	###
 	moveSync: (from, to, opts = {}) ->
 		_.defaults opts, {
 			isForce: false
@@ -968,9 +930,6 @@ _.extend nofs, {
 				nofs.mkdirsP(dir, opts.mode).then ->
 					nofs.writeFileP path, data, opts
 
-	###*
-	 * See `outputFileP`.
-	###
 	outputFileSync: (path, data, opts = {}) ->
 		if nofs.fileExistsSync path
 			nofs.writeFileSync path, data, opts
@@ -1005,9 +964,6 @@ _.extend nofs, {
 
 		nofs.outputFileP path, str, opts
 
-	###*
-	 * See `outputJSONP`.
-	###
 	outputJsonSync: (path, obj, opts = {}) ->
 		if _.isString opts
 			opts = { encoding: opts }
@@ -1046,10 +1002,6 @@ _.extend nofs, {
 			catch err
 				Promise.reject err
 
-	###*
-	 * See `readJSONP`.
-	 * @return {Any} The parsed object.
-	###
 	readJsonSync: (path, opts = {}) ->
 		data = nofs.readFileSync path, opts
 		JSON.parse data + ''
@@ -1098,10 +1050,6 @@ _.extend nofs, {
 		.then ->
 			prev
 
-	###*
-	 * See `reduceDirP`
-	 * @return {Any} Final value.
-	###
 	reduceDirSync: (path, opts = {}, fn) ->
 		if _.isFunction opts
 			fn = opts
@@ -1137,9 +1085,6 @@ _.extend nofs, {
 			if err.code != 'ENOENT'
 				Promise.reject err
 
-	###*
-	 * See `removeP`.
-	###
 	removeSync: (path, opts = {}) ->
 		opts.isReverse = true
 
@@ -1182,10 +1127,6 @@ _.extend nofs, {
 			).then ->
 				not exists
 
-	###*
-	 * See `touchP`.
-	 * @return {Boolean} Whether a new file is created or not.
-	###
 	touchSync: (path, opts = {}) ->
 		now = new Date
 		_.defaults opts, {
@@ -1402,9 +1343,6 @@ _.extend nofs, {
 			.then ->
 				nofs.closeP fd
 
-	###*
-	 * See `writeFileP`
-	###
 	writeFileSync: (path, data, opts = {}) ->
 		switch typeof opts
 			when 'string'
