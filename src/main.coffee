@@ -427,7 +427,8 @@ _.extend nofs, {
 		handleSpath = ->
 			if opts.isAutoMimimatch and
 			pm = nofs.pmatch.isPmatch(spath)
-				opts.filter = pm
+				if nofs.pmatch.isNotPlain pm
+					opts.filter = pm
 				spath = nofs.pmatch.getPlainPath pm
 
 		handleFilter = ->
@@ -687,6 +688,9 @@ _.extend nofs, {
 				pm = new nofs.pmatch.Minimatch pattern, opts.pmatch
 				nofs.eachDirP pm, opts, (fileInfo) ->
 					fn fileInfo, list
+				.catch (err) ->
+					if err.code != 'ENOENT'
+						Promise.reject err
 
 		Promise.all patterns.map glob
 		.then -> list

@@ -14,10 +14,13 @@ _.extend minimatch, {
 			return if not target
 
 			pm = new minimatch.Minimatch target
-			if pm.set.length > 1 or !_.all(pm.set[0], _.isString)
+			if minimatch.isNotPlain pm
 				return pm
 		else if target instanceof minimatch.Minimatch
 			target
+
+	isNotPlain: (pm) ->
+		pm.set.length > 1 or !_.all(pm.set[0], _.isString)
 
 	###*
 	 * Get the plain path of the pattern.
