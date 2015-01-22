@@ -419,6 +419,50 @@ describe 'Basic:', ->
 		ls = nofs.globSync 'test/fixtures/sample.txt'
 		shouldDeepEqual normalizePath(ls), ['test/fixtures/sample.txt']
 
+	it 'globP patterns', ->
+		nofs.globP [
+			'test/fixtures/dir/test2/**'
+			'test/fixtures/dir/test0/**'
+		]
+		.then (ls) ->
+			shouldDeepEqual normalizePath(ls), [
+				"test/fixtures/dir/test0/b","test/fixtures/dir/test0/test1",
+				"test/fixtures/dir/test0/test1/c","test/fixtures/dir/test2/d"
+			]
+
+	it 'globSync patterns', ->
+		ls = nofs.globSync [
+			'test/fixtures/dir/test2/**'
+			'test/fixtures/dir/test0/**'
+		]
+		shouldDeepEqual normalizePath(ls), [
+			"test/fixtures/dir/test0/b","test/fixtures/dir/test0/test1",
+			"test/fixtures/dir/test0/test1/c","test/fixtures/dir/test2/d"
+		]
+
+	it 'globP negate patterns', ->
+		nofs.globP [
+			'test/fixtures/dir/test2/**'
+			'test/fixtures/dir/test0/**'
+			'!**/c'
+		]
+		.then (ls) ->
+			shouldDeepEqual normalizePath(ls), [
+				"test/fixtures/dir/test0/b","test/fixtures/dir/test0/test1",
+				"test/fixtures/dir/test2/d"
+			]
+
+	it 'globSync negate patterns', ->
+		ls = nofs.globSync [
+			'test/fixtures/dir/test2/**'
+			'test/fixtures/dir/test0/**'
+			'!**/c'
+		]
+		shouldDeepEqual normalizePath(ls), [
+			"test/fixtures/dir/test0/b","test/fixtures/dir/test0/test1",
+			"test/fixtures/dir/test2/d"
+		]
+
 describe 'Watch:', ->
 	it 'watchFileP', (tdone) ->
 		path = 'test/fixtures/watchFileTmp.txt'

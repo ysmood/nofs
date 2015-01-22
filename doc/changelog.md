@@ -3,6 +3,7 @@
 - v0.3.2
 
   - Now `globP` array works as sequence, rather than running parallel.
+  - Now `globP` can use patterns to exclude files.
 
 - v0.3.1
 

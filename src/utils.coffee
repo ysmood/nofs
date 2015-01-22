@@ -54,3 +54,10 @@ module.exports =
 				return false
 
 		return true
+
+	any: (arr, fn) ->
+		for el, i in arr
+			if fn(el, i) == true
+				return true
+
+		return false

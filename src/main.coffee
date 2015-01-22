@@ -633,6 +633,8 @@ _.extend nofs, {
 	###*
 	 * Get files by patterns.
 	 * @param  {String | Array} pattern The minimatch pattern.
+	 * Patterns that starts with '!' in the array will be used
+	 * to exclude paths.
 	 * @param {Object} opts Extends the options of [eachDir](#eachDirP-opts).
 	 * But the `filter` property will be fixed with the pattern.
 	 * Defaults:
@@ -651,7 +653,11 @@ _.extend nofs, {
 	 * @example
 	 * ```coffee
 	 * # Get all js files.
-	 * nofs.globP('**\/*.js').then (paths) ->
+	 * nofs.globP(['**\/*.js', '**\/*.css']).then (paths) ->
+	 * 	console.log paths
+	 *
+	 * # Exclude some files. "a.js" will be ignored.
+	 * nofs.globP(['**\/*.js', '**\/a.js']).then (paths) ->
 	 * 	console.log paths
 	 *
 	 * # Custom the iterator. Append '/' to each directory path.
@@ -683,18 +689,42 @@ _.extend nofs, {
 
 		fn ?= (fileInfo, list) -> list.push fileInfo.path
 
-		glob = (pattern) ->
-			nofs.existsP pattern
-			.then (exists) ->
-				pm = new nofs.pmatch.Minimatch pattern, opts.pmatch
-				nofs.eachDirP pm, opts, (fileInfo) ->
-					fn fileInfo, list
-				.catch (err) ->
-					if err.code != 'ENOENT'
-						Promise.reject err
+		# Hanle negate patterns
+		negatePms = []
+		pms = []
+		if not opts.pmatch.nonegate
+			for p in patterns
+				arr = if p[0] == '!' and patterns.length > 1
+					p = p[1..]
+					negatePms
+				else
+					pms
+				arr.push new nofs.pmatch.Minimatch(p, opts.pmatch)
+		negatePms = null if negatePms.length == 0
+		negateMath = (path) ->
+			_.any negatePms, (pm) -> pm.match path
 
-		patterns.reduce((p, pattern) ->
-			p.then -> glob(pattern)
+		glob = (pm) ->
+			opts.filter = (fileInfo) ->
+				return if negatePms and negateMath fileInfo.path
+				if fileInfo.path == '.'
+					return pm.match ''
+				pm.match fileInfo.path
+
+			opts.searchFilter = (fileInfo) ->
+				return if negatePms and negateMath fileInfo.path
+				if fileInfo.path == '.'
+					return true
+				pm.match fileInfo.path, true
+
+			nofs.eachDirP nofs.pmatch.getPlainPath(pm), opts, (fileInfo) ->
+				fn fileInfo, list
+			.catch (err) ->
+				if err.code != 'ENOENT'
+					Promise.reject err
+
+		pms.reduce((p, pm) ->
+			p.then -> glob(pm)
 		, Promise.resolve())
 		.then -> list
 
@@ -717,17 +747,47 @@ _.extend nofs, {
 
 		fn ?= (fileInfo, list) -> list.push fileInfo.path
 
-		glob = (pattern) ->
-			pm = new nofs.pmatch.Minimatch pattern, opts.pmatch
+		# Hanle negate patterns
+		negatePms = []
+		pms = []
+		if not opts.pmatch.nonegate
+			for p in patterns
+				arr = if p[0] == '!' and patterns.length > 1
+					p = p[1..]
+					negatePms
+				else
+					pms
+				arr.push new nofs.pmatch.Minimatch(p, opts.pmatch)
+		negatePms = null if negatePms.length == 0
+		negateMath = (path) ->
+			_.any negatePms, (pm) -> pm.match path
+
+		glob = (pm) ->
+			opts.filter = (fileInfo) ->
+				return if negatePms and negateMath fileInfo.path
+				if fileInfo.path == '.'
+					return pm.match ''
+				pm.match fileInfo.path
+
+			opts.searchFilter = (fileInfo) ->
+				return if negatePms and negateMath fileInfo.path
+				if fileInfo.path == '.'
+					return true
+				pm.match fileInfo.path, true
+
 			try
-				nofs.eachDirSync pm, opts, (fileInfo) ->
-					fn fileInfo, list
+				nofs.eachDirSync(
+					nofs.pmatch.getPlainPath(pm)
+					opts
+					(fileInfo) ->
+						fn fileInfo, list
+				)
 			catch err
 				if err.code != 'ENOENT'
 					throw err
 
-		patterns.map glob
-
+		for pm in pms
+			glob pm
 		list
 
 	###*
