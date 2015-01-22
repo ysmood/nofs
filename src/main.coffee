@@ -351,16 +351,18 @@ _.extend nofs, {
 	 * ```
 	 * @param  {Function} fn `(fileInfo) -> Promise | Any`.
 	 * The `fileInfo` object has these properties: `{ path, isDir, children, stats }`.
-	 * Assume the `fn` is `(f) -> f`, the directory object array may look like:
+	 * Assume we call the function: `nofs.eachDirP('dir', (f) -> f)`,
+	 * the resolved directory object array may look like:
 	 * ```coffee
 	 * {
 	 * 	path: 'dir/path'
 	 * 	name: 'path'
+	 * 	baseDir: 'dir'
 	 * 	isDir: true
 	 * 	val: 'test'
 	 * 	children: [
-	 * 		{ path: 'dir/path/a.txt', name: 'a.txt', isDir: false, stats: { ... } }
-	 * 		{ path: 'dir/path/b.txt', name: 'b.txt', isDir: false, stats: { ... } }
+	 * 		{ path: 'dir/path/a.txt', name: 'a.txt', baseDir: 'dir', isDir: false, stats: { ... } }
+	 * 		{ path: 'dir/path/b.txt', name: 'b.txt', baseDir: 'dir', isDir: false, stats: { ... } }
 	 * 	]
 	 * 	stats: {
 	 * 		size: 527
@@ -467,7 +469,7 @@ _.extend nofs, {
 			path = npath.join dir, name
 			stat(resolve path).then (stats) ->
 				isDir = stats.isDirectory()
-				fileInfo = { path, name, isDir, stats }
+				fileInfo = { path, name, baseDir: spath, isDir, stats }
 
 				if opts.isForceUnixSep
 					fileInfo.path = fileInfo.path.replace regWinSep, '/'
@@ -569,7 +571,7 @@ _.extend nofs, {
 
 			stats = stat(resolve path)
 			isDir = stats.isDirectory()
-			fileInfo = { path, name, isDir, stats }
+			fileInfo = { path, name, baseDir: spath, isDir, stats }
 
 			if opts.isForceUnixSep
 				fileInfo.path = fileInfo.path.replace regWinSep, '/'
