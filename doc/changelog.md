@@ -1,8 +1,9 @@
 # Changelog
 
-- v0.2.9
+- v0.3.0
 
   - Now pattern path is supported by almost every function.
+  - Update deps.
 
 - v0.2.8
 
