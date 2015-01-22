@@ -640,8 +640,6 @@ _.extend nofs, {
 	 *
 	 * 	# The minimatch option object.
 	 * 	pmatch: {}
-	 *
-	 * 	isIncludeRoot: false
 	 * }
 	 * ```
 	 * @param {Function} fn `(fileInfo, list) -> Promise | Any`.
@@ -672,7 +670,6 @@ _.extend nofs, {
 		_.defaults opts, {
 			pmatch: {}
 			all: false
-			isIncludeRoot: false
 		}
 
 		opts.pmatch.dot = opts.all
@@ -685,12 +682,8 @@ _.extend nofs, {
 		fn ?= (fileInfo, list) -> list.push fileInfo.path
 
 		glob = (pattern) ->
-			# If a pattern is a plain path, return it directly.
 			nofs.existsP pattern
 			.then (exists) ->
-				if exists
-					return list.push pattern
-
 				pm = new nofs.pmatch.Minimatch pattern, opts.pmatch
 				nofs.eachDirP pm, opts, (fileInfo) ->
 					fn fileInfo, list
@@ -706,7 +699,6 @@ _.extend nofs, {
 		_.defaults opts, {
 			pmatch: {}
 			all: false
-			isIncludeRoot: false
 		}
 
 		opts.pmatch.dot = opts.all
@@ -719,10 +711,6 @@ _.extend nofs, {
 		fn ?= (fileInfo, list) -> list.push fileInfo.path
 
 		glob = (pattern) ->
-			# If a pattern is a plain path, return it directly.
-			if nofs.existsSync pattern
-				return list.push pattern
-
 			pm = new nofs.pmatch.Minimatch pattern, opts.pmatch
 			nofs.eachDirSync pm, opts, (fileInfo) ->
 				fn fileInfo, list
