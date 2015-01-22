@@ -693,7 +693,9 @@ _.extend nofs, {
 					if err.code != 'ENOENT'
 						Promise.reject err
 
-		Promise.all patterns.map glob
+		patterns.reduce((p, pattern) ->
+			p.then -> glob(pattern)
+		, Promise.resolve())
 		.then -> list
 
 	globSync: (patterns, opts = {}, fn) ->

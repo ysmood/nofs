@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.3.2
+
+  - Now `globP` array works as sequence, rather than running parallel.
+
 - v0.3.1
 
   - Now pattern path is supported by almost every function.
