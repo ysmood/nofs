@@ -3,7 +3,8 @@
 ## Overview
 
 `nofs` extends Node's native `fs` module with some useful methods. It tries
-to make your functional programming experience better.
+to make your functional programming experience better. It's one of the core
+lib of [nokit][].
 
 [![NPM version](https://badge.fury.io/js/nofs.svg)](http://badge.fury.io/js/nofs) [![Build Status](https://travis-ci.org/ysmood/nofs.svg)](https://travis-ci.org/ysmood/nofs) [![Build status](https://ci.appveyor.com/api/projects/status/11ddy1j4wofdhal7?svg=true)](https://ci.appveyor.com/project/ysmood/nofs)
  [![Deps Up to Date](https://david-dm.org/ysmood/nofs.svg?style=flat)](https://david-dm.org/ysmood/nofs)
@@ -13,7 +14,8 @@ to make your functional programming experience better.
 - Introduce `map` and `reduce` to folders.
 - Recursive `glob`, `move`, `copy`, `remove`, etc.
 - **Promise** by default.
-- Unified API. Support **Promise**, **Sync** and **Callback** paradigms.
+- Unified intuitive API. Support **Promise**, **Sync** and **Callback**paradigms.
+- Much lighter than [gulp](https://github.com/gulpjs/gulp), but much more flexible.
 
 ## Install
 
@@ -22,6 +24,10 @@ npm install nofs
 ```
 
 ## API Convention
+
+### Path & Pattern
+
+Any path that can be a pattern it will do.
 
 ### Unix Path Separator
 
@@ -32,13 +38,13 @@ When the system is Windows and `process.env.force_unix_sep != 'off'`, nofs  will
 Any function that has a `Sync` version will has a promise version that ends with `P`.
 For example the `fs.remove` will have `fs.removeSync` for sync IO, and `fs.removeP` for Promise.
 
-### `eachDir`
+### [eachDir](#eachDirP)
 
 It is the core function for directory manipulation. Other abstract functions
 like `mapDir`, `reduceDir`, `glob` are built on top of it. You can play
 with it if you don't like other functions.
 
-### `nofs` vs Node Native `fs`
+### nofs & Node Native fs
 
 `nofs` only extends the native module, no pollution will be found. You can
 still call `nofs.readFile` as easy as pie.
@@ -54,22 +60,31 @@ option, therefore `glob` also has a `filter` option.
 # You can replace "require('fs')" with "require('nofs')"
 fs = require 'nofs'
 
+
+###
 # Callback
+###
 fs.outputFile 'x.txt', 'test', (err) ->
     console.log 'done'
 
+
+###
 # Sync
+###
 fs.readFileSync 'x.txt'
 fs.copySync 'dir/a', 'dir/b'
 
+
+###
 # Promise
+###
 fs.mkdirsP 'deep/dir/path'
 .then ->
     fs.outputFileP 'a.txt', 'hello world'
 .then ->
-    fs.moveP 'a.txt', 'b.txt'
+    fs.moveP 'dir/path', 'other'
 .then ->
-    fs.copyP 'b.txt', 'c.js'
+    fs.copyP 'one/**/*.js', 'two'
 .then ->
     # Get all txt files.
     fs.globP 'deep/**'
@@ -77,28 +92,111 @@ fs.mkdirsP 'deep/dir/path'
     console.log list
 .then ->
     # Remove only js files.
-    fs.removeP 'deep', { filter: '**/*.js' }
+    fs.removeP 'deep/**/*.js'
 
+
+###
 # Concat all css files.
-fs.reduceDirP 'dir/path', {
+###
+fs.reduceDirP 'dir/**/*.css', {
     init: '/* Concated by nofs */\n'
-    filter: '**/*.css'
 }, (sum, { path }) ->
     fs.readFileP(path).then (str) ->
         sum += str + '\n'
 .then (concated) ->
     console.log concated
 
-# Compile files from on place to another.
+
+###
+# Compile files from one place to another.
+###
 fs.mapDirP 'from', 'to', (src, dest) ->
     fs.readFileP(src, 'utf8').then (str) ->
         compiled = '/* Compiled by nofs */\n' + str
         fs.outputFileP dest, compiled
+
+
+
+###
+# Play with the low level api.
+# Filter all the ignored files with high performance.
+###
+patterns = fs.readFileSync('.gitignore', 'utf8').split '\n'
+
+filter = ({ path }) ->
+    for ptn in patterns
+        if fs.pmatch.minimath path, ptn
+            return false
+    return true
+
+fs.eachDirP('.', {
+    searchFilter: filter # Ensure subdirectory won't be searched.
+    filter: filter
+}, (info) ->
+    info  # Directly return the file info object.
+).then (tree) ->
+    # Instead a list as usual,
+    # here we get a file tree for further usage.
+    console.log tree
+```
+
+
+## VS Gulp
+
+- If you know Promise, no learning curve.
+- If you use it with [nokit][] `spawn`, you can esaily take advantage of multi-core cpu, and compile much faster.
+- Error handling is more unified and flexible, since it is just Promise.
+- Async sequence chainning is also more unified and flexible.
+- Will works great with ES7 `async / await`.
+
+```coffee
+fs = require 'nofs'
+
+# coffee plugin
+coffee = (path) ->
+    fs.readFileP path, 'utf8'
+    .then (coffee) ->
+        # Unlike pipe, you can still control all the details esaily.
+        '/* Add Lisence Info */\n\n' + coffee
+
+# writer plugin: A simple curried function.
+writer = (path) -> (js) ->
+    fs.outputFileP path, js
+
+# minify plugin
+minify = (js) ->
+    uglify = require 'uglify-js'
+    uglify.minify js, { fromString: true }
+
+# Use the plugins.
+jsTask = ->
+    # All files will be compiled concurrently.
+    # Unlike Gulp, you don't have to wait glob finished to compile a file.
+    fs.mapDirP 'src/**/*.coffee', 'dist', (src, dest) ->
+        # Here's the work flow, simple yet readable.
+        coffee src
+        .then minify
+        .then writer(dest)
+
+cssTask = -> # ...
+
+cleanTask = -> # ...
+
+# Run all tasks concurrently, and sequence groups.
+compileGroup = [jsTask(), cssTask()]
+fs.Promise.all compileGroup
+.then cleanTask # The clean will work after all compilers are settled.
+.then ->
+    console.log 'All Done!'
 ```
 
 ## Changelog
 
 Goto [changelog](doc/changelog.md)
+
+## Function Alias
+
+For some naming convention reasons, `nofs` also uses some common alias for fucntions. See [src/alias.coffee](src/alias.coffee).
 
 ## API
 
@@ -135,11 +233,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[copyDirSync](src/main.coffee?source#L75)**
-
-    See `copyDirP`.
-
-- #### **[copyFileP](src/main.coffee?source#L110)**
+- #### **[copyFileP](src/main.coffee?source#L118)**
 
     Copy a single file.
 
@@ -158,11 +252,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[copyFileSync](src/main.coffee?source#L153)**
-
-    See `copyDirP`.
-
-- #### **[copyP](src/main.coffee?source#L214)**
+- #### **[copyP](src/main.coffee?source#L219)**
 
     Like `cp -r`.
 
@@ -188,11 +278,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[copySync](src/main.coffee?source#L247)**
-
-    See `copyP`.
-
-- #### **[dirExistsP](src/main.coffee?source#L280)**
+- #### **[dirExistsP](src/main.coffee?source#L292)**
 
     Check if a path exists, and if it is a directory.
 
@@ -202,20 +288,13 @@ __No native `fs` funtion will be listed.__
 
         Resolves a boolean value.
 
-- #### **[dirExistsSync](src/main.coffee?source#L290)**
+- #### **[eachDirP](src/main.coffee?source#L405)**
 
-    Check if a path exists, and if it is a directory.
-
-    - **<u>param</u>**: `path` { _String_ }
-
-    - **<u>return</u>**: { _boolean_ }
-
-- #### **[eachDirP](src/main.coffee?source#L394)**
-
-    Walk through a path recursively with a callback. The callback
-    can return a Promise to continue the sequence. The resolving order
-    is also recursive, a directory path resolves after all its children
-    are resolved.
+    <a name='eachDirP'></a>
+    Concurrently walks through a path recursively with a callback.
+    The callback can return a Promise to continue the sequence.
+    The resolving order is also recursive, a directory path resolves
+    after all its children are resolved.
 
     - **<u>param</u>**: `spath` { _String_ }
 
@@ -226,6 +305,9 @@ __No native `fs` funtion will be listed.__
         Optional. <a id='eachDirP-opts'></a> Defaults:
         ```coffee
         {
+        	# Auto check if the spath is a minimatch pattern.
+        	isAutoMimimatch: true
+
         	# Include entries whose names begin with a dot (.).
         	all: true
 
@@ -259,7 +341,7 @@ __No native `fs` funtion will be listed.__
 
         	# Such as force `C:\test\path` to `C:/test/path`.
         	# This option only works on Windows.
-        	isForceUnixSep: isWin and process.env.force_unix_sep == 'off'
+        	isForceUnixSep: isWin and process.env.isForceUnixSep != 'off'
         }
         ```
 
@@ -323,16 +405,7 @@ __No native `fs` funtion will be listed.__
         	console.log path
         ```
 
-- #### **[eachDirSync](src/main.coffee?source#L490)**
-
-    See `eachDirP`.
-
-    - **<u>return</u>**: { _Object | Array_ }
-
-        A tree data structure that
-        represents the files recursively.
-
-- #### **[fileExistsP](src/main.coffee?source#L591)**
+- #### **[fileExistsP](src/main.coffee?source#L618)**
 
     Check if a path exists, and if it is a file.
 
@@ -342,15 +415,7 @@ __No native `fs` funtion will be listed.__
 
         Resolves a boolean value.
 
-- #### **[fileExistsSync](src/main.coffee?source#L601)**
-
-    Check if a path exists, and if it is a file.
-
-    - **<u>param</u>**: `path` { _String_ }
-
-    - **<u>return</u>**: { _boolean_ }
-
-- #### **[globP](src/main.coffee?source#L641)**
+- #### **[globP](src/main.coffee?source#L665)**
 
     Get files by patterns.
 
@@ -368,7 +433,9 @@ __No native `fs` funtion will be listed.__
         	all: false
 
         	# The minimatch option object.
-        	minimatch: {}
+        	pmatch: {}
+
+        	isIncludeRoot: false
         }
         ```
 
@@ -399,15 +466,7 @@ __No native `fs` funtion will be listed.__
         	console.log paths
         ```
 
-- #### **[globSync](src/main.coffee?source#L691)**
-
-    See `globP`.
-
-    - **<u>return</u>**: { _Array_ }
-
-        The list array.
-
-- #### **[mapDirP](src/main.coffee?source#L765)**
+- #### **[mapDirP](src/main.coffee?source#L762)**
 
     Map file from a directory to another recursively with a
     callback.
@@ -455,23 +514,7 @@ __No native `fs` funtion will be listed.__
         )
         ```
 
-- #### **[mapDirSync](src/main.coffee?source#L785)**
-
-    See `mapDirP`.
-
-    - **<u>return</u>**: { _Object | Array_ }
-
-        A tree object.
-
-- #### **[minimatch](src/main.coffee?source#L807)**
-
-    The `minimatch` lib.
-    [Documentation](https://github.com/isaacs/minimatch)
-    [Offline Documentation](?gotoDoc=minimatch/readme.md)
-
-    - **<u>type</u>**: { _Funtion_ }
-
-- #### **[mkdirsP](src/main.coffee?source#L815)**
+- #### **[mkdirsP](src/main.coffee?source#L800)**
 
     Recursively create directory path, like `mkdir -p`.
 
@@ -483,11 +526,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[mkdirsSync](src/main.coffee?source#L838)**
-
-    See `mkdirsP`.
-
-- #### **[moveP](src/main.coffee?source#L861)**
+- #### **[moveP](src/main.coffee?source#L842)**
 
     Moves a file or directory. Also works between partitions.
     Behaves like the Unix `mv`.
@@ -502,7 +541,6 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-        Extends the options of [eachDir](#eachDirP-opts).
         Defaults:
         ```coffee
         {
@@ -515,11 +553,7 @@ __No native `fs` funtion will be listed.__
         It will resolve a boolean value which indicates
         whether this action is taken between two partitions.
 
-- #### **[moveSync](src/main.coffee?source#L893)**
-
-    See `moveP`.
-
-- #### **[outputFileP](src/main.coffee?source#L930)**
+- #### **[outputFileP](src/main.coffee?source#L908)**
 
     Almost the same as `writeFile`, except that if its parent
     directories do not exist, they will be created.
@@ -535,11 +569,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[outputFileSync](src/main.coffee?source#L942)**
-
-    See `outputFileP`.
-
-- #### **[outputJsonP](src/main.coffee?source#L965)**
+- #### **[outputJsonP](src/main.coffee?source#L940)**
 
     Write a object to a file, if its parent directory doesn't
     exists, it will be created.
@@ -563,9 +593,32 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[outputJsonSync](src/main.coffee?source#L979)**
+- #### **[pmatch](src/main.coffee?source#L971)**
 
-    See `outputJSONP`.
+    The `minimatch` lib. It has two extra methods:
+    - `isPmatch(String | Object) -> Pmatch | undefined`
+        It helps to detect if a string or an object is a minimatch.
+
+    - `getPlainPath(Pmatch) -> String`
+        Helps to get the plain root path of a pattern. Such as `src/js/*.js`
+        will get `src/js`
+
+    [Documentation](https://github.com/isaacs/minimatch)
+
+    [Offline Documentation](?gotoDoc=minimatch/readme.md)
+
+- #### **[Promise](src/main.coffee?source#L977)**
+
+    What promise this lib is using.
+
+    - **<u>type</u>**: { _Bluebird_ }
+
+- #### **[promisify](src/main.coffee?source#L984)**
+
+    A callback style to promise helper.
+    It doesn't depends on Bluebird.
+
+    - **<u>type</u>**: { _Function_ }
 
 - #### **[readJsonP](src/main.coffee?source#L997)**
 
@@ -588,15 +641,7 @@ __No native `fs` funtion will be listed.__
         	console.log obj.name, obj.age
         ```
 
-- #### **[readJsonSync](src/main.coffee?source#L1008)**
-
-    See `readJSONP`.
-
-    - **<u>return</u>**: { _Any_ }
-
-        The parsed object.
-
-- #### **[reduceDirP](src/main.coffee?source#L1037)**
+- #### **[reduceDirP](src/main.coffee?source#L1033)**
 
     Walk through directory recursively with a callback.
 
@@ -634,15 +679,7 @@ __No native `fs` funtion will be listed.__
         	console.log ret
         ```
 
-- #### **[reduceDirSync](src/main.coffee?source#L1060)**
-
-    See `reduceDirP`
-
-    - **<u>return</u>**: { _Any_ }
-
-        Final value.
-
-- #### **[removeP](src/main.coffee?source#L1083)**
+- #### **[removeP](src/main.coffee?source#L1075)**
 
     Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -655,11 +692,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[removeSync](src/main.coffee?source#L1098)**
-
-    See `removeP`.
-
-- #### **[touchP](src/main.coffee?source#L1125)**
+- #### **[touchP](src/main.coffee?source#L1114)**
 
     Change file access and modification times.
     If the file does not exist, it is created.
@@ -681,15 +714,7 @@ __No native `fs` funtion will be listed.__
 
         If new file created, resolves true.
 
-- #### **[touchSync](src/main.coffee?source#L1144)**
-
-    See `touchP`.
-
-    - **<u>return</u>**: { _Boolean_ }
-
-        Whether a new file is created or not.
-
-- #### **[watchFileP](src/main.coffee?source#L1184)**
+- #### **[watchFileP](src/main.coffee?source#L1169)**
 
     <a id="writeFile-opts"></a>
     Watch a file. If the file changes, the handler will be invoked.
@@ -729,7 +754,7 @@ __No native `fs` funtion will be listed.__
         		console.log path
         ```
 
-- #### **[watchFilesP](src/main.coffee?source#L1215)**
+- #### **[watchFilesP](src/main.coffee?source#L1200)**
 
     Watch files, when file changes, the handler will be invoked.
     It is build on the top of `nofs.watchFileP`.
@@ -752,7 +777,7 @@ __No native `fs` funtion will be listed.__
         	console.log path
         ```
 
-- #### **[watchDirP](src/main.coffee?source#L1256)**
+- #### **[watchDirP](src/main.coffee?source#L1238)**
 
     Watch directory and all the files in it.
     It supports three types of change: create, modify, move, delete.
@@ -772,7 +797,7 @@ __No native `fs` funtion will be listed.__
         	all: false
 
         	# The minimatch options.
-        	minimatch: {}
+        	pmatch: {}
 
         	isEnableMoveEvent: false
         }
@@ -792,16 +817,13 @@ __No native `fs` funtion will be listed.__
 
         ```coffee
         # Only current folder, and only watch js and css file.
-        nofs.watchDir {
-        	dir: 'lib'
+        nofs.watchDir 'lib', {
         	pattern: '*.+(js|css)'
-        	handler: (type, path) ->
-        		console.log type
-        		console.log path
-        }
+        }, (type, path) ->
+        		console.log type, path
         ```
 
-- #### **[writeFileP](src/main.coffee?source#L1341)**
+- #### **[writeFileP](src/main.coffee?source#L1323)**
 
     A `writeFile` shim for `< Node v0.10`.
 
@@ -813,15 +835,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[writeFileSync](src/main.coffee?source#L1366)**
 
-    See `writeFileP`
-
-
-
-## Function Alias
-
-For some naming convention reasons, `nofs` also uses some common alias for fucntions. See [src/alias.coffee](src/alias.coffee).
 
 ## Benckmark
 
@@ -830,3 +844,6 @@ For some naming convention reasons, `nofs` also uses some common alias for fucnt
 ## Lisence
 
 MIT
+
+
+[nokit]: https://github.com/ysmood/nokit
