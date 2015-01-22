@@ -1,8 +1,9 @@
 # Changelog
 
-- v0.3.0
+- v0.3.1
 
   - Now pattern path is supported by almost every function.
+  - Fix a `mapDir` pattern issue.
   - Update deps.
 
 - v0.2.8

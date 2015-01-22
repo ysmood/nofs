@@ -115,6 +115,34 @@ describe 'Basic:', ->
 			ls.push fileInfo.name
 		shouldDeepEqual normalizePath(ls), [".e", "a", "d", "dir", "test2"]
 
+	it 'mapDirP pattern', ->
+		ls = []
+
+		nofs.mapDirP(
+			'test/fixtures/dir/*0/**'
+			'test/fixtures/other'
+			(src, dest) ->
+				ls.push src + '/' + dest
+		).then ->
+			shouldDeepEqual ls.sort(), [
+				'test/fixtures/dir/test0/b/test/fixtures/other/test0/b'
+				'test/fixtures/dir/test0/test1/c/test/fixtures/other/test0/test1/c'
+			]
+
+	it 'mapDirSync pattern', ->
+		ls = []
+
+		nofs.mapDirSync(
+			'test/fixtures/dir/*0/**'
+			'test/fixtures/other'
+			(src, dest) ->
+				ls.push src + '/' + dest
+		)
+		shouldDeepEqual ls.sort(), [
+			'test/fixtures/dir/test0/b/test/fixtures/other/test0/b'
+			'test/fixtures/dir/test0/test1/c/test/fixtures/other/test0/test1/c'
+		]
+
 	it 'copyP', ->
 		dir = 'test/fixtures/dir-copyP'
 		after ->

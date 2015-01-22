@@ -768,6 +768,11 @@ _.extend nofs, {
 			isFnFileOnly: true
 		}
 
+		if pm = nofs.pmatch.isPmatch(from)
+			from = nofs.pmatch.getPlainPath pm
+			pm = npath.relative from, pm.pattern
+			opts.filter = pm
+
 		opts.cwd = from
 
 		nofs.eachDirP '', opts, (fileInfo) ->
@@ -783,6 +788,11 @@ _.extend nofs, {
 		_.defaults opts, {
 			isFnFileOnly: true
 		}
+
+		if pm = nofs.pmatch.isPmatch(from)
+			from = nofs.pmatch.getPlainPath pm
+			pm = npath.relative from, pm.pattern
+			opts.filter = pm
 
 		opts.cwd = from
 

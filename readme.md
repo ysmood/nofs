@@ -514,7 +514,7 @@ __No native `fs` funtion will be listed.__
         )
         ```
 
-- #### **[mkdirsP](src/main.coffee?source#L800)**
+- #### **[mkdirsP](src/main.coffee?source#L810)**
 
     Recursively create directory path, like `mkdir -p`.
 
@@ -526,7 +526,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[moveP](src/main.coffee?source#L842)**
+- #### **[moveP](src/main.coffee?source#L852)**
 
     Moves a file or directory. Also works between partitions.
     Behaves like the Unix `mv`.
@@ -553,7 +553,7 @@ __No native `fs` funtion will be listed.__
         It will resolve a boolean value which indicates
         whether this action is taken between two partitions.
 
-- #### **[outputFileP](src/main.coffee?source#L908)**
+- #### **[outputFileP](src/main.coffee?source#L918)**
 
     Almost the same as `writeFile`, except that if its parent
     directories do not exist, they will be created.
@@ -569,7 +569,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[outputJsonP](src/main.coffee?source#L940)**
+- #### **[outputJsonP](src/main.coffee?source#L950)**
 
     Write a object to a file, if its parent directory doesn't
     exists, it will be created.
@@ -593,7 +593,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[pmatch](src/main.coffee?source#L971)**
+- #### **[pmatch](src/main.coffee?source#L981)**
 
     The `minimatch` lib. It has two extra methods:
     - `isPmatch(String | Object) -> Pmatch | undefined`
@@ -607,20 +607,20 @@ __No native `fs` funtion will be listed.__
 
     [Offline Documentation](?gotoDoc=minimatch/readme.md)
 
-- #### **[Promise](src/main.coffee?source#L977)**
+- #### **[Promise](src/main.coffee?source#L987)**
 
     What promise this lib is using.
 
     - **<u>type</u>**: { _Bluebird_ }
 
-- #### **[promisify](src/main.coffee?source#L984)**
+- #### **[promisify](src/main.coffee?source#L994)**
 
     A callback style to promise helper.
     It doesn't depends on Bluebird.
 
     - **<u>type</u>**: { _Function_ }
 
-- #### **[readJsonP](src/main.coffee?source#L997)**
+- #### **[readJsonP](src/main.coffee?source#L1007)**
 
     Read A Json file and parse it to a object.
 
@@ -641,7 +641,7 @@ __No native `fs` funtion will be listed.__
         	console.log obj.name, obj.age
         ```
 
-- #### **[reduceDirP](src/main.coffee?source#L1033)**
+- #### **[reduceDirP](src/main.coffee?source#L1043)**
 
     Walk through directory recursively with a callback.
 
@@ -679,7 +679,7 @@ __No native `fs` funtion will be listed.__
         	console.log ret
         ```
 
-- #### **[removeP](src/main.coffee?source#L1075)**
+- #### **[removeP](src/main.coffee?source#L1085)**
 
     Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -692,7 +692,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[touchP](src/main.coffee?source#L1114)**
+- #### **[touchP](src/main.coffee?source#L1124)**
 
     Change file access and modification times.
     If the file does not exist, it is created.
@@ -714,7 +714,7 @@ __No native `fs` funtion will be listed.__
 
         If new file created, resolves true.
 
-- #### **[watchFileP](src/main.coffee?source#L1169)**
+- #### **[watchFileP](src/main.coffee?source#L1179)**
 
     <a id="writeFile-opts"></a>
     Watch a file. If the file changes, the handler will be invoked.
@@ -754,7 +754,7 @@ __No native `fs` funtion will be listed.__
         		console.log path
         ```
 
-- #### **[watchFilesP](src/main.coffee?source#L1200)**
+- #### **[watchFilesP](src/main.coffee?source#L1210)**
 
     Watch files, when file changes, the handler will be invoked.
     It is build on the top of `nofs.watchFileP`.
@@ -777,7 +777,7 @@ __No native `fs` funtion will be listed.__
         	console.log path
         ```
 
-- #### **[watchDirP](src/main.coffee?source#L1238)**
+- #### **[watchDirP](src/main.coffee?source#L1248)**
 
     Watch directory and all the files in it.
     It supports three types of change: create, modify, move, delete.
@@ -823,7 +823,7 @@ __No native `fs` funtion will be listed.__
         		console.log type, path
         ```
 
-- #### **[writeFileP](src/main.coffee?source#L1323)**
+- #### **[writeFileP](src/main.coffee?source#L1333)**
 
     A `writeFile` shim for `< Node v0.10`.
 
