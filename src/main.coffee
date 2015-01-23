@@ -4,7 +4,12 @@
 ###
 Overview = 'nofs'
 
-npath = require 'path'
+iopath = require './path'
+npath = if process.env.force_unix_sep == 'off'
+	iopath
+else
+	iopath.posix
+
 _ = require './utils'
 
 ###*
@@ -347,10 +352,6 @@ _.extend nofs, {
 	 * 	# If you want sort the names of each level, you can hack here.
 	 * 	# Such as `(names) -> names.sort()`.
 	 * 	handleNames: (names) -> names
-	 *
-	 * 	# Such as force `C:\test\path` to `C:/test/path`.
-	 * 	# This option only works on Windows.
-	 * 	isForceUnixSep: isWin and process.env.isForceUnixSep != 'off'
 	 * }
 	 * ```
 	 * @param  {Function} fn `(fileInfo) -> Promise | Any`.
@@ -424,7 +425,6 @@ _.extend nofs, {
 			isIncludeRoot: true
 			isFollowLink: true
 			isReverse: false
-			isForceUnixSep: isWin and process.env.isForceUnixSep != 'off'
 		}
 
 		stat = if opts.isFollowLink then nofs.statP else nofs.lstatP
@@ -477,9 +477,6 @@ _.extend nofs, {
 				isDir = stats.isDirectory()
 				fileInfo = { path, name, baseDir: spath, isDir, stats }
 
-				if opts.isForceUnixSep
-					fileInfo.path = fileInfo.path.replace regWinSep, '/'
-
 				if isDir
 					return if not opts.searchFilter fileInfo
 
@@ -527,7 +524,6 @@ _.extend nofs, {
 			isIncludeRoot: true
 			isFollowLink: true
 			isReverse: false
-			isForceUnixSep: isWin and process.env.isForceUnixSep != 'off'
 		}
 
 		stat = if opts.isFollowLink then nofs.statSync else nofs.lstatSync
@@ -580,9 +576,6 @@ _.extend nofs, {
 			stats = stat(resolve path)
 			isDir = stats.isDirectory()
 			fileInfo = { path, name, baseDir: spath, isDir, stats }
-
-			if opts.isForceUnixSep
-				fileInfo.path = fileInfo.path.replace regWinSep, '/'
 
 			if isDir
 				return if not opts.searchFilter fileInfo
@@ -1031,6 +1024,12 @@ _.extend nofs, {
 
 		str = JSON.stringify obj, opts.replacer, opts.space
 		nofs.outputFileSync path, str, opts
+
+	###*
+	 * The native [io.js](iojs.org) path lib.
+	 * @type {Object}
+	###
+	path: iopath
 
 	###*
 	 * The `minimatch` lib. It has two extra methods:

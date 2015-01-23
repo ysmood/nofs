@@ -207,14 +207,14 @@ __No native `fs` funtion will be listed.__
     I hate to reinvent the wheel. But to purely use promise, I don't
     have many choices.
 
-- #### **[Promise](src/main.coffee?source#L16)**
+- #### **[Promise](src/main.coffee?source#L21)**
 
     Here I use [Bluebird][Bluebird] only as an ES6 shim for Promise.
     No APIs other than ES6 spec will be used. In the
     future it will be removed.
     [Bluebird]: https://github.com/petkaantonov/bluebird
 
-- #### **[copyDirP](src/main.coffee?source#L51)**
+- #### **[copyDirP](src/main.coffee?source#L56)**
 
     Copy an empty directory.
 
@@ -233,7 +233,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[copyFileP](src/main.coffee?source#L118)**
+- #### **[copyFileP](src/main.coffee?source#L123)**
 
     Copy a single file.
 
@@ -252,7 +252,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[copyP](src/main.coffee?source#L219)**
+- #### **[copyP](src/main.coffee?source#L224)**
 
     Like `cp -r`.
 
@@ -278,7 +278,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[dirExistsP](src/main.coffee?source#L292)**
+- #### **[dirExistsP](src/main.coffee?source#L297)**
 
     Check if a path exists, and if it is a directory.
 
@@ -288,7 +288,7 @@ __No native `fs` funtion will be listed.__
 
         Resolves a boolean value.
 
-- #### **[eachDirP](src/main.coffee?source#L407)**
+- #### **[eachDirP](src/main.coffee?source#L412)**
 
     <a name='eachDirP'></a>
     Concurrently walks through a path recursively with a callback.
@@ -339,9 +339,9 @@ __No native `fs` funtion will be listed.__
         	# won't be itered by the fn.
         	searchFilter: (fileInfo) -> true
 
-        	# Such as force `C:\test\path` to `C:/test/path`.
-        	# This option only works on Windows.
-        	isForceUnixSep: isWin and process.env.isForceUnixSep != 'off'
+        	# If you want sort the names of each level, you can hack here.
+        	# Such as `(names) -> names.sort()`.
+        	handleNames: (names) -> names
         }
         ```
 
@@ -407,7 +407,7 @@ __No native `fs` funtion will be listed.__
         	console.log path
         ```
 
-- #### **[fileExistsP](src/main.coffee?source#L622)**
+- #### **[fileExistsP](src/main.coffee?source#L621)**
 
     Check if a path exists, and if it is a file.
 
@@ -417,7 +417,7 @@ __No native `fs` funtion will be listed.__
 
         Resolves a boolean value.
 
-- #### **[globP](src/main.coffee?source#L673)**
+- #### **[globP](src/main.coffee?source#L672)**
 
     Get files by patterns.
 
@@ -472,7 +472,7 @@ __No native `fs` funtion will be listed.__
         	console.log paths
         ```
 
-- #### **[mapDirP](src/main.coffee?source#L823)**
+- #### **[mapDirP](src/main.coffee?source#L822)**
 
     Map file from a directory to another recursively with a
     callback.
@@ -520,7 +520,7 @@ __No native `fs` funtion will be listed.__
         )
         ```
 
-- #### **[mkdirsP](src/main.coffee?source#L871)**
+- #### **[mkdirsP](src/main.coffee?source#L870)**
 
     Recursively create directory path, like `mkdir -p`.
 
@@ -532,7 +532,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[moveP](src/main.coffee?source#L913)**
+- #### **[moveP](src/main.coffee?source#L912)**
 
     Moves a file or directory. Also works between partitions.
     Behaves like the Unix `mv`.
@@ -559,7 +559,7 @@ __No native `fs` funtion will be listed.__
         It will resolve a boolean value which indicates
         whether this action is taken between two partitions.
 
-- #### **[outputFileP](src/main.coffee?source#L979)**
+- #### **[outputFileP](src/main.coffee?source#L978)**
 
     Almost the same as `writeFile`, except that if its parent
     directories do not exist, they will be created.
@@ -575,7 +575,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[outputJsonP](src/main.coffee?source#L1011)**
+- #### **[outputJsonP](src/main.coffee?source#L1010)**
 
     Write a object to a file, if its parent directory doesn't
     exists, it will be created.
@@ -599,7 +599,13 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[pmatch](src/main.coffee?source#L1042)**
+- #### **[path](src/main.coffee?source#L1032)**
+
+    The native [io.js](iojs.org) path lib.
+
+    - **<u>type</u>**: { _Object_ }
+
+- #### **[pmatch](src/main.coffee?source#L1047)**
 
     The `minimatch` lib. It has two extra methods:
     - `isPmatch(String | Object) -> Pmatch | undefined`
@@ -613,20 +619,20 @@ __No native `fs` funtion will be listed.__
 
     [Offline Documentation](?gotoDoc=minimatch/readme.md)
 
-- #### **[Promise](src/main.coffee?source#L1048)**
+- #### **[Promise](src/main.coffee?source#L1053)**
 
     What promise this lib is using.
 
     - **<u>type</u>**: { _Bluebird_ }
 
-- #### **[promisify](src/main.coffee?source#L1055)**
+- #### **[promisify](src/main.coffee?source#L1060)**
 
     A callback style to promise helper.
     It doesn't depends on Bluebird.
 
     - **<u>type</u>**: { _Function_ }
 
-- #### **[readJsonP](src/main.coffee?source#L1068)**
+- #### **[readJsonP](src/main.coffee?source#L1073)**
 
     Read A Json file and parse it to a object.
 
@@ -647,7 +653,7 @@ __No native `fs` funtion will be listed.__
         	console.log obj.name, obj.age
         ```
 
-- #### **[reduceDirP](src/main.coffee?source#L1104)**
+- #### **[reduceDirP](src/main.coffee?source#L1109)**
 
     Walk through directory recursively with a callback.
 
@@ -685,7 +691,7 @@ __No native `fs` funtion will be listed.__
         	console.log ret
         ```
 
-- #### **[removeP](src/main.coffee?source#L1146)**
+- #### **[removeP](src/main.coffee?source#L1151)**
 
     Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -698,7 +704,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[touchP](src/main.coffee?source#L1185)**
+- #### **[touchP](src/main.coffee?source#L1190)**
 
     Change file access and modification times.
     If the file does not exist, it is created.
@@ -720,7 +726,7 @@ __No native `fs` funtion will be listed.__
 
         If new file created, resolves true.
 
-- #### **[watchFileP](src/main.coffee?source#L1240)**
+- #### **[watchFileP](src/main.coffee?source#L1245)**
 
     <a id="writeFile-opts"></a>
     Watch a file. If the file changes, the handler will be invoked.
@@ -760,7 +766,7 @@ __No native `fs` funtion will be listed.__
         		console.log path
         ```
 
-- #### **[watchFilesP](src/main.coffee?source#L1271)**
+- #### **[watchFilesP](src/main.coffee?source#L1276)**
 
     Watch files, when file changes, the handler will be invoked.
     It is build on the top of `nofs.watchFileP`.
@@ -783,7 +789,7 @@ __No native `fs` funtion will be listed.__
         	console.log path
         ```
 
-- #### **[watchDirP](src/main.coffee?source#L1309)**
+- #### **[watchDirP](src/main.coffee?source#L1314)**
 
     Watch directory and all the files in it.
     It supports three types of change: create, modify, move, delete.
@@ -829,7 +835,7 @@ __No native `fs` funtion will be listed.__
         		console.log type, path
         ```
 
-- #### **[writeFileP](src/main.coffee?source#L1394)**
+- #### **[writeFileP](src/main.coffee?source#L1399)**
 
     A `writeFile` shim for `< Node v0.10`.
 

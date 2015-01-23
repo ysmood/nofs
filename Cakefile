@@ -38,7 +38,7 @@ task 'build', 'Build project.', build = ->
 option '-g', '--grep [grep]', 'Test pattern'
 task 'test', 'Test', (opts) ->
 	clean = ->
-		kit.spawn 'git', ['clean', '-fd', kit.path.join('test/fixtures')]
+		kit.spawn 'git', ['clean', '-fd', kit.path.normalize('test/fixtures')]
 
 	clean()
 	.then ->
