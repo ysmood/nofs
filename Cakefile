@@ -2,6 +2,7 @@ process.env.NODE_ENV = 'development'
 process.chdir __dirname
 
 kit = require 'nokit'
+fs = require './src/main'
 { _ } = kit
 
 task 'dev', 'Lab', ->
@@ -28,6 +29,7 @@ task 'build', 'Build project.', build = ->
 
 	start = kit.compose [
 		-> kit.remove 'dist'
+		-> fs.copyP 'src/**/*.js', 'dist'
 		compileCoffee
 		createDoc
 	]
