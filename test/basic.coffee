@@ -518,3 +518,12 @@ describe 'Watch:', ->
 		.then -> wait()
 		.then ->
 			nofs.removeSync tmp + '/dir0/c'
+
+	after ->
+		[
+			'test/fixtures/watchFileTmp.txt'
+			'test/fixtures/watchDirModify'
+			'test/fixtures/watchDirDelete'
+			'test/fixtures/watchDirCreate'
+		].map (p) ->
+			nofs.removeSync p
