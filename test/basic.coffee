@@ -464,6 +464,16 @@ describe 'Basic:', ->
 		]
 
 describe 'Watch:', ->
+
+	before ->
+		[
+			'test/fixtures/watchFileTmp.txt'
+			'test/fixtures/watchDirModify'
+			'test/fixtures/watchDirDelete'
+			'test/fixtures/watchDirCreate'
+		].map (p) ->
+			nofs.removeSync p
+
 	it 'watchFileP', (tdone) ->
 		path = 'test/fixtures/watchFileTmp.txt'
 
@@ -518,12 +528,3 @@ describe 'Watch:', ->
 		.then -> wait()
 		.then ->
 			nofs.removeSync tmp + '/dir0/c'
-
-	after ->
-		[
-			'test/fixtures/watchFileTmp.txt'
-			'test/fixtures/watchDirModify'
-			'test/fixtures/watchDirDelete'
-			'test/fixtures/watchDirCreate'
-		].map (p) ->
-			nofs.removeSync p
