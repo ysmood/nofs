@@ -4,6 +4,7 @@
 
   - Now `globP` array works as sequence, rather than running parallel.
   - Now `globP` can use patterns to exclude files.
+  - Better posix path handling.
 
 - v0.3.1
 
