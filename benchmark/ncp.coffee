@@ -1,16 +1,25 @@
-# "nofs.copy" vs "ncp"
-#
-# ncp: 4628ms
-# nofs: 5858ms
-# copied file: 20273
-# ratio: 20% slower
-# ----------------------
-# ncp: 243ms
-# nofs: 283ms
-# copied file: 936
-# ratio: 13% slower
-#
-# The trade off of using Promise is not that bad though.
+###
+
+"nofs.copy" vs "ncp"
+
+ncp: 251ms
+nofs: 259ms
+copied file: 926
+ratio: 2% slower
+----------------------
+ncp: 243ms
+nofs: 268ms
+copied file: 926
+ratio: 9% slower
+----------------------
+ncp: 238ms
+nofs: 210ms
+copied file: 926
+ratio: -13% slower
+
+The trade off of using Promise is not that bad though.
+
+###
 
 ncp = require 'ncp'
 nofs = require '../src/main'
