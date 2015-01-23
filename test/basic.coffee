@@ -40,7 +40,7 @@ normalizePath = (val) ->
 	else if typeof val == 'string'
 		val
 
-wait = (time = 1000) ->
+wait = (time = 300) ->
 	new Promise (resolve) ->
 		setTimeout ->
 			resolve()
@@ -467,9 +467,6 @@ describe 'Watch:', ->
 	it 'watchFileP', (tdone) ->
 		path = 'test/fixtures/watchFileTmp.txt'
 
-		after ->
-			nofs.removeP path
-
 		nofs.copyP 'test/fixtures/watchFile.txt', path
 		.then ->
 			nofs.watchFileP path, (p, curr, prev, isDelete) ->
@@ -482,8 +479,6 @@ describe 'Watch:', ->
 
 	it 'watchDirP modify', (tdone) ->
 		tmp = 'test/fixtures/watchDirModify'
-		after ->
-			nofs.removeP tmp
 
 		nofs.copyP 'test/fixtures/watchDir', tmp
 		.then ->
@@ -498,8 +493,6 @@ describe 'Watch:', ->
 
 	it 'watchDirP create', (tdone) ->
 		tmp = 'test/fixtures/watchDirCreate'
-		after ->
-			nofs.removeP tmp
 
 		nofs.copyP 'test/fixtures/watchDir', tmp
 		.then ->
@@ -514,8 +507,6 @@ describe 'Watch:', ->
 
 	it 'watchDirP delete', (tdone) ->
 		tmp = 'test/fixtures/watchDirDelete'
-		after ->
-			nofs.removeP tmp
 
 		nofs.copyP 'test/fixtures/watchDir', tmp
 		.then ->
