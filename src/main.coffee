@@ -344,6 +344,10 @@ _.extend nofs, {
 	 * 	# won't be itered by the fn.
 	 * 	searchFilter: (fileInfo) -> true
 	 *
+	 * 	# If you want sort the names of each level, you can hack here.
+	 * 	# Such as `(names) -> names.sort()`.
+	 * 	handleNames: (names) -> names
+	 *
 	 * 	# Such as force `C:\test\path` to `C:/test/path`.
 	 * 	# This option only works on Windows.
 	 * 	isForceUnixSep: isWin and process.env.isForceUnixSep != 'off'
@@ -414,6 +418,7 @@ _.extend nofs, {
 			all: true
 			filter: -> true
 			searchFilter: -> true
+			handleNames: (names) -> names
 			cwd: ''
 			isFnFileOnly: false
 			isIncludeRoot: true
@@ -495,7 +500,7 @@ _.extend nofs, {
 
 		readdir = (dir) ->
 			nofs.readdirP(resolve dir).then (names) ->
-				Promise.all names.map (name) ->
+				Promise.all opts.handleNames(names).map (name) ->
 					decideNext dir, name
 
 		handleSpath()
@@ -516,6 +521,7 @@ _.extend nofs, {
 			all: true
 			filter: -> true
 			searchFilter: -> true
+			handleNames: (names) -> names
 			cwd: ''
 			isFnFileOnly: false
 			isIncludeRoot: true
@@ -595,7 +601,7 @@ _.extend nofs, {
 				execFn fileInfo
 
 		readdir = (dir) ->
-			names = nofs.readdirSync(resolve dir)
+			names = opts.handleNames nofs.readdirSync(resolve dir)
 			names.map (name) ->
 				decideNext dir, name
 
