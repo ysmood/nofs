@@ -145,9 +145,6 @@ describe 'Basic:', ->
 
 	it 'copyP', ->
 		dir = 'test/fixtures/dir-copyP'
-		after ->
-			nofs.removeP dir
-
 		nofs.copyP 'test/fixtures/dir', dir
 		.then ->
 			nofs.globP '**', {
@@ -161,9 +158,6 @@ describe 'Basic:', ->
 
 	it 'copySync', ->
 		dir = 'test/fixtures/dir-copySync'
-		after ->
-			nofs.removeP dir
-
 		nofs.copySync 'test/fixtures/dir', dir
 		ls = nofs.globSync '**', {
 			cwd: dir
@@ -175,9 +169,6 @@ describe 'Basic:', ->
 
 	it 'copyP pattern', ->
 		dir = 'test/fixtures/dir-copyP-pattern'
-		after ->
-			nofs.removeP dir
-
 		nofs.copyP 'test/fixtures/dir/*0/**', dir
 		.then ->
 			nofs.globP '**', {
@@ -191,9 +182,6 @@ describe 'Basic:', ->
 
 	it 'copySync pattern', ->
 		dir = 'test/fixtures/dir-copySync-pattern'
-		after ->
-			nofs.removeP dir
-
 		nofs.copySync 'test/fixtures/dir/*0/**', dir
 		ls = nofs.globSync '**', {
 			cwd: dir
@@ -206,9 +194,6 @@ describe 'Basic:', ->
 	it 'moveP', ->
 		dir = 'test/fixtures/dir-moveP'
 		dir2 = dir + '2'
-		after ->
-			nofs.removeP dir2
-
 		nofs.copyP 'test/fixtures/dir', dir
 		.then ->
 			nofs.moveP dir, dir2
@@ -225,9 +210,6 @@ describe 'Basic:', ->
 	it 'moveSync', ->
 		dir = 'test/fixtures/dir-moveSync'
 		dir2 = dir + '2'
-		after ->
-			nofs.removeP dir2
-
 		nofs.copySync 'test/fixtures/dir', dir
 		nofs.moveSync dir, dir2
 		ls = nofs.globSync '**', {
@@ -239,9 +221,6 @@ describe 'Basic:', ->
 		]
 
 	it 'copyP moveP a file', ->
-		after ->
-			nofs.removeSync 'test/fixtures/copySample'
-			nofs.removeSync 'test/fixtures/copySample2'
 
 		nofs.copyP 'test/fixtures/sample.txt', 'test/fixtures/copySample/sample'
 		.then ->
@@ -252,9 +231,6 @@ describe 'Basic:', ->
 				shouldEqual exists, true
 
 	it 'copySync moveSync a file', ->
-		after ->
-			nofs.removeSync 'test/fixtures/copySampleSync'
-			nofs.removeSync 'test/fixtures/copySampleSync2'
 
 		nofs.copyP 'test/fixtures/sample.txt', 'test/fixtures/copySampleSync/sample'
 		.then ->
@@ -266,9 +242,6 @@ describe 'Basic:', ->
 
 	it 'copyP filter', ->
 		dir = 'test/fixtures/copyFilter'
-		after ->
-			nofs.removeP dir
-
 		nofs.copyP 'test/fixtures/dir', dir, { filter: '**/b' }
 		.then ->
 			nofs.globP dir + '/**'
@@ -279,9 +252,6 @@ describe 'Basic:', ->
 
 	it 'copySync filter', ->
 		dir = 'test/fixtures/copyFilter'
-		after ->
-			nofs.removeP dir
-
 		nofs.copySync 'test/fixtures/dir', dir, { filter: '**/b' }
 		ls = nofs.globSync dir + '/**'
 		shouldDeepEqual normalizePath(ls), [
@@ -289,9 +259,6 @@ describe 'Basic:', ->
 		]
 
 	it 'touchP time', ->
-		after ->
-			nofs.removeSync 'test/fixtures/touchP'
-
 		t = Date.now() // 1000
 		nofs.touchP 'test/fixtures/touchP', {
 			mtime: t
@@ -302,9 +269,6 @@ describe 'Basic:', ->
 				shouldEqual stats.mtime.getTime() // 1000, t
 
 	it 'touchSync time', ->
-		after ->
-			nofs.removeSync 'test/fixtures/touchSync'
-
 		t = Date.now() // 1000
 		nofs.touchSync 'test/fixtures/touchSync', {
 			mtime: t
@@ -313,9 +277,6 @@ describe 'Basic:', ->
 		shouldEqual stats.mtime.getTime() // 1000, t
 
 	it 'touchP create', ->
-		after ->
-			nofs.removeP 'test/fixtures/touchCreate'
-
 		nofs.touchP 'test/fixtures/touchCreate'
 		.then ->
 			nofs.fileExistsP 'test/fixtures/touchCreate'
@@ -323,17 +284,11 @@ describe 'Basic:', ->
 			shouldEqual exists, true
 
 	it 'touchSync create', ->
-		after ->
-			nofs.removeSync 'test/fixtures/touchCreate'
-
 		nofs.touchSync 'test/fixtures/touchCreate'
 		exists = nofs.fileExistsSync 'test/fixtures/touchCreate'
 		shouldEqual exists, true
 
 	it 'outputFileP', ->
-		after ->
-			nofs.removeP 'test/fixtures/out'
-
 		nofs.outputFileP 'test/fixtures/out/put/file', 'ok'
 		.then ->
 			nofs.readFileP 'test/fixtures/out/put/file', 'utf8'
@@ -341,17 +296,11 @@ describe 'Basic:', ->
 			shouldEqual str, 'ok'
 
 	it 'outputFileSync', ->
-		after ->
-			nofs.removeSync 'test/fixtures/out'
-
 		nofs.outputFileSync 'test/fixtures/out/put/file', 'ok'
 		str = nofs.readFileSync 'test/fixtures/out/put/file', 'utf8'
 		shouldEqual str, 'ok'
 
 	it 'mkdirsP', ->
-		after ->
-			nofs.removeP 'test/fixtures/make'
-
 		nofs.mkdirsP 'test/fixtures/make/dir/s'
 		.then ->
 			nofs.dirExistsP 'test/fixtures/make/dir/s'
@@ -359,17 +308,11 @@ describe 'Basic:', ->
 			shouldEqual exists, true
 
 	it 'mkdirsSync', ->
-		after ->
-			nofs.removeSync 'test/fixtures/make'
-
 		nofs.mkdirsSync 'test/fixtures/make/dir/s'
 		exists = nofs.dirExistsSync 'test/fixtures/make/dir/s'
 		shouldEqual exists, true
 
 	it 'writeJsonP readJsonP', ->
-		after ->
-			nofs.removeP 'test/fixtures/json'
-
 		nofs.outputJsonP 'test/fixtures/json/json.json', { val: 'test' }
 		.then ->
 			nofs.readJsonP 'test/fixtures/json/json.json'
@@ -377,9 +320,6 @@ describe 'Basic:', ->
 				shouldDeepEqual obj, { val: 'test' }
 
 	it 'alias', ->
-		after ->
-			nofs.removeSync 'test/fixtures/alias'
-
 		nofs.ensureFileP 'test/fixtures/alias/file/path'
 		.then (created) ->
 			shouldEqual created, true
@@ -464,16 +404,6 @@ describe 'Basic:', ->
 		]
 
 describe 'Watch:', ->
-
-	before ->
-		[
-			'test/fixtures/watchFileTmp.txt'
-			'test/fixtures/watchDirModify'
-			'test/fixtures/watchDirDelete'
-			'test/fixtures/watchDirCreate'
-		].map (p) ->
-			nofs.removeSync p
-
 	it 'watchFileP', (tdone) ->
 		path = 'test/fixtures/watchFileTmp.txt'
 
