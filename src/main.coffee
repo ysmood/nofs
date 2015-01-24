@@ -1,9 +1,3 @@
-###*
- * I hate to reinvent the wheel. But to purely use promise, I don't
- * have many choices.
-###
-Overview = 'nofs'
-
 iopath = require './path'
 npath = if process.env.force_unix_sep == 'off'
 	iopath

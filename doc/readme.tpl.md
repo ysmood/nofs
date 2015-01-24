@@ -14,8 +14,7 @@ lib of [nokit][].
 - Introduce `map` and `reduce` to folders.
 - Recursive `glob`, `move`, `copy`, `remove`, etc.
 - **Promise** by default.
-- Unified intuitive API. Support **Promise**, **Sync** and **Callback**paradigms.
-- Much lighter than [gulp](https://github.com/gulpjs/gulp), but much more flexible.
+- Unified intuitive API. Support **Promise**, **Sync** and **Callback** paradigms.
 
 ## Install
 
@@ -141,13 +140,7 @@ fs.eachDirP('.', {
 ```
 
 
-## VS Gulp
-
-- If you know Promise, no learning curve.
-- If you use it with [nokit][] `spawn`, you can esaily take advantage of multi-core cpu, and compile much faster.
-- Error handling is more unified and flexible, since it is just Promise.
-- Async sequence chainning is also more unified and flexible.
-- Will works great with ES7 `async / await`.
+## Works like Gulp
 
 For more information see project [nokit][].
 
