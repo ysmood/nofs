@@ -86,8 +86,8 @@ fs.mkdirsP 'deep/dir/path'
 .then ->
     fs.copyP 'one/**/*.js', 'two'
 .then ->
-    # Get all txt files.
-    fs.globP 'deep/**'
+    # Get all files, except js files.
+    fs.globP ['deep/**', '!**/*.js']
 .then (list) ->
     console.log list
 .then ->
@@ -149,6 +149,8 @@ fs.eachDirP('.', {
 - Async sequence chainning is also more unified and flexible.
 - Will works great with ES7 `async / await`.
 
+For more information see project [nokit][].
+
 ```coffee
 fs = require 'nofs'
 
@@ -171,7 +173,6 @@ minify = (js) ->
 # Use the plugins.
 jsTask = ->
     # All files will be compiled concurrently.
-    # Unlike Gulp, you don't have to wait glob finished to compile a file.
     fs.mapDirP 'src/**/*.coffee', 'dist', (src, dest) ->
         # Here's the work flow, simple yet readable.
         coffee src

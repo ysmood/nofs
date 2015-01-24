@@ -656,7 +656,7 @@ _.extend nofs, {
 	 * 	console.log paths
 	 *
 	 * # Exclude some files. "a.js" will be ignored.
-	 * nofs.globP(['**\/*.js', '**\/a.js']).then (paths) ->
+	 * nofs.globP(['**\/*.js', '!**\/a.js']).then (paths) ->
 	 * 	console.log paths
 	 *
 	 * # Custom the iterator. Append '/' to each directory path.
@@ -688,18 +688,24 @@ _.extend nofs, {
 
 		fn ?= (fileInfo, list) -> list.push fileInfo.path
 
-		# Hanle negate patterns
+		# Hanle negate patterns.
+		# Only when there are both negate and non-negate patterns,
+		# the exclusion will work.
 		negatePms = []
 		pms = []
 		if not opts.pmatch.nonegate
 			for p in patterns
-				arr = if p[0] == '!' and patterns.length > 1
-					p = p[1..]
-					negatePms
-				else
-					pms
-				arr.push new nofs.pmatch.Minimatch(p, opts.pmatch)
-		negatePms = null if negatePms.length == 0
+				(if p[0] == '!' then negatePms else pms).push p
+
+			if pms.length == 0
+				pms = negatePms
+				negatePms = []
+		pms = pms.map (p) -> new nofs.pmatch.Minimatch(p, opts.pmatch)
+		negatePms = if negatePms.length == 0
+			null
+		else
+			negatePms.map (p) -> new nofs.pmatch.Minimatch(p[1..], opts.pmatch)
+
 		negateMath = (path) ->
 			_.any negatePms, (pm) -> pm.match path
 
@@ -711,7 +717,7 @@ _.extend nofs, {
 				pm.match fileInfo.path
 
 			opts.searchFilter = (fileInfo) ->
-				return if negatePms and negateMath fileInfo.path
+				return if negatePms and negateMath(fileInfo.path, true)
 				if fileInfo.path == '.'
 					return true
 				pm.match fileInfo.path, true
@@ -746,18 +752,24 @@ _.extend nofs, {
 
 		fn ?= (fileInfo, list) -> list.push fileInfo.path
 
-		# Hanle negate patterns
+		# Hanle negate patterns.
+		# Only when there are both negate and non-negate patterns,
+		# the exclusion will work.
 		negatePms = []
 		pms = []
 		if not opts.pmatch.nonegate
 			for p in patterns
-				arr = if p[0] == '!' and patterns.length > 1
-					p = p[1..]
-					negatePms
-				else
-					pms
-				arr.push new nofs.pmatch.Minimatch(p, opts.pmatch)
-		negatePms = null if negatePms.length == 0
+				(if p[0] == '!' then negatePms else pms).push p
+
+			if pms.length == 0
+				pms = negatePms
+				negatePms = []
+		pms = pms.map (p) -> new nofs.pmatch.Minimatch(p, opts.pmatch)
+		negatePms = if negatePms.length == 0
+			null
+		else
+			negatePms.map (p) -> new nofs.pmatch.Minimatch(p[1..], opts.pmatch)
+
 		negateMath = (path) ->
 			_.any negatePms, (pm) -> pm.match path
 
@@ -769,7 +781,7 @@ _.extend nofs, {
 				pm.match fileInfo.path
 
 			opts.searchFilter = (fileInfo) ->
-				return if negatePms and negateMath fileInfo.path
+				return if negatePms and negateMath(fileInfo.path, true)
 				if fileInfo.path == '.'
 					return true
 				pm.match fileInfo.path, true
