@@ -74,6 +74,14 @@ describe 'Basic:', ->
 	it 'fileExistsSync', ->
 		assert.equal nofs.fileExistsSync('readme.md'), true
 
+	it 'readFile', (tdone) ->
+		nofs.readFile 'test/fixtures/sample.txt', 'utf8', (err, ret) ->
+			try
+				assert.equal ret, 'test'
+				tdone()
+			catch err
+				tdone err
+
 	it 'readFileP', ->
 		nofs.readFileP 'test/fixtures/sample.txt', 'utf8'
 		.then (ret) ->
