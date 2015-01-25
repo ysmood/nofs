@@ -38,7 +38,7 @@ If you call an async function without callback, it will return a promise.
 For example the `nofs.remove('dir', -> 'done!' )` are the same with
 `nofs.remove('dir').then -> 'done!'`.
 
-### [eachDir](#eachDirP)
+### [eachDir](#eachDir)
 
 It is the core function for directory manipulation. Other abstract functions
 like `mapDir`, `reduceDir`, `glob` are built on top of it. You can play
@@ -78,30 +78,30 @@ fs.copySync 'dir/a', 'dir/b'
 ###
 # Promise
 ###
-fs.mkdirsP 'deep/dir/path'
+fs.mkdirs 'deep/dir/path'
 .then ->
-    fs.outputFileP 'a.txt', 'hello world'
+    fs.outputFile 'a.txt', 'hello world'
 .then ->
-    fs.moveP 'dir/path', 'other'
+    fs.move 'dir/path', 'other'
 .then ->
-    fs.copyP 'one/**/*.js', 'two'
+    fs.copy 'one/**/*.js', 'two'
 .then ->
     # Get all files, except js files.
-    fs.globP ['deep/**', '!**/*.js']
+    fs.glob ['deep/**', '!**/*.js']
 .then (list) ->
     console.log list
 .then ->
     # Remove only js files.
-    fs.removeP 'deep/**/*.js'
+    fs.remove 'deep/**/*.js'
 
 
 ###
 # Concat all css files.
 ###
-fs.reduceDirP 'dir/**/*.css', {
+fs.reduceDir 'dir/**/*.css', {
     init: '/* Concated by nofs */\n'
     iter: (sum, { path }) ->
-        fs.readFileP(path).then (str) ->
+        fs.readFile(path).then (str) ->
             sum += str + '\n'
 }
 .then (concated) ->
@@ -121,7 +121,7 @@ filter = ({ path }) ->
             return false
     return true
 
-fs.eachDirP('.', {
+fs.eachDir('.', {
     searchFilter: filter # Ensure subdirectory won't be searched.
     filter: filter
     iter: (info) -> info  # Directly return the file info object.
@@ -141,14 +141,14 @@ fs = require 'nofs'
 
 # coffee plugin
 coffee = (path) ->
-    fs.readFileP path, 'utf8'
+    fs.readFile path, 'utf8'
     .then (coffee) ->
         # Unlike pipe, you can still control all the details esaily.
         '/* Add Lisence Info */\n\n' + coffee
 
 # writer plugin: A simple curried function.
 writer = (path) -> (js) ->
-    fs.outputFileP path, js
+    fs.outputFile path, js
 
 # minify plugin
 minify = (js) ->
@@ -158,7 +158,7 @@ minify = (js) ->
 # Use the plugins.
 jsTask = ->
     # All files will be compiled concurrently.
-    fs.mapDirP 'src/**/*.coffee', 'dist', {
+    fs.mapDir 'src/**/*.coffee', 'dist', {
         iter: (src, dest) ->
             # Here's the work flow, simple yet readable.
             coffee src

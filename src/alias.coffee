@@ -12,9 +12,8 @@ module.exports = (fs) ->
 
 	# Thus `nofs.touch` is the same with the `nofs.ensureFile`,
 	# `nofs.touchSync` is the same with the `nofs.ensureFileSync`,
-	# `nofs.touchP` is the same with the `nofs.ensureFileP`,
+	# `nofs.touch` is the same with the `nofs.ensureFile`,
 	for k, list of aliasList
 		for alias in list
 			fs[alias] = fs[k]
-			fs[alias + 'P'] = fs[k + 'P']
 			fs[alias + 'Sync'] = fs[k + 'Sync']

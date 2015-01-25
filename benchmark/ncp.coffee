@@ -38,7 +38,7 @@ ncp largeDir, 'test/fixtures/large-ncp', (err) ->
 
 	count = 0
 	console.time('nofs')
-	nofs.copyP largeDir, 'test/fixtures/large-nofs', {
+	nofs.copy largeDir, 'test/fixtures/large-nofs', {
 		filter: ->
 			count++
 			true

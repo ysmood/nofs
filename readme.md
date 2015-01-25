@@ -14,7 +14,7 @@ lib of [nokit][].
 - Introduce `map` and `reduce` to folders.
 - Recursive `glob`, `move`, `copy`, `remove`, etc.
 - **Promise** by default.
-- Unified intuitive API. Support **Promise**, **Sync** and **Callback** paradigms.
+- Unified intuitive API. Supports both **Promise**, **Sync** and **Callback** paradigms.
 
 ## Install
 
@@ -34,10 +34,11 @@ When the system is Windows and `process.env.force_unix_sep != 'off'`, nofs  will
 
 ### Promise, Sync and Callback
 
-Any function that has a `Sync` version will has a promise version that ends with `P`.
-For example the `fs.remove` will have `fs.removeSync` for sync IO, and `fs.removeP` for Promise.
+If you call an async function without callback, it will return a promise.
+For example the `nofs.remove('dir', -> 'done!' )` are the same with
+`nofs.remove('dir').then -> 'done!'`.
 
-### [eachDir](#eachDirP)
+### [eachDir](#eachDir)
 
 It is the core function for directory manipulation. Other abstract functions
 like `mapDir`, `reduceDir`, `glob` are built on top of it. You can play
@@ -77,42 +78,34 @@ fs.copySync 'dir/a', 'dir/b'
 ###
 # Promise
 ###
-fs.mkdirsP 'deep/dir/path'
+fs.mkdirs 'deep/dir/path'
 .then ->
-    fs.outputFileP 'a.txt', 'hello world'
+    fs.outputFile 'a.txt', 'hello world'
 .then ->
-    fs.moveP 'dir/path', 'other'
+    fs.move 'dir/path', 'other'
 .then ->
-    fs.copyP 'one/**/*.js', 'two'
+    fs.copy 'one/**/*.js', 'two'
 .then ->
     # Get all files, except js files.
-    fs.globP ['deep/**', '!**/*.js']
+    fs.glob ['deep/**', '!**/*.js']
 .then (list) ->
     console.log list
 .then ->
     # Remove only js files.
-    fs.removeP 'deep/**/*.js'
+    fs.remove 'deep/**/*.js'
 
 
 ###
 # Concat all css files.
 ###
-fs.reduceDirP 'dir/**/*.css', {
+fs.reduceDir 'dir/**/*.css', {
     init: '/* Concated by nofs */\n'
-}, (sum, { path }) ->
-    fs.readFileP(path).then (str) ->
-        sum += str + '\n'
+    iter: (sum, { path }) ->
+        fs.readFile(path).then (str) ->
+            sum += str + '\n'
+}
 .then (concated) ->
     console.log concated
-
-
-###
-# Compile files from one place to another.
-###
-fs.mapDirP 'from', 'to', (src, dest) ->
-    fs.readFileP(src, 'utf8').then (str) ->
-        compiled = '/* Compiled by nofs */\n' + str
-        fs.outputFileP dest, compiled
 
 
 
@@ -128,12 +121,11 @@ filter = ({ path }) ->
             return false
     return true
 
-fs.eachDirP('.', {
+fs.eachDir('.', {
     searchFilter: filter # Ensure subdirectory won't be searched.
     filter: filter
-}, (info) ->
-    info  # Directly return the file info object.
-).then (tree) ->
+    iter: (info) -> info  # Directly return the file info object.
+}).then (tree) ->
     # Instead a list as usual,
     # here we get a file tree for further usage.
     console.log tree
@@ -149,14 +141,14 @@ fs = require 'nofs'
 
 # coffee plugin
 coffee = (path) ->
-    fs.readFileP path, 'utf8'
+    fs.readFile path, 'utf8'
     .then (coffee) ->
         # Unlike pipe, you can still control all the details esaily.
         '/* Add Lisence Info */\n\n' + coffee
 
 # writer plugin: A simple curried function.
 writer = (path) -> (js) ->
-    fs.outputFileP path, js
+    fs.outputFile path, js
 
 # minify plugin
 minify = (js) ->
@@ -166,11 +158,13 @@ minify = (js) ->
 # Use the plugins.
 jsTask = ->
     # All files will be compiled concurrently.
-    fs.mapDirP 'src/**/*.coffee', 'dist', (src, dest) ->
-        # Here's the work flow, simple yet readable.
-        coffee src
-        .then minify
-        .then writer(dest)
+    fs.mapDir 'src/**/*.coffee', 'dist', {
+        iter: (src, dest) ->
+            # Here's the work flow, simple yet readable.
+            coffee src
+            .then minify
+            .then writer(dest)
+    }
 
 cssTask = -> # ...
 
@@ -203,7 +197,7 @@ __No native `fs` funtion will be listed.__
     future it will be removed.
     [Bluebird]: https://github.com/petkaantonov/bluebird
 
-- #### **[copyDirP](src/main.coffee?source#L50)**
+- #### **[copyDir](src/main.coffee?source#L52)**
 
     Copy an empty directory.
 
@@ -222,7 +216,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[copyFileP](src/main.coffee?source#L117)**
+- #### **[copyFile](src/main.coffee?source#L119)**
 
     Copy a single file.
 
@@ -241,7 +235,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[copyP](src/main.coffee?source#L218)**
+- #### **[copy](src/main.coffee?source#L220)**
 
     Like `cp -r`.
 
@@ -255,19 +249,19 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-        Extends the options of [eachDir](#eachDirP-opts).
+        Extends the options of [eachDir](#eachDir-opts).
         Defaults:
         ```coffee
         {
         	# Overwrite file if exists.
         	isForce: false
-        	isFnFileOnly: false
+        	isIterFileOnly: false
         }
         ```
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[dirExistsP](src/main.coffee?source#L291)**
+- #### **[dirExists](src/main.coffee?source#L293)**
 
     Check if a path exists, and if it is a directory.
 
@@ -277,9 +271,9 @@ __No native `fs` funtion will be listed.__
 
         Resolves a boolean value.
 
-- #### **[eachDirP](src/main.coffee?source#L406)**
+- #### **[eachDir](src/main.coffee?source#L418)**
 
-    <a name='eachDirP'></a>
+    <a name='eachDir'></a>
     Concurrently walks through a path recursively with a callback.
     The callback can return a Promise to continue the sequence.
     The resolving order is also recursive, a directory path resolves
@@ -291,13 +285,16 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-        Optional. <a id='eachDirP-opts'></a> Defaults:
+        Optional. <a id='eachDir-opts'></a> Defaults:
         ```coffee
         {
+        	# Callback on each path iteration.
+        	iter: (fileInfo) -> Promise | Any
+
         	# Auto check if the spath is a minimatch pattern.
         	isAutoMimimatch: true
 
-        	# Include entries whose names begin with a dot (.).
+        	# Include entries whose names begin with a dot (.), the posix hidden files.
         	all: true
 
         	# To filter paths. It can also be a RegExp or a glob pattern string.
@@ -307,8 +304,8 @@ __No native `fs` funtion will be listed.__
         	# The current working directory to search.
         	cwd: ''
 
-        	# Call fn only when it is a file.
-        	isFnFileOnly: false
+        	# Call iter only when it is a file.
+        	isIterFileOnly: false
 
         	# Whether to include the root directory or not.
         	isIncludeRoot: true
@@ -319,13 +316,13 @@ __No native `fs` funtion will be listed.__
         	# Iterate children first, then parent folder.
         	isReverse: false
 
-        	# When isReverse is false, it will be the previous fn resolve value.
+        	# When isReverse is false, it will be the previous iter resolve value.
         	val: any
 
         	# If it return false, sub-entries won't be searched.
         	# When the `filter` option returns false, its children will
         	# still be itered. But when `searchFilter` returns false, children
-        	# won't be itered by the fn.
+        	# won't be itered by the iter.
         	searchFilter: (fileInfo) -> true
 
         	# If you want sort the names of each level, you can hack here.
@@ -333,12 +330,9 @@ __No native `fs` funtion will be listed.__
         	handleNames: (names) -> names
         }
         ```
-
-    - **<u>param</u>**: `fn` { _Function_ }
-
-        `(fileInfo) -> Promise | Any`.
-        The `fileInfo` object has these properties: `{ path, isDir, children, stats }`.
-        Assume we call the function: `nofs.eachDirP('dir', (f) -> f)`,
+        The argument of `opts.iter`, `fileInfo` object has these
+        properties: `{ path, isDir, children, stats }`.
+        Assume we call the function: `nofs.eachDir('dir', { iter: (f) -> f })`,
         the resolved directory object array may look like:
         ```coffee
         {
@@ -370,33 +364,40 @@ __No native `fs` funtion will be listed.__
 
         ```coffee
         # Print all file and directory names, and the modification time.
-        nofs.eachDirP 'dir/path', (obj, stats) ->
-        	console.log obj.path, stats.mtime
+        nofs.eachDir 'dir/path', {
+        	iter: (obj, stats) ->
+        		console.log obj.path, stats.mtime
+        }
 
         # Print path name list.
-        nofs.eachDirP 'dir/path', (curr) -> curr
+        nofs.eachDir 'dir/path', { iter: (curr) -> curr }
         .then (tree) ->
         	console.log tree
 
         # Find all js files.
-        nofs.eachDirP 'dir/path', {
-        	filter: '**/*.js', nocase: true
-        }, ({ path }) ->
-        	console.log paths
+        nofs.eachDir 'dir/path', {
+        	filter: '**/*.js'
+        	iter: ({ path }) ->
+        		console.log paths
+        }
 
         # Find all js files.
-        nofs.eachDirP 'dir/path', { filter: /\.js$/ }, ({ path }) ->
-        	console.log paths
+        nofs.eachDir 'dir/path', {
+        	filter: /\.js$/
+         iter: ({ path }) ->
+        		console.log paths
+        }
 
-        # Custom filter
-        nofs.eachDirP 'dir/path', {
+        # Custom filter.
+        nofs.eachDir 'dir/path', {
         	filter: ({ path, stats }) ->
         		path.slice(-1) != '/' and stats.size > 1000
-        }, (path) ->
-        	console.log path
+        	iter: (path) ->
+        		console.log path
+        }
         ```
 
-- #### **[fileExistsP](src/main.coffee?source#L615)**
+- #### **[fileExists](src/main.coffee?source#L612)**
 
     Check if a path exists, and if it is a file.
 
@@ -406,7 +407,7 @@ __No native `fs` funtion will be listed.__
 
         Resolves a boolean value.
 
-- #### **[globP](src/main.coffee?source#L666)**
+- #### **[glob](src/main.coffee?source#L666)**
 
     Get files by patterns.
 
@@ -418,7 +419,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-        Extends the options of [eachDir](#eachDirP-opts).
+        Extends the options of [eachDir](#eachDir-opts).
         But the `filter` property will be fixed with the pattern.
         Defaults:
         ```coffee
@@ -427,14 +428,12 @@ __No native `fs` funtion will be listed.__
 
         	# The minimatch option object.
         	pmatch: {}
+
+        	# It will be called after each match. It can also return
+        	# a promise.
+        	iter: (fileInfo, list) -> list.push fileInfo.path
         }
         ```
-
-    - **<u>param</u>**: `fn` { _Function_ }
-
-        `(fileInfo, list) -> Promise | Any`.
-        It will be called after each match. By default it is:
-        `(fileInfo, list) -> list.push fileInfo.path`
 
     - **<u>return</u>**: { _Promise_ }
 
@@ -444,24 +443,26 @@ __No native `fs` funtion will be listed.__
 
         ```coffee
         # Get all js files.
-        nofs.globP(['**/*.js', '**/*.css']).then (paths) ->
+        nofs.glob(['**/*.js', '**/*.css']).then (paths) ->
         	console.log paths
 
         # Exclude some files. "a.js" will be ignored.
-        nofs.globP(['**/*.js', '!**/a.js']).then (paths) ->
+        nofs.glob(['**/*.js', '!**/a.js']).then (paths) ->
         	console.log paths
 
         # Custom the iterator. Append '/' to each directory path.
-        nofs.globP('**/*.js', (info, list) ->
-        	list.push if info.isDir
-        		info.path + '/'
-        	else
-        		info.path
-        ).then (paths) ->
+        nofs.glob '**/*.js', {
+        	iter: (info, list) ->
+        		list.push if info.isDir
+        			info.path + '/'
+        		else
+        			info.path
+        }
+        .then (paths) ->
         	console.log paths
         ```
 
-- #### **[mapDirP](src/main.coffee?source#L828)**
+- #### **[mapDir](src/main.coffee?source#L822)**
 
     Map file from a directory to another recursively with a
     callback.
@@ -476,19 +477,17 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-        Extends the options of [eachDir](#eachDirP-opts). But `cwd` is
+        Extends the options of [eachDir](#eachDir-opts). But `cwd` is
         fixed with the same as the `from` parameter. Defaults:
         ```coffee
         {
-        	isFnFileOnly: true
+        	# It will be called with each path. The callback can return
+        	# a `Promise` to keep the async sequence go on.
+        	iter: (src, dest, fileInfo) -> Promise | Any
+
+        	isIterFileOnly: true
         }
         ```
-
-    - **<u>param</u>**: `fn` { _Function_ }
-
-        `(src, dest, fileInfo) -> Promise | Any` The callback
-        will be called with each path. The callback can return a `Promise` to
-        keep the async sequence go on.
 
     - **<u>return</u>**: { _Promise_ }
 
@@ -499,17 +498,15 @@ __No native `fs` funtion will be listed.__
         ```coffee
         # Copy and add license header for each files
         # from a folder to another.
-        nofs.mapDirP(
-        	'from'
-        	'to'
-        	(src, dest) ->
-        		nofs.readFileP(src).then (buf) ->
+        nofs.mapDir 'from', 'to', {
+        	iter: (src, dest) ->
+        		nofs.readFile(src).then (buf) ->
         			buf += 'License MIT\n' + buf
-        			nofs.outputFileP dest, buf
-        )
+        			nofs.outputFile dest, buf
+        }
         ```
 
-- #### **[mkdirsP](src/main.coffee?source#L876)**
+- #### **[mkdirs](src/main.coffee?source#L868)**
 
     Recursively create directory path, like `mkdir -p`.
 
@@ -521,7 +518,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[moveP](src/main.coffee?source#L918)**
+- #### **[move](src/main.coffee?source#L910)**
 
     Moves a file or directory. Also works between partitions.
     Behaves like the Unix `mv`.
@@ -548,7 +545,7 @@ __No native `fs` funtion will be listed.__
         It will resolve a boolean value which indicates
         whether this action is taken between two partitions.
 
-- #### **[outputFileP](src/main.coffee?source#L984)**
+- #### **[outputFile](src/main.coffee?source#L976)**
 
     Almost the same as `writeFile`, except that if its parent
     directories do not exist, they will be created.
@@ -559,12 +556,12 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _String | Object_ }
 
-        <a id="outputFileP-opts"></a>
+        <a id="outputFile-opts"></a>
         Same with the [writeFile](#writeFile-opts).
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[outputJsonP](src/main.coffee?source#L1016)**
+- #### **[outputJson](src/main.coffee?source#L1008)**
 
     Write a object to a file, if its parent directory doesn't
     exists, it will be created.
@@ -577,7 +574,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object | String_ }
 
-        Extends the options of [outputFileP](#outputFileP-opts).
+        Extends the options of [outputFile](#outputFile-opts).
         Defaults:
         ```coffee
         {
@@ -588,13 +585,13 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[path](src/main.coffee?source#L1038)**
+- #### **[path](src/main.coffee?source#L1030)**
 
     The native [io.js](iojs.org) path lib.
 
     - **<u>type</u>**: { _Object_ }
 
-- #### **[pmatch](src/main.coffee?source#L1053)**
+- #### **[pmatch](src/main.coffee?source#L1045)**
 
     The `minimatch` lib. It has two extra methods:
     - `isPmatch(String | Object) -> Pmatch | undefined`
@@ -608,20 +605,20 @@ __No native `fs` funtion will be listed.__
 
     [Offline Documentation](?gotoDoc=minimatch/readme.md)
 
-- #### **[Promise](src/main.coffee?source#L1059)**
+- #### **[Promise](src/main.coffee?source#L1051)**
 
     What promise this lib is using.
 
     - **<u>type</u>**: { _Bluebird_ }
 
-- #### **[promisify](src/main.coffee?source#L1066)**
+- #### **[promisify](src/main.coffee?source#L1058)**
 
     A callback style to promise helper.
     It doesn't depends on Bluebird.
 
     - **<u>type</u>**: { _Function_ }
 
-- #### **[readJsonP](src/main.coffee?source#L1079)**
+- #### **[readJson](src/main.coffee?source#L1071)**
 
     Read A Json file and parse it to a object.
 
@@ -638,32 +635,30 @@ __No native `fs` funtion will be listed.__
     - **<u>example</u>**:
 
         ```coffee
-        nofs.readJsonP('a.json').then (obj) ->
+        nofs.readJson('a.json').then (obj) ->
         	console.log obj.name, obj.age
         ```
 
-- #### **[reduceDirP](src/main.coffee?source#L1115)**
+- #### **[reduceDir](src/main.coffee?source#L1111)**
 
-    Walk through directory recursively with a callback.
+    Walk through directory recursively with a iterator.
 
     - **<u>param</u>**: `path` { _String_ }
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-        Extends the options of [eachDir](#eachDirP-opts),
+        Extends the options of [eachDir](#eachDir-opts),
         with some extra options:
         ```coffee
         {
+        	iter: (prev, path, isDir, stats) -> Promise | Any
+
         	# The init value of the walk.
         	init: undefined
 
-        	isFnFileOnly: true
+        	isIterFileOnly: true
         }
         ```
-
-    - **<u>param</u>**: `fn` { _Function_ }
-
-        `(prev, path, isDir, stats) -> Promise`
 
     - **<u>return</u>**: { _Promise_ }
 
@@ -673,14 +668,17 @@ __No native `fs` funtion will be listed.__
 
         ```coffee
         # Concat all files.
-        nofs.reduceDirP 'dir/path', { init: '' }, (val, { path }) ->
-        	nofs.readFileP(path).then (str) ->
-        		val += str + '\n'
+        nofs.reduceDir 'dir/path', {
+        	init: ''
+        	iter: (val, { path }) ->
+        		nofs.readFile(path).then (str) ->
+        			val += str + '\n'
+        }
         .then (ret) ->
         	console.log ret
         ```
 
-- #### **[removeP](src/main.coffee?source#L1157)**
+- #### **[remove](src/main.coffee?source#L1148)**
 
     Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -688,12 +686,12 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-        Extends the options of [eachDir](#eachDirP-opts). But
+        Extends the options of [eachDir](#eachDir-opts). But
         the `isReverse` is fixed with `true`.
 
     - **<u>return</u>**: { _Promise_ }
 
-- #### **[touchP](src/main.coffee?source#L1196)**
+- #### **[touch](src/main.coffee?source#L1191)**
 
     Change file access and modification times.
     If the file does not exist, it is created.
@@ -715,7 +713,7 @@ __No native `fs` funtion will be listed.__
 
         If new file created, resolves true.
 
-- #### **[watchFileP](src/main.coffee?source#L1251)**
+- #### **[watchPath](src/main.coffee?source#L1249)**
 
     <a id="writeFile-opts"></a>
     Watch a file. If the file changes, the handler will be invoked.
@@ -728,19 +726,17 @@ __No native `fs` funtion will be listed.__
 
         The file path
 
-    - **<u>param</u>**: `handler` { _Function_ }
+    - **<u>param</u>**: `opts` { _Object_ }
 
-        Event listener.
-        The handler has these params:
-        - file path
-        - current `nofs.Stats`
-        - previous `nofs.Stats`
-        - if its a deletion
+        Defaults:
+        ```coffee
+        {
+        	handler: (path, curr, prev, isDeletion) ->
 
-    - **<u>param</u>**: `autoUnwatch` { _Boolean_ }
-
-        Auto unwatch the file while file deletion.
-        Default is true.
+        	# Auto unwatch the file while file deletion.
+        	autoUnwatch: true
+        }
+        ```
 
     - **<u>return</u>**: { _Promise_ }
 
@@ -750,22 +746,26 @@ __No native `fs` funtion will be listed.__
 
         ```coffee
         process.env.watchPersistent = 'off'
-        nofs.watchFileP 'a.js', (path, curr, prev, isDeletion) ->
-        	if curr.mtime != prev.mtime
-        		console.log path
+        nofs.watchFile 'a.js', {
+        	handler: (path, curr, prev, isDeletion) ->
+        		if curr.mtime != prev.mtime
+        			console.log path
+        }
         ```
 
-- #### **[watchFilesP](src/main.coffee?source#L1282)**
+- #### **[watchFiles](src/main.coffee?source#L1284)**
 
     Watch files, when file changes, the handler will be invoked.
-    It is build on the top of `nofs.watchFileP`.
+    It is build on the top of `nofs.watchFile`.
 
     - **<u>param</u>**: `patterns` { _Array_ }
 
         String array with minimatch syntax.
         Such as `['*/**.css', 'lib/**/*.js']`.
 
-    - **<u>param</u>**: `handler` { _Function_ }
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Same as the `nofs.watchFile`.
 
     - **<u>return</u>**: { _Promise_ }
 
@@ -778,12 +778,12 @@ __No native `fs` funtion will be listed.__
         	console.log path
         ```
 
-- #### **[watchDirP](src/main.coffee?source#L1320)**
+- #### **[watchDir](src/main.coffee?source#L1324)**
 
     Watch directory and all the files in it.
     It supports three types of change: create, modify, move, delete.
     By default, `move` event is disabled.
-    It is build on the top of `nofs.watchFileP`.
+    It is build on the top of `nofs.watchFile`.
 
     - **<u>param</u>**: `root` { _String_ }
 
@@ -792,6 +792,9 @@ __No native `fs` funtion will be listed.__
         Defaults:
         ```coffee
         {
+        	# If the "path" ends with '/' it's a directory, else a file.
+        	handler: (type, path, oldPath) ->
+
         	pattern: '**' # minimatch, string or array
 
         	# Whether to watch POSIX hidden file.
@@ -804,11 +807,6 @@ __No native `fs` funtion will be listed.__
         }
         ```
 
-    - **<u>param</u>**: `fn` { _Function_ }
-
-        `(type, path, oldPath) ->`.
-        If the "path" ends with '/' it's a directory, else a file.
-
     - **<u>return</u>**: { _Promise_ }
 
         Resolves a object that keys are paths,
@@ -820,11 +818,12 @@ __No native `fs` funtion will be listed.__
         # Only current folder, and only watch js and css file.
         nofs.watchDir 'lib', {
         	pattern: '*.+(js|css)'
-        }, (type, path) ->
+        	handler: (type, path) ->
         		console.log type, path
+        }
         ```
 
-- #### **[writeFileP](src/main.coffee?source#L1405)**
+- #### **[writeFile](src/main.coffee?source#L1404)**
 
     A `writeFile` shim for `< Node v0.10`.
 

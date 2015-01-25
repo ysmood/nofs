@@ -2,13 +2,13 @@
 
 - v0.4.0
 
-  - **API CHANGE** Now all iterator arguments are unified into the `opts`,
+  - **BIG API CHANGE!** Now all iterator arguments are unified into the `opts`,
     including the watch handlers.
 
 - v0.3.4
 
-  - Now `globP` array works as sequence, rather than running parallel.
-  - Now `globP` can use patterns to exclude files.
+  - Now `glob` array works as sequence, rather than running parallel.
+  - Now `glob` can use patterns to exclude files.
   - Better posix path handling.
 
 - v0.3.1
@@ -24,8 +24,8 @@
 
 - v0.2.6
 
-  - **API CHANGE** `watchDirP`.
-  - Fix a memory leak issue of `watchDirP`.
+  - **API CHANGE** `watchDir`.
+  - Fix a memory leak issue of `watchDir`.
   - **API CHANGE** `readDirs` removed.
 
 - v0.2.5

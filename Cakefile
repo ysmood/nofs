@@ -29,7 +29,7 @@ task 'build', 'Build project.', build = ->
 
 	start = kit.compose [
 		-> kit.remove 'dist'
-		-> fs.copyP 'src/**/*.js', 'dist'
+		-> fs.copy 'src/**/*.js', 'dist'
 		compileCoffee
 		createDoc
 	]

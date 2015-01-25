@@ -1,11 +1,14 @@
 Promise = require 'bluebird'
 
-module.exports =
+module.exports = _ =
 
 	Promise: Promise
 
 	promisify: (fn, self) ->
 		(args...) ->
+			if _.isFunction args[args.length - 1]
+				return fn.apply self, args
+
 			new Promise (resolve, reject) ->
 				args.push ->
 					if arguments[0]?
@@ -16,6 +19,10 @@ module.exports =
 
 	callbackify: (fn, self) ->
 		(args..., cb) ->
+			if not _.isFunction cb
+				args.push cb
+				return fn.apply self, args
+
 			if arguments.length == 1
 				args = [cb]
 				cb == null
