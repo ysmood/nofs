@@ -1239,7 +1239,7 @@ nofs = _.extend {}, {
 	 * @example
 	 * ```coffee
 	 * process.env.watchPersistent = 'off'
-	 * nofs.watchFile 'a.js', {
+	 * nofs.watchPath 'a.js', {
 	 * 	handler: (path, curr, prev, isDeletion) ->
 	 * 		if curr.mtime != prev.mtime
 	 * 			console.log path
@@ -1270,10 +1270,10 @@ nofs = _.extend {}, {
 
 	###*
 	 * Watch files, when file changes, the handler will be invoked.
-	 * It is build on the top of `nofs.watchFile`.
+	 * It is build on the top of `nofs.watchPath`.
 	 * @param  {Array} patterns String array with minimatch syntax.
 	 * Such as `['*\/**.css', 'lib\/**\/*.js']`.
-	 * @param  {Object} opts Same as the `nofs.watchFile`.
+	 * @param  {Object} opts Same as the `nofs.watchPath`.
 	 * @return {Promise} It contains the wrapped watch listeners.
 	 * @example
 	 * ```coffee
@@ -1290,7 +1290,7 @@ nofs = _.extend {}, {
 	 * Watch directory and all the files in it.
 	 * It supports three types of change: create, modify, move, delete.
 	 * By default, `move` event is disabled.
-	 * It is build on the top of `nofs.watchFile`.
+	 * It is build on the top of `nofs.watchPath`.
 	 * @param {String} root
 	 * @param  {Object} opts Defaults:
 	 * ```coffee

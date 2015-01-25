@@ -746,7 +746,7 @@ __No native `fs` funtion will be listed.__
 
         ```coffee
         process.env.watchPersistent = 'off'
-        nofs.watchFile 'a.js', {
+        nofs.watchPath 'a.js', {
         	handler: (path, curr, prev, isDeletion) ->
         		if curr.mtime != prev.mtime
         			console.log path
@@ -756,7 +756,7 @@ __No native `fs` funtion will be listed.__
 - #### **[watchFiles](src/main.coffee?source#L1284)**
 
     Watch files, when file changes, the handler will be invoked.
-    It is build on the top of `nofs.watchFile`.
+    It is build on the top of `nofs.watchPath`.
 
     - **<u>param</u>**: `patterns` { _Array_ }
 
@@ -765,7 +765,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>param</u>**: `opts` { _Object_ }
 
-        Same as the `nofs.watchFile`.
+        Same as the `nofs.watchPath`.
 
     - **<u>return</u>**: { _Promise_ }
 
@@ -783,7 +783,7 @@ __No native `fs` funtion will be listed.__
     Watch directory and all the files in it.
     It supports three types of change: create, modify, move, delete.
     By default, `move` event is disabled.
-    It is build on the top of `nofs.watchFile`.
+    It is build on the top of `nofs.watchPath`.
 
     - **<u>param</u>**: `root` { _String_ }
 
