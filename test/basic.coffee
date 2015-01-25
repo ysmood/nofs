@@ -40,7 +40,7 @@ normalizePath = (val) ->
 	else if typeof val == 'string'
 		val
 
-wait = (time = 300) ->
+wait = (time = 500) ->
 	new Promise (resolve) ->
 		setTimeout ->
 			resolve()
@@ -435,77 +435,67 @@ describe 'Watch:', ->
 	it 'watchPath', (tdone) ->
 		path = 'test/fixtures/watchFileTmp.txt'
 
-		nofs.copy 'test/fixtures/watchFile.txt', path
-		.then ->
-			nofs.watchPath path, {
-				handler: (p, curr, prev, isDelete) ->
-					assert.equal p, path
-					return if isDelete
-					tdone()
-			}
-		.then -> wait()
-		.then ->
+		nofs.copySync 'test/fixtures/watchFile.txt', path
+		nofs.watchPath path, {
+			handler: (p, curr, prev, isDelete) ->
+				assert.equal p, path
+				return if isDelete
+				tdone()
+		}
+		wait().then ->
 			nofs.outputFileSync path, 'test'
 
 	it 'watchFiles', (tdone) ->
 		path = 'test/fixtures/watchFilesTmp.txt'
 
-		nofs.copy 'test/fixtures/watchFile.txt', path
-		.then ->
-			nofs.watchFiles 'test/fixtures/**/*.txt', {
-				handler: (p, curr, prev, isDelete) ->
-					assert.equal p, path
-					return if isDelete
-					tdone()
-			}
-		.then -> wait()
-		.then ->
+		nofs.copySync 'test/fixtures/watchFile.txt', path
+		nofs.watchFiles 'test/fixtures/**/*.txt', {
+			handler: (p, curr, prev, isDelete) ->
+				assert.equal p, path
+				return if isDelete
+				tdone()
+		}
+		wait().then ->
 			nofs.outputFileSync path, 'test'
 
 	it 'watchDir modify', (tdone) ->
 		tmp = 'test/fixtures/watchDirModify'
 
-		nofs.copy 'test/fixtures/watchDir', tmp
-		.then ->
-			nofs.watchDir tmp, {
-				handler: (type, path) ->
-					shouldDeepEqualDone tdone, { type, path }, {
-						type: 'modify'
-						path: tmp + '/dir0/c'
-					}
-			}
-		.then -> wait()
-		.then ->
+		nofs.copySync 'test/fixtures/watchDir', tmp
+		nofs.watchDir tmp, {
+			handler: (type, path) ->
+				shouldDeepEqualDone tdone, { type, path }, {
+					type: 'modify'
+					path: tmp + '/dir0/c'
+				}
+		}
+		wait().then ->
 			nofs.outputFileSync tmp + '/dir0/c', 'ok'
 
 	it 'watchDir create', (tdone) ->
 		tmp = 'test/fixtures/watchDirCreate'
 
-		nofs.copy 'test/fixtures/watchDir', tmp
-		.then ->
-			nofs.watchDir tmp, {
-				handler: (type, path) ->
-					shouldDeepEqualDone tdone, { type, path }, {
-						type: 'create'
-						path: tmp + '/dir0/d'
-					}
-			}
-		.then -> wait()
-		.then ->
+		nofs.copySync 'test/fixtures/watchDir', tmp
+		nofs.watchDir tmp, {
+			handler: (type, path) ->
+				shouldDeepEqualDone tdone, { type, path }, {
+					type: 'create'
+					path: tmp + '/dir0/d'
+				}
+		}
+		wait(1000).then ->
 			nofs.outputFileSync tmp + '/dir0/d', 'ok'
 
 	it 'watchDir delete', (tdone) ->
 		tmp = 'test/fixtures/watchDirDelete'
 
-		nofs.copy 'test/fixtures/watchDir', tmp
-		.then ->
-			nofs.watchDir tmp, {
-				handler: (type, path) ->
-					shouldDeepEqualDone tdone, { type, path }, {
-						type: 'delete'
-						path: tmp + '/dir0/c'
-					}
-			}
-		.then -> wait()
-		.then ->
+		nofs.copySync 'test/fixtures/watchDir', tmp
+		nofs.watchDir tmp, {
+			handler: (type, path) ->
+				shouldDeepEqualDone tdone, { type, path }, {
+					type: 'delete'
+					path: tmp + '/dir0/c'
+				}
+		}
+		wait().then ->
 			nofs.removeSync tmp + '/dir0/c'
