@@ -210,7 +210,7 @@ _.extend nofs, {
 	 * {
 	 * 	# Overwrite file if exists.
 	 * 	isForce: false
-	 * 	isFnFileOnly: false
+	 * 	isIterFileOnly: false
 	 * }
 	 * ```
 	 * @return {Promise}
@@ -218,12 +218,12 @@ _.extend nofs, {
 	copyP: (from, to, opts = {}) ->
 		_.defaults opts, {
 			isForce: false
-			isFnFileOnly: false
+			isIterFileOnly: false
 		}
 
 		flags = if opts.isForce then 'w' else 'wx'
 
-		copy = (src, dest, { isDir, stats }) ->
+		opts.iter = (src, dest, { isDir, stats }) ->
 			opts = {
 				isForce: opts.isForce
 				mode: stats.mode
@@ -246,19 +246,19 @@ _.extend nofs, {
 		.then (stats) ->
 			isDir = stats.isDirectory()
 			if isDir
-				nofs.mapDirP from, to, opts, copy
+				nofs.mapDirP from, to, opts
 			else
-				copy from, to, { isDir, stats }
+				opts.iter from, to, { isDir, stats }
 
 	copySync: (from, to, opts = {}) ->
 		_.defaults opts, {
 			isForce: false
-			isFnFileOnly: false
+			isIterFileOnly: false
 		}
 
 		flags = if opts.isForce then 'w' else 'wx'
 
-		copy = (src, dest, { isDir, stats }) ->
+		opts.iter = (src, dest, { isDir, stats }) ->
 			opts = {
 				isForce: opts.isForce
 				mode: stats.mode
@@ -279,9 +279,9 @@ _.extend nofs, {
 		stats = nofs.statSync from
 		isDir = stats.isDirectory()
 		if isDir
-			nofs.mapDirSync from, to, opts, copy
+			nofs.mapDirSync from, to, opts
 		else
-			copy from, to, { isDir, stats }
+			opts.iter from, to, { isDir, stats }
 
 	###*
 	 * Check if a path exists, and if it is a directory.
@@ -309,10 +309,13 @@ _.extend nofs, {
 	 * @param  {Object} opts Optional. <a id='eachDirP-opts'></a> Defaults:
 	 * ```coffee
 	 * {
+	 * 	# Callback on each path iteration.
+	 * 	iter: (fileInfo) -> Promise | Any
+	 *
 	 * 	# Auto check if the spath is a minimatch pattern.
 	 * 	isAutoMimimatch: true
 	 *
-	 * 	# Include entries whose names begin with a dot (.).
+	 * 	# Include entries whose names begin with a dot (.), the posix hidden files.
 	 * 	all: true
 	 *
 	 * 	# To filter paths. It can also be a RegExp or a glob pattern string.
@@ -322,8 +325,8 @@ _.extend nofs, {
 	 * 	# The current working directory to search.
 	 * 	cwd: ''
 	 *
-	 * 	# Call fn only when it is a file.
-	 * 	isFnFileOnly: false
+	 * 	# Call iter only when it is a file.
+	 * 	isIterFileOnly: false
 	 *
 	 * 	# Whether to include the root directory or not.
 	 * 	isIncludeRoot: true
@@ -334,13 +337,13 @@ _.extend nofs, {
 	 * 	# Iterate children first, then parent folder.
 	 * 	isReverse: false
 	 *
-	 * 	# When isReverse is false, it will be the previous fn resolve value.
+	 * 	# When isReverse is false, it will be the previous iter resolve value.
 	 * 	val: any
 	 *
 	 * 	# If it return false, sub-entries won't be searched.
 	 * 	# When the `filter` option returns false, its children will
 	 * 	# still be itered. But when `searchFilter` returns false, children
-	 * 	# won't be itered by the fn.
+	 * 	# won't be itered by the iter.
 	 * 	searchFilter: (fileInfo) -> true
 	 *
 	 * 	# If you want sort the names of each level, you can hack here.
@@ -348,9 +351,9 @@ _.extend nofs, {
 	 * 	handleNames: (names) -> names
 	 * }
 	 * ```
-	 * @param  {Function} fn `(fileInfo) -> Promise | Any`.
-	 * The `fileInfo` object has these properties: `{ path, isDir, children, stats }`.
-	 * Assume we call the function: `nofs.eachDirP('dir', (f) -> f)`,
+	 * The argument of `opts.iter`, `fileInfo` object has these
+	 * properties: `{ path, isDir, children, stats }`.
+	 * Assume we call the function: `nofs.eachDirP('dir', { iter: (f) -> f })`,
 	 * the resolved directory object array may look like:
 	 * ```coffee
 	 * {
@@ -377,37 +380,40 @@ _.extend nofs, {
 	 * @example
 	 * ```coffee
 	 * # Print all file and directory names, and the modification time.
-	 * nofs.eachDirP 'dir/path', (obj, stats) ->
-	 * 	console.log obj.path, stats.mtime
+	 * nofs.eachDirP 'dir/path', {
+	 * 	iter: (obj, stats) ->
+	 * 		console.log obj.path, stats.mtime
+	 * }
 	 *
 	 * # Print path name list.
-	 * nofs.eachDirP 'dir/path', (curr) -> curr
+	 * nofs.eachDirP 'dir/path', { iter: (curr) -> curr }
 	 * .then (tree) ->
 	 * 	console.log tree
 	 *
 	 * # Find all js files.
 	 * nofs.eachDirP 'dir/path', {
-	 * 	filter: '**\/*.js', nocase: true
-	 * }, ({ path }) ->
-	 * 	console.log paths
+	 * 	filter: '**\/*.js'
+	 * 	iter: ({ path }) ->
+	 * 		console.log paths
+	 * }
 	 *
 	 * # Find all js files.
-	 * nofs.eachDirP 'dir/path', { filter: /\.js$/ }, ({ path }) ->
-	 * 	console.log paths
+	 * nofs.eachDirP 'dir/path', {
+	 * 	filter: /\.js$/
+	 *  iter: ({ path }) ->
+	 * 		console.log paths
+	 * }
 	 *
-	 * # Custom filter
+	 * # Custom filter.
 	 * nofs.eachDirP 'dir/path', {
 	 * 	filter: ({ path, stats }) ->
 	 * 		path.slice(-1) != '/' and stats.size > 1000
-	 * }, (path) ->
-	 * 	console.log path
+	 * 	iter: (path) ->
+	 * 		console.log path
+	 * }
 	 * ```
 	###
-	eachDirP: (spath, opts, fn) ->
-		if _.isFunction opts
-			fn = opts
-			opts = {}
-
+	eachDirP: (spath, opts = {}) ->
 		_.defaults opts, {
 			isAutoMimimatch: true
 			all: true
@@ -415,7 +421,7 @@ _.extend nofs, {
 			searchFilter: -> true
 			handleNames: (names) -> names
 			cwd: ''
-			isFnFileOnly: false
+			isIterFileOnly: false
 			isIncludeRoot: true
 			isFollowLink: true
 			isReverse: false
@@ -461,9 +467,9 @@ _.extend nofs, {
 		execFn = (fileInfo) ->
 			return if not opts.all and fileInfo.name[0] == '.'
 
-			return if opts.isFnFileOnly and fileInfo.isDir
+			return if opts.isIterFileOnly and fileInfo.isDir
 
-			fn fileInfo if opts.filter fileInfo
+			opts.iter? fileInfo if opts.filter fileInfo
 
 		decideNext = (dir, name) ->
 			path = npath.join dir, name
@@ -502,11 +508,7 @@ _.extend nofs, {
 		else
 			readdir spath
 
-	eachDirSync: (spath, opts, fn) ->
-		if _.isFunction opts
-			fn = opts
-			opts = {}
-
+	eachDirSync: (spath, opts = {}) ->
 		_.defaults opts, {
 			isAutoMimimatch: true
 			all: true
@@ -514,7 +516,7 @@ _.extend nofs, {
 			searchFilter: -> true
 			handleNames: (names) -> names
 			cwd: ''
-			isFnFileOnly: false
+			isIterFileOnly: false
 			isIncludeRoot: true
 			isFollowLink: true
 			isReverse: false
@@ -560,9 +562,9 @@ _.extend nofs, {
 		execFn = (fileInfo) ->
 			return if not opts.all and fileInfo.name[0] == '.'
 
-			return if opts.isFnFileOnly and fileInfo.isDir
+			return if opts.isIterFileOnly and fileInfo.isDir
 
-			fn fileInfo if opts.filter fileInfo
+			opts.iter? fileInfo if opts.filter fileInfo
 
 		decideNext = (dir, name) ->
 			path = npath.join dir, name
@@ -637,11 +639,12 @@ _.extend nofs, {
 	 *
 	 * 	# The minimatch option object.
 	 * 	pmatch: {}
+	 *
+	 * 	# It will be called after each match. It can also return
+	 * 	# a promise.
+	 * 	iter: (fileInfo, list) -> list.push fileInfo.path
 	 * }
 	 * ```
-	 * @param {Function} fn `(fileInfo, list) -> Promise | Any`.
-	 * It will be called after each match. By default it is:
-	 * `(fileInfo, list) -> list.push fileInfo.path`
 	 * @return {Promise} Resolves the list array.
 	 * @example
 	 * ```coffee
@@ -654,23 +657,22 @@ _.extend nofs, {
 	 * 	console.log paths
 	 *
 	 * # Custom the iterator. Append '/' to each directory path.
-	 * nofs.globP('**\/*.js', (info, list) ->
-	 * 	list.push if info.isDir
-	 * 		info.path + '/'
-	 * 	else
-	 * 		info.path
-	 * ).then (paths) ->
+	 * nofs.globP '**\/*.js', {
+	 * 	iter: (info, list) ->
+	 * 		list.push if info.isDir
+	 * 			info.path + '/'
+	 * 		else
+	 * 			info.path
+	 * }
+	 * .then (paths) ->
 	 * 	console.log paths
 	 * ```
 	###
-	globP: (patterns, opts = {}, fn) ->
-		if _.isFunction opts
-			fn = opts
-			opts = {}
-
+	globP: (patterns, opts = {}) ->
 		_.defaults opts, {
 			pmatch: {}
 			all: false
+			iter: (fileInfo, list) -> list.push fileInfo.path
 		}
 
 		opts.pmatch.dot = opts.all
@@ -679,8 +681,6 @@ _.extend nofs, {
 			patterns = [patterns]
 
 		list = []
-
-		fn ?= (fileInfo, list) -> list.push fileInfo.path
 
 		# Hanle negate patterns.
 		# Only when there are both negate and non-negate patterns,
@@ -702,6 +702,10 @@ _.extend nofs, {
 
 		negateMath = (path) ->
 			_.any negatePms, (pm) -> pm.match path
+
+		iter = opts.iter
+		opts.iter = (fileInfo) ->
+			iter fileInfo, list
 
 		glob = (pm) ->
 			opts.filter = (fileInfo) ->
@@ -716,8 +720,7 @@ _.extend nofs, {
 					return true
 				pm.match fileInfo.path, true
 
-			nofs.eachDirP nofs.pmatch.getPlainPath(pm), opts, (fileInfo) ->
-				fn fileInfo, list
+			nofs.eachDirP nofs.pmatch.getPlainPath(pm), opts
 			.catch (err) ->
 				if err.code != 'ENOENT'
 					Promise.reject err
@@ -727,14 +730,11 @@ _.extend nofs, {
 		, Promise.resolve())
 		.then -> list
 
-	globSync: (patterns, opts = {}, fn) ->
-		if _.isFunction opts
-			fn = opts
-			opts = {}
-
+	globSync: (patterns, opts = {}) ->
 		_.defaults opts, {
 			pmatch: {}
 			all: false
+			iter: (fileInfo, list) -> list.push fileInfo.path
 		}
 
 		opts.pmatch.dot = opts.all
@@ -743,8 +743,6 @@ _.extend nofs, {
 			patterns = [patterns]
 
 		list = []
-
-		fn ?= (fileInfo, list) -> list.push fileInfo.path
 
 		# Hanle negate patterns.
 		# Only when there are both negate and non-negate patterns,
@@ -766,6 +764,10 @@ _.extend nofs, {
 
 		negateMath = (path) ->
 			_.any negatePms, (pm) -> pm.match path
+
+		iter = opts.iter
+		opts.iter = (fileInfo) ->
+			iter fileInfo, list
 
 		glob = (pm) ->
 			opts.filter = (fileInfo) ->
@@ -784,8 +786,6 @@ _.extend nofs, {
 				nofs.eachDirSync(
 					nofs.pmatch.getPlainPath(pm)
 					opts
-					(fileInfo) ->
-						fn fileInfo, list
 				)
 			catch err
 				if err.code != 'ENOENT'
@@ -804,34 +804,29 @@ _.extend nofs, {
 	 * fixed with the same as the `from` parameter. Defaults:
 	 * ```coffee
 	 * {
-	 * 	isFnFileOnly: true
+	 * 	# It will be called with each path. The callback can return
+	 * 	# a `Promise` to keep the async sequence go on.
+	 * 	iter: (src, dest, fileInfo) -> Promise | Any
+	 *
+	 * 	isIterFileOnly: true
 	 * }
 	 * ```
-	 * @param  {Function} fn `(src, dest, fileInfo) -> Promise | Any` The callback
-	 * will be called with each path. The callback can return a `Promise` to
-	 * keep the async sequence go on.
 	 * @return {Promise} Resolves a tree object.
 	 * @example
 	 * ```coffee
 	 * # Copy and add license header for each files
 	 * # from a folder to another.
-	 * nofs.mapDirP(
-	 * 	'from'
-	 * 	'to'
-	 * 	(src, dest) ->
+	 * nofs.mapDirP 'from', 'to', {
+	 * 	iter: (src, dest) ->
 	 * 		nofs.readFileP(src).then (buf) ->
 	 * 			buf += 'License MIT\n' + buf
 	 * 			nofs.outputFileP dest, buf
-	 * )
+	 * }
 	 * ```
 	###
-	mapDirP: (from, to, opts = {}, fn) ->
-		if _.isFunction opts
-			fn = opts
-			opts = {}
-
+	mapDirP: (from, to, opts = {}) ->
 		_.defaults opts, {
-			isFnFileOnly: true
+			isIterFileOnly: true
 		}
 
 		if pm = nofs.pmatch.isPmatch(from)
@@ -841,18 +836,17 @@ _.extend nofs, {
 
 		opts.cwd = from
 
-		nofs.eachDirP '', opts, (fileInfo) ->
+		iter = opts.iter
+		opts.iter = (fileInfo) ->
 			src = npath.join from, fileInfo.path
 			dest = npath.join to, fileInfo.path
-			fn src, dest, fileInfo
+			iter? src, dest, fileInfo
 
-	mapDirSync: (from, to, opts = {}, fn) ->
-		if _.isFunction opts
-			fn = opts
-			opts = {}
+		nofs.eachDirP '', opts
 
+	mapDirSync: (from, to, opts = {}) ->
 		_.defaults opts, {
-			isFnFileOnly: true
+			isIterFileOnly: true
 		}
 
 		if pm = nofs.pmatch.isPmatch(from)
@@ -862,10 +856,13 @@ _.extend nofs, {
 
 		opts.cwd = from
 
-		nofs.eachDirSync '', opts, (fileInfo) ->
+		iter = opts.iter
+		opts.iter = (fileInfo) ->
 			src = npath.join from, fileInfo.path
 			dest = npath.join to, fileInfo.path
-			fn src, dest, fileInfo
+			iter? src, dest, fileInfo
+
+		nofs.eachDirSync '', opts
 
 	###*
 	 * Recursively create directory path, like `mkdir -p`.
@@ -1088,63 +1085,62 @@ _.extend nofs, {
 		JSON.parse data + ''
 
 	###*
-	 * Walk through directory recursively with a callback.
+	 * Walk through directory recursively with a iterator.
 	 * @param  {String}   path
 	 * @param  {Object}   opts Extends the options of [eachDir](#eachDirP-opts),
 	 * with some extra options:
 	 * ```coffee
 	 * {
+	 * 	iter: (prev, path, isDir, stats) -> Promise | Any
+	 *
 	 * 	# The init value of the walk.
 	 * 	init: undefined
 	 *
-	 * 	isFnFileOnly: true
+	 * 	isIterFileOnly: true
 	 * }
 	 * ```
-	 * @param  {Function} fn `(prev, path, isDir, stats) -> Promise`
 	 * @return {Promise} Final resolved value.
 	 * @example
 	 * ```coffee
 	 * # Concat all files.
-	 * nofs.reduceDirP 'dir/path', { init: '' }, (val, { path }) ->
-	 * 	nofs.readFileP(path).then (str) ->
-	 * 		val += str + '\n'
+	 * nofs.reduceDirP 'dir/path', {
+	 * 	init: ''
+	 * 	iter: (val, { path }) ->
+	 * 		nofs.readFileP(path).then (str) ->
+	 * 			val += str + '\n'
+	 * }
 	 * .then (ret) ->
 	 * 	console.log ret
 	 * ```
 	###
-	reduceDirP: (path, opts = {}, fn) ->
-		if _.isFunction opts
-			fn = opts
-			opts = {}
-
+	reduceDirP: (path, opts = {}) ->
 		_.defaults opts, {
-			isFnFileOnly: true
+			isIterFileOnly: true
 		}
 
 		prev = Promise.resolve opts.init
 
-		nofs.eachDirP path, opts, (fileInfo) ->
+		iter = opts.iter
+		opts.iter = (fileInfo) ->
 			prev = prev.then (val) ->
-				val = fn val, fileInfo
+				val = iter val, fileInfo
 				if not val or not val.then
 					Promise.resolve val
-		.then ->
-			prev
 
-	reduceDirSync: (path, opts = {}, fn) ->
-		if _.isFunction opts
-			fn = opts
-			opts = {}
+		nofs.eachDirP(path, opts).then -> prev
 
+	reduceDirSync: (path, opts = {}) ->
 		_.defaults opts, {
-			isFnFileOnly: true
+			isIterFileOnly: true
 		}
 
 		prev = opts.init
 
-		nofs.eachDirSync path, opts, (fileInfo) ->
-			prev = fn prev, fileInfo
+		iter = opts.iter
+		opts.iter = (fileInfo) ->
+			prev = iter prev, fileInfo
 
+		nofs.eachDirSync path, opts
 		prev
 
 	###*
@@ -1157,11 +1153,13 @@ _.extend nofs, {
 	removeP: (path, opts = {}) ->
 		opts.isReverse = true
 
-		nofs.eachDirP path, opts, ({ path, isDir }) ->
+		opts.iter = ({ path, isDir }) ->
 			if isDir
 				nofs.rmdirP path
 			else
 				nofs.unlinkP path
+
+		nofs.eachDirP path, opts
 		.catch (err) ->
 			if err.code != 'ENOENT'
 				Promise.reject err
@@ -1169,12 +1167,14 @@ _.extend nofs, {
 	removeSync: (path, opts = {}) ->
 		opts.isReverse = true
 
+		opts.iter = ({ path, isDir }) ->
+			if isDir
+				nofs.rmdirSync path
+			else
+				nofs.unlinkSync path
+
 		try
-			nofs.eachDirSync path, opts, ({ path, isDir }) ->
-				if isDir
-					nofs.rmdirSync path
-				else
-					nofs.unlinkSync path
+			nofs.eachDirSync path, opts
 		catch err
 			if err.code != 'ENOENT'
 				throw err
@@ -1231,28 +1231,35 @@ _.extend nofs, {
 	 * Why not use `nofs.watch`? Because `nofs.watch` is unstable on some file
 	 * systems, such as Samba or OSX.
 	 * @param  {String}   path    The file path
-	 * @param  {Function} handler Event listener.
-	 * The handler has these params:
-	 * - file path
-	 * - current `nofs.Stats`
-	 * - previous `nofs.Stats`
-	 * - if its a deletion
-	 * @param {Boolean} autoUnwatch Auto unwatch the file while file deletion.
-	 * Default is true.
+	 * @param  {Object} opts Defaults:
+	 * ```coffee
+	 * {
+	 * 	handler: (path, curr, prev, isDeletion) ->
+	 *
+	 * 	# Auto unwatch the file while file deletion.
+	 * 	autoUnwatch: true
+	 * }
+	 * ```
 	 * @return {Promise} It resolves the wrapped watch listener.
 	 * @example
 	 * ```coffee
 	 * process.env.watchPersistent = 'off'
-	 * nofs.watchFileP 'a.js', (path, curr, prev, isDeletion) ->
-	 * 	if curr.mtime != prev.mtime
-	 * 		console.log path
+	 * nofs.watchFileP 'a.js', {
+	 * 	handler: (path, curr, prev, isDeletion) ->
+	 * 		if curr.mtime != prev.mtime
+	 * 			console.log path
+	 * }
 	 * ```
 	###
-	watchFileP: (path, handler, autoUnwatch = true) ->
+	watchFileP: (path, opts = {}) ->
+		_.defaults opts, {
+			autoUnwatch: true
+		}
+
 		listener = (curr, prev) ->
 			isDeletion = curr.mtime.getTime() == 0
-			handler(path, curr, prev, isDeletion)
-			if autoUnwatch and isDeletion
+			opts.handler(path, curr, prev, isDeletion)
+			if opts.autoUnwatch and isDeletion
 				nofs.unwatchFile path, listener
 
 		fs.watchFile(
@@ -1271,7 +1278,7 @@ _.extend nofs, {
 	 * It is build on the top of `nofs.watchFileP`.
 	 * @param  {Array} patterns String array with minimatch syntax.
 	 * Such as `['*\/**.css', 'lib\/**\/*.js']`.
-	 * @param  {Function} handler
+	 * @param  {Object} opts Same as the `nofs.watchFileP`.
 	 * @return {Promise} It contains the wrapped watch listeners.
 	 * @example
 	 * ```coffee
@@ -1279,10 +1286,10 @@ _.extend nofs, {
 	 * 	console.log path
 	 * ```
 	###
-	watchFilesP: (patterns, handler) ->
+	watchFilesP: (patterns, opts = {}) ->
 		nofs.globP(patterns).then (paths) ->
 			paths.map (path) ->
-				nofs.watchFileP path, handler
+				nofs.watchFileP path, opts
 
 	###*
 	 * Watch directory and all the files in it.
@@ -1293,6 +1300,9 @@ _.extend nofs, {
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
 	 * {
+	 * 	# If the "path" ends with '/' it's a directory, else a file.
+	 * 	handler: (type, path, oldPath) ->
+	 *
 	 * 	pattern: '**' # minimatch, string or array
 	 *
 	 * 	# Whether to watch POSIX hidden file.
@@ -1304,8 +1314,6 @@ _.extend nofs, {
 	 * 	isEnableMoveEvent: false
 	 * }
 	 * ```
-	 * @param {Function} fn `(type, path, oldPath) ->`.
-	 * If the "path" ends with '/' it's a directory, else a file.
 	 * @return {Promise} Resolves a object that keys are paths,
 	 * values are listeners.
 	 * @example
@@ -1313,15 +1321,12 @@ _.extend nofs, {
 	 * # Only current folder, and only watch js and css file.
 	 * nofs.watchDir 'lib', {
 	 * 	pattern: '*.+(js|css)'
-	 * }, (type, path) ->
+	 * 	handler: (type, path) ->
 	 * 		console.log type, path
+	 * }
 	 * ```
 	###
-	watchDirP: (root, opts = {}, fn) ->
-		if _.isFunction opts
-			fn = opts
-			opts = {}
-
+	watchDirP: (root, opts = {}) ->
 		_.defaults opts, {
 			pattern: '**'
 			pmatch: {}
@@ -1354,10 +1359,10 @@ _.extend nofs, {
 
 		fileHandler = (path, curr, prev, isDelete) ->
 			if isDelete
-				fn 'delete', path
+				opts.handler 'delete', path
 				delete watchedList[path]
 			else
-				fn 'modify', path
+				opts.handler 'modify', path
 
 		dirHandler = (dir, curr, prev, isDelete) ->
 			# Possible Event Order
@@ -1367,7 +1372,7 @@ _.extend nofs, {
 			# 4.   move event: file delete -> parent modify -> file create.
 
 			if isDelete
-				fn 'delete', dirPath(dir)
+				opts.handler 'delete', dirPath(dir)
 				delete watchedList[dir]
 				return
 
@@ -1376,22 +1381,21 @@ _.extend nofs, {
 			# Prevent high frequency concurrent fs changes,
 			# we should to use Sync function here. But for
 			# now if we don't need `move` event, everything is OK.
-			nofs.eachDirP dir, {
-				all: opts.all
-			}, (fileInfo) ->
+			nofs.eachDirP dir, { all: opts.all, iter: (fileInfo) ->
 				path = fileInfo.path
 				if watchedList[path]
 					return
 
 				(if fileInfo.isDir
-					fn 'create', dirPath(path) if curr
-					nofs.watchFileP path, dirHandler
+					opts.handler 'create', dirPath(path) if curr
+					nofs.watchFileP path, { handler: dirHandler }
 				else
 					if match path, pattern
-						fn 'create', path if curr
-						nofs.watchFileP path, fileHandler
+						opts.handler 'create', path if curr
+						nofs.watchFileP path, { handler: fileHandler }
 				).then (listener) ->
 					watchedList[path] = listener
+			}
 
 		dirHandler(root).then -> watchedList
 

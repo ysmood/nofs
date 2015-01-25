@@ -89,17 +89,20 @@ describe 'Basic:', ->
 
 	it 'reduceDirP', ->
 		nofs.reduceDirP 'test/fixtures/dir', {
-			init: '', isReverse: true
-		}, (sum, { path }) ->
-			sum += path.slice(-1)
+			init: ''
+			isReverse: true
+			iter: (sum, { path }) ->
+				sum += path.slice(-1)
+		}
 		.then (v) ->
 			shouldEqual v.split('').sort().join(''), 'abcde'
 
 	it 'reduceDirSync', ->
 		v = nofs.reduceDirSync 'test/fixtures/dir', {
 			init: '', isReverse: true
-		}, (sum, { path }) ->
-			sum += path.slice(-1)
+			iter: (sum, { path }) ->
+				sum += path.slice(-1)
+		}
 
 		shouldEqual v.split('').sort().join(''), 'abcde'
 
@@ -109,8 +112,9 @@ describe 'Basic:', ->
 			all: false
 			searchFilter: ({ path }) ->
 				normalizePath(path) != 'test/fixtures/dir/test0'
-		}, (fileInfo) ->
-			ls.push fileInfo.name
+			iter: (fileInfo) ->
+				ls.push fileInfo.name
+		}
 		.then ->
 			shouldDeepEqual normalizePath(ls), ["a", "d", "dir", "test2"]
 
@@ -119,8 +123,9 @@ describe 'Basic:', ->
 		nofs.eachDirSync 'test/fixtures/dir', {
 			searchFilter: ({ path }) ->
 				normalizePath(path) != 'test/fixtures/dir/test0'
-		}, (fileInfo) ->
-			ls.push fileInfo.name
+			iter: (fileInfo) ->
+				ls.push fileInfo.name
+		}
 		shouldDeepEqual normalizePath(ls), [".e", "a", "d", "dir", "test2"]
 
 	it 'mapDirP pattern', ->
@@ -129,7 +134,7 @@ describe 'Basic:', ->
 		nofs.mapDirP(
 			'test/fixtures/dir/*0/**'
 			'test/fixtures/other'
-			(src, dest) ->
+			iter: (src, dest) ->
 				ls.push src + '/' + dest
 		).then ->
 			shouldDeepEqual ls.sort(), [
@@ -143,7 +148,7 @@ describe 'Basic:', ->
 		nofs.mapDirSync(
 			'test/fixtures/dir/*0/**'
 			'test/fixtures/other'
-			(src, dest) ->
+			iter: (src, dest) ->
 				ls.push src + '/' + dest
 		)
 		shouldDeepEqual ls.sort(), [
@@ -198,6 +203,21 @@ describe 'Basic:', ->
 			".", "test0", "test0/b", "test0/test1"
 			"test0/test1/c"
 		]
+
+	it 'removeP', ->
+		dir = 'test/fixtures/dir-removeP'
+		nofs.copySync 'test/fixtures/dir', dir
+
+		nofs.removeP dir
+		.then ->
+			shouldEqual nofs.dirExistsSync(dir), false
+
+	it 'removeSync', ->
+		dir = 'test/fixtures/dir-removeSync'
+		nofs.copySync 'test/fixtures/dir', dir
+
+		nofs.removeSync dir
+		shouldEqual nofs.dirExistsSync(dir), false
 
 	it 'moveP', ->
 		dir = 'test/fixtures/dir-moveP'
@@ -417,10 +437,27 @@ describe 'Watch:', ->
 
 		nofs.copyP 'test/fixtures/watchFile.txt', path
 		.then ->
-			nofs.watchFileP path, (p, curr, prev, isDelete) ->
-				assert.equal p, path
-				return if isDelete
-				tdone()
+			nofs.watchFileP path, {
+				handler: (p, curr, prev, isDelete) ->
+					assert.equal p, path
+					return if isDelete
+					tdone()
+			}
+		.then -> wait()
+		.then ->
+			nofs.outputFileSync path, 'test'
+
+	it 'watchFilesP', (tdone) ->
+		path = 'test/fixtures/watchFilesTmp.txt'
+
+		nofs.copyP 'test/fixtures/watchFile.txt', path
+		.then ->
+			nofs.watchFilesP 'test/fixtures/**/*.txt', {
+				handler: (p, curr, prev, isDelete) ->
+					assert.equal p, path
+					return if isDelete
+					tdone()
+			}
 		.then -> wait()
 		.then ->
 			nofs.outputFileSync path, 'test'
@@ -430,11 +467,13 @@ describe 'Watch:', ->
 
 		nofs.copyP 'test/fixtures/watchDir', tmp
 		.then ->
-			nofs.watchDirP tmp, (type, path) ->
-				shouldDeepEqualDone tdone, { type, path }, {
-					type: 'modify'
-					path: tmp + '/dir0/c'
-				}
+			nofs.watchDirP tmp, {
+				handler: (type, path) ->
+					shouldDeepEqualDone tdone, { type, path }, {
+						type: 'modify'
+						path: tmp + '/dir0/c'
+					}
+			}
 		.then -> wait()
 		.then ->
 			nofs.outputFileSync tmp + '/dir0/c', 'ok'
@@ -444,11 +483,13 @@ describe 'Watch:', ->
 
 		nofs.copyP 'test/fixtures/watchDir', tmp
 		.then ->
-			nofs.watchDirP tmp, (type, path) ->
-				shouldDeepEqualDone tdone, { type, path }, {
-					type: 'create'
-					path: tmp + '/dir0/d'
-				}
+			nofs.watchDirP tmp, {
+				handler: (type, path) ->
+					shouldDeepEqualDone tdone, { type, path }, {
+						type: 'create'
+						path: tmp + '/dir0/d'
+					}
+			}
 		.then -> wait()
 		.then ->
 			nofs.outputFileSync tmp + '/dir0/d', 'ok'
@@ -458,11 +499,13 @@ describe 'Watch:', ->
 
 		nofs.copyP 'test/fixtures/watchDir', tmp
 		.then ->
-			nofs.watchDirP tmp, (type, path) ->
-				shouldDeepEqualDone tdone, { type, path }, {
-					type: 'delete'
-					path: tmp + '/dir0/c'
-				}
+			nofs.watchDirP tmp, {
+				handler: (type, path) ->
+					shouldDeepEqualDone tdone, { type, path }, {
+						type: 'delete'
+						path: tmp + '/dir0/c'
+					}
+			}
 		.then -> wait()
 		.then ->
 			nofs.removeSync tmp + '/dir0/c'

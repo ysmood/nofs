@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.4.0
+
+  - **API CHANGE** Now all iterator arguments are unified into the `opts`,
+    including the watch handlers.
+
 - v0.3.4
 
   - Now `globP` array works as sequence, rather than running parallel.

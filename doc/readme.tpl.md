@@ -14,7 +14,7 @@ lib of [nokit][].
 - Introduce `map` and `reduce` to folders.
 - Recursive `glob`, `move`, `copy`, `remove`, etc.
 - **Promise** by default.
-- Unified intuitive API. Support **Promise**, **Sync** and **Callback** paradigms.
+- Unified intuitive API. Supports both **Promise**, **Sync** and **Callback** paradigms.
 
 ## Install
 
@@ -34,8 +34,9 @@ When the system is Windows and `process.env.force_unix_sep != 'off'`, nofs  will
 
 ### Promise, Sync and Callback
 
-Any function that has a `Sync` version will has a promise version that ends with `P`.
-For example the `fs.remove` will have `fs.removeSync` for sync IO, and `fs.removeP` for Promise.
+If you call an async function without callback, it will return a promise.
+For example the `nofs.remove('dir', -> 'done!' )` are the same with
+`nofs.remove('dir').then -> 'done!'`.
 
 ### [eachDir](#eachDirP)
 
@@ -99,20 +100,12 @@ fs.mkdirsP 'deep/dir/path'
 ###
 fs.reduceDirP 'dir/**/*.css', {
     init: '/* Concated by nofs */\n'
-}, (sum, { path }) ->
-    fs.readFileP(path).then (str) ->
-        sum += str + '\n'
+    iter: (sum, { path }) ->
+        fs.readFileP(path).then (str) ->
+            sum += str + '\n'
+}
 .then (concated) ->
     console.log concated
-
-
-###
-# Compile files from one place to another.
-###
-fs.mapDirP 'from', 'to', (src, dest) ->
-    fs.readFileP(src, 'utf8').then (str) ->
-        compiled = '/* Compiled by nofs */\n' + str
-        fs.outputFileP dest, compiled
 
 
 
@@ -131,9 +124,8 @@ filter = ({ path }) ->
 fs.eachDirP('.', {
     searchFilter: filter # Ensure subdirectory won't be searched.
     filter: filter
-}, (info) ->
-    info  # Directly return the file info object.
-).then (tree) ->
+    iter: (info) -> info  # Directly return the file info object.
+}).then (tree) ->
     # Instead a list as usual,
     # here we get a file tree for further usage.
     console.log tree
@@ -166,11 +158,13 @@ minify = (js) ->
 # Use the plugins.
 jsTask = ->
     # All files will be compiled concurrently.
-    fs.mapDirP 'src/**/*.coffee', 'dist', (src, dest) ->
-        # Here's the work flow, simple yet readable.
-        coffee src
-        .then minify
-        .then writer(dest)
+    fs.mapDirP 'src/**/*.coffee', 'dist', {
+        iter: (src, dest) ->
+            # Here's the work flow, simple yet readable.
+            coffee src
+            .then minify
+            .then writer(dest)
+    }
 
 cssTask = -> # ...
 
