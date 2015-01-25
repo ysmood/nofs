@@ -15,6 +15,7 @@ lib of [nokit][].
 - Recursive `glob`, `move`, `copy`, `remove`, etc.
 - **Promise** by default.
 - Unified intuitive API. Supports both **Promise**, **Sync** and **Callback** paradigms.
+- Very light weight.
 
 ## Install
 
@@ -30,9 +31,9 @@ Any path that can be a pattern it will do.
 
 ### Unix Path Separator
 
-When the system is Windows and `process.env.force_unix_sep != 'off'`, nofs  will force all the path separator to `/`, such as `C:\a\b` will be transformed to `C:/a/b`.
+When the system is Windows and `process.env.forceUnixSep != 'off'`, nofs will force all the path separators to `/`, such as `C:\a\b` will be transformed to `C:/a/b`.
 
-### Promise, Sync and Callback
+### Promise & Callback
 
 If you call an async function without callback, it will return a promise.
 For example the `nofs.remove('dir', -> 'done!' )` are the same with
@@ -46,8 +47,11 @@ with it if you don't like other functions.
 
 ### nofs & Node Native fs
 
+Only the callback of `nofs.exists`
+is slightly different, it will also gets two arguments `(err, exists)`.
+
 `nofs` only extends the native module, no pollution will be found. You can
-still call `nofs.readFile` as easy as pie.
+still require the native `fs`, and call `fs.exists` as easy as pie.
 
 ### Inheritance of Options
 
@@ -191,6 +195,10 @@ For some naming convention reasons, `nofs` also uses some common alias for fucnt
 __No native `fs` funtion will be listed.__
 
 <%= api %>
+
+## `graceful-fs`
+
+You can use `process.env.gracefulFs == 'off'` to disable it.
 
 ## Benckmark
 

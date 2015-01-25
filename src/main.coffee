@@ -1,5 +1,5 @@
 iopath = require './path'
-npath = if process.env.force_unix_sep == 'off'
+npath = if process.env.forceUnixSep == 'off'
 	iopath
 else
 	iopath.posix
@@ -18,7 +18,8 @@ Promise = _.Promise
 fs = _.extend {}, (require 'fs')
 
 # Evil of Node.
-_.extend fs, require('graceful-fs')
+if process.env.gracefulFs != 'off'
+	_.extend fs, require('./graceful-fs')
 
 # Feel pity for Node again.
 # The `nofs.exists` api doesn't fulfil the node callback standard.

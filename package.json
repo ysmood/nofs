@@ -31,7 +31,6 @@
   },
   "dependencies": {
     "bluebird": "2.8.0",
-    "graceful-fs": "3.0.5",
     "minimatch": "2.0.1"
   }
 }
