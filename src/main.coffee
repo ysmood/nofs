@@ -7,10 +7,9 @@ else
 _ = require './utils'
 
 ###*
- * Here I use [Bluebird][Bluebird] only as an ES6 shim for Promise.
+ * Here I use [Bluebird](https://github.com/petkaantonov/bluebird) only as an ES6 shim for Promise.
  * No APIs other than ES6 spec will be used. In the
  * future it will be removed.
- * [Bluebird]: https://github.com/petkaantonov/bluebird
 ###
 Promise = _.Promise
 
