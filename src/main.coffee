@@ -4,6 +4,9 @@ npath = if process.env.forceUnixSep == 'off'
 else
 	iopath.posix
 
+# Keep the delimiter same as the current system's.
+npath.delimiter = iopath.delimiter
+
 _ = require './utils'
 
 ###*
