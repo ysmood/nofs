@@ -1,9 +1,10 @@
 # Changelog
 
-- v0.4.0
+- v0.4.1
 
   - **BIG API CHANGE!** Now all iterator arguments are unified into the `opts`,
     including the watch handlers.
+  - **API CHANGE** The `path` now reflects what sep style nofs is using.
 
 - v0.3.4
 
