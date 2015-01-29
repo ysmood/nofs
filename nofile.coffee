@@ -16,7 +16,7 @@ task 'build', 'build project', build = ->
 		]
 
 	createDoc = ->
-		kit.compose([
+		kit.flow([
 			kit.parseFileComment 'src/main.coffee'
 			(doc) ->
 				tpl = kit.readFileSync 'doc/readme.tpl.md', 'utf8'
@@ -24,7 +24,7 @@ task 'build', 'build project', build = ->
 				kit.outputFile 'readme.md', _.template(tpl)({ api: doc })
 		])()
 
-	start = kit.compose [
+	start = kit.flow [
 		-> kit.remove 'dist'
 		-> kit.copy 'src/**/*.js', 'dist'
 		compileCoffee
