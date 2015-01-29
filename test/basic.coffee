@@ -7,7 +7,7 @@ npath = require 'path'
 assert = require 'assert'
 
 isWin = process.platform == 'win32'
-regSep = ///#{npath.sep}///g
+regSep = ///#{'\\' + npath.sep}///g
 
 shouldEqual = (args...) ->
 	try
