@@ -1,11 +1,12 @@
 # Changelog
 
-- v0.4.2
+- v0.4.3
 
   - **BIG API CHANGE!** Now all iterator arguments are unified into the `opts`,
     including the watch handlers.
   - **API CHANGE** The `path` now reflects what sep style nofs is using.
   - Fix a delimiter issue on Windows.
+  - Fix the path behavior on different systems.
 
 - v0.3.4
 
