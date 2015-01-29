@@ -29,10 +29,6 @@ npm install nofs
 
 Any path that can be a pattern it will do.
 
-### Unix Path Separator
-
-When the system is Windows and `process.env.forceUnixSep != 'off'`, nofs will force all the path separators to `/`, such as `C:\a\b` will be transformed to `C:/a/b`.
-
 ### Promise & Callback
 
 If you call an async function without callback, it will return a promise.

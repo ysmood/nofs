@@ -1,13 +1,5 @@
-iopath = require './path'
-npath = if process.env.forceUnixSep == 'off'
-	iopath
-else
-	iopath.posix
-
-# Keep the delimiter same as the current system's.
-npath.delimiter = iopath.delimiter
-
 _ = require './utils'
+npath = require './path'
 
 ###*
  * Here I use [Bluebird](https://github.com/petkaantonov/bluebird) only as an ES6 shim for Promise.
@@ -1028,18 +1020,12 @@ nofs = _.extend {}, {
 
 	###*
 	 * The path module nofs is using.
-	 * When the system is Windows and `process.env.forceUnixSep != 'off'`,
+	 * It's the native [io.js](iojs.org) path lib.
 	 * nofs will force all the path separators to `/`,
 	 * such as `C:\a\b` will be transformed to `C:/a/b`.
 	 * @type {Object}
 	###
 	path: npath
-
-	###*
-	 * The native [io.js](iojs.org) path lib.
-	 * @type {Object}
-	###
-	iopath: iopath
 
 	###*
 	 * The `minimatch` lib. It has two extra methods:

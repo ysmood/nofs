@@ -7,6 +7,7 @@ npath = require 'path'
 assert = require 'assert'
 
 isWin = process.platform == 'win32'
+regSep = ///#{npath.sep}///g
 
 shouldEqual = (args...) ->
 	try
@@ -36,9 +37,9 @@ shouldDeepEqualDone = (done, args...) ->
 
 normalizePath = (val) ->
 	if val instanceof Array
-		val.sort()
+		val.map((p) -> p.replace regSep, '/').sort()
 	else if typeof val == 'string'
-		val
+		val.replace regSep, '/'
 
 wait = (time = 500) ->
 	new Promise (resolve) ->
@@ -438,9 +439,8 @@ describe 'Watch:', ->
 		nofs.copySync 'test/fixtures/watchFile.txt', path
 		nofs.watchPath path, {
 			handler: (p, curr, prev, isDelete) ->
-				assert.equal p, path
 				return if isDelete
-				tdone()
+				shouldEqualDone tdone, p, path
 		}
 		wait().then ->
 			nofs.outputFileSync path, 'test'
@@ -451,9 +451,8 @@ describe 'Watch:', ->
 		nofs.copySync 'test/fixtures/watchFile.txt', path
 		nofs.watchFiles 'test/fixtures/**/*.txt', {
 			handler: (p, curr, prev, isDelete) ->
-				assert.equal p, path
 				return if isDelete
-				tdone()
+				shouldEqualDone tdone, p, path
 		}
 		wait().then ->
 			nofs.outputFileSync path, 'test'
