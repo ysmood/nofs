@@ -1,9 +1,6 @@
-process.env.NODE_ENV = 'development'
 process.chdir __dirname
 
-kit = require 'nokit'
-fs = require './src/main'
-{ _ } = kit
+task 'default', ['build'], 'Default task is "build"'
 
 task 'dev', 'Lab', ->
 	kit.monitorApp {
@@ -22,14 +19,14 @@ task 'build', 'Build project.', build = ->
 		kit.compose([
 			kit.parseFileComment 'src/main.coffee'
 			(doc) ->
-				tpl = kit.fs.readFileSync 'doc/readme.tpl.md', 'utf8'
+				tpl = kit.readFileSync 'doc/readme.tpl.md', 'utf8'
 
-				kit.outputFile 'readme.md', _.template tpl, { api: doc }
+				kit.outputFile 'readme.md', _.template(tpl)({ api: doc })
 		])()
 
 	start = kit.compose [
 		-> kit.remove 'dist'
-		-> fs.copy 'src/**/*.js', 'dist'
+		-> kit.copy 'src/**/*.js', 'dist'
 		compileCoffee
 		createDoc
 	]
@@ -37,7 +34,7 @@ task 'build', 'Build project.', build = ->
 	start().then ->
 		kit.log 'Build done.'.green
 
-option '-g', '--grep [grep]', 'Test pattern'
+option '-g, --grep [pattern]', 'Test pattern', '.'
 task 'test', 'Test', (opts) ->
 	clean = ->
 		kit.spawn 'git', ['clean', '-fd', kit.path.normalize('test/fixtures')]
@@ -48,7 +45,7 @@ task 'test', 'Test', (opts) ->
 			'-t', '5000'
 			'-r', 'coffee-script/register'
 			'-R', 'spec'
-			'-g', opts.grep or '.'
+			'-g', opts.grep
 			'test/basic.coffee'
 		])
 	.then -> clean()

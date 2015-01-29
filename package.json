@@ -4,8 +4,8 @@
   "description": "Promise to make a better fs lib.",
   "main": "dist/main.js",
   "scripts": {
-    "test": "cake test",
-    "prepublish": "cake build"
+    "test": "no test",
+    "prepublish": "no build"
   },
   "repository": {
     "type": "git",
