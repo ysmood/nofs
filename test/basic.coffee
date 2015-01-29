@@ -138,7 +138,7 @@ describe 'Basic:', ->
 			iter: (src, dest) ->
 				ls.push src + '/' + dest
 		).then ->
-			shouldDeepEqual ls.sort(), [
+			shouldDeepEqual normalizePath(ls), [
 				'test/fixtures/dir/test0/b/test/fixtures/other/test0/b'
 				'test/fixtures/dir/test0/test1/c/test/fixtures/other/test0/test1/c'
 			]
@@ -152,7 +152,7 @@ describe 'Basic:', ->
 			iter: (src, dest) ->
 				ls.push src + '/' + dest
 		)
-		shouldDeepEqual ls.sort(), [
+		shouldDeepEqual normalizePath(ls), [
 			'test/fixtures/dir/test0/b/test/fixtures/other/test0/b'
 			'test/fixtures/dir/test0/test1/c/test/fixtures/other/test0/test1/c'
 		]
@@ -440,7 +440,7 @@ describe 'Watch:', ->
 		nofs.watchPath path, {
 			handler: (p, curr, prev, isDelete) ->
 				return if isDelete
-				shouldEqualDone tdone, p, path
+				shouldEqualDone tdone, normalizePath(p), path
 		}
 		wait().then ->
 			nofs.outputFileSync path, 'test'
@@ -452,7 +452,7 @@ describe 'Watch:', ->
 		nofs.watchFiles 'test/fixtures/**/*.txt', {
 			handler: (p, curr, prev, isDelete) ->
 				return if isDelete
-				shouldEqualDone tdone, p, path
+				shouldEqualDone tdone, normalizePath(p), path
 		}
 		wait().then ->
 			nofs.outputFileSync path, 'test'
@@ -463,7 +463,7 @@ describe 'Watch:', ->
 		nofs.copySync 'test/fixtures/watchDir', tmp
 		nofs.watchDir tmp, {
 			handler: (type, path) ->
-				shouldDeepEqualDone tdone, { type, path }, {
+				shouldDeepEqualDone tdone, { type, path: normalizePath(path) }, {
 					type: 'modify'
 					path: tmp + '/dir0/c'
 				}
@@ -477,7 +477,7 @@ describe 'Watch:', ->
 		nofs.copySync 'test/fixtures/watchDir', tmp
 		nofs.watchDir tmp, {
 			handler: (type, path) ->
-				shouldDeepEqualDone tdone, { type, path }, {
+				shouldDeepEqualDone tdone, { type, path: normalizePath(path) }, {
 					type: 'create'
 					path: tmp + '/dir0/d'
 				}
@@ -491,7 +491,7 @@ describe 'Watch:', ->
 		nofs.copySync 'test/fixtures/watchDir', tmp
 		nofs.watchDir tmp, {
 			handler: (type, path) ->
-				shouldDeepEqualDone tdone, { type, path }, {
+				shouldDeepEqualDone tdone, { type, path: normalizePath(path) }, {
 					type: 'delete'
 					path: tmp + '/dir0/c'
 				}
