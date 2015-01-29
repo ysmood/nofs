@@ -1,14 +1,14 @@
 process.chdir __dirname
 
-task 'default', ['build'], 'Default task is "build"'
+task 'default', ['build'], 'default task is "build"'
 
-task 'dev', 'Lab', ->
+task 'dev', 'lab', ->
 	kit.monitorApp {
 		bin: 'coffee'
 		args: ['test/lab.coffee']
 	}
 
-task 'build', 'Build project.', build = ->
+task 'build', 'build project', build = ->
 	compileCoffee = ->
 		kit.spawn 'coffee', [
 			'-o', 'dist'
@@ -34,8 +34,8 @@ task 'build', 'Build project.', build = ->
 	start().then ->
 		kit.log 'Build done.'.green
 
-option '-g, --grep [pattern]', 'Test pattern', '.'
-task 'test', 'Test', (opts) ->
+option '-g, --grep ["."]', 'test pattern', '.'
+task 'test', 'run unit tests', (opts) ->
 	clean = ->
 		kit.spawn 'git', ['clean', '-fd', kit.path.normalize('test/fixtures')]
 
