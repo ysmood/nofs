@@ -25,6 +25,7 @@
   "homepage": "https://github.com/ysmood/nofs",
   "devDependencies": {
     "coffee-script": "*",
+    "commander": "^2.6.0",
     "mocha": "*",
     "ncp": "*",
     "nokit": "*"
