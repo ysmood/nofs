@@ -1386,8 +1386,10 @@ nofs = _.extend {}, {
 					if match path, pattern
 						opts.handler 'create', path if curr
 						nofs.watchPath path, { handler: fileHandler }
+					else
+						Promise.resolve()
 				).then (listener) ->
-					watchedList[path] = listener
+					watchedList[path] = listener if listener
 			}
 
 		dirHandler(root).then -> watchedList

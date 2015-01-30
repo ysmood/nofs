@@ -462,14 +462,15 @@ describe 'Watch:', ->
 
 		nofs.copySync 'test/fixtures/watchDir', tmp
 		nofs.watchDir tmp, {
+			pattern: '*'
 			handler: (type, path) ->
 				shouldDeepEqualDone tdone, { type, path: normalizePath(path) }, {
 					type: 'modify'
-					path: tmp + '/dir0/c'
+					path: tmp + '/a'
 				}
 		}
 		wait().then ->
-			nofs.outputFileSync tmp + '/dir0/c', 'ok'
+			nofs.outputFileSync tmp + '/a', 'ok'
 
 	it 'watchDir create', (tdone) ->
 		tmp = 'test/fixtures/watchDirCreate'
