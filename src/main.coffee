@@ -348,20 +348,33 @@ nofs = _.extend {}, {
 	 * 	handleNames: (names) -> names
 	 * }
 	 * ```
-	 * The argument of `opts.iter`, `fileInfo` object has these
-	 * properties: `{ path, isDir, children, stats }`.
+	 * The argument of `opts.iter`, `fileInfo` object has these properties:
+	 * ```coffee
+	 * {
+	 * 	path: String
+	 * 	name: String
+	 * 	baseDir: String
+	 * 	isDir: Boolean
+	 * 	children: [fileInfo]
+	 * 	stats: fs.Stats
+	 * 	val: Any
+	 * }
+	 * ```
 	 * Assume we call the function: `nofs.eachDir('dir', { iter: (f) -> f })`,
 	 * the resolved directory object array may look like:
 	 * ```coffee
 	 * {
-	 * 	path: 'dir/path'
+	 * 	path: 'some/dir/path'
 	 * 	name: 'path'
-	 * 	baseDir: 'dir'
+	 * 	baseDir: 'some/dir'
 	 * 	isDir: true
 	 * 	val: 'test'
 	 * 	children: [
-	 * 		{ path: 'dir/path/a.txt', name: 'a.txt', baseDir: 'dir', isDir: false, stats: { ... } }
-	 * 		{ path: 'dir/path/b.txt', name: 'b.txt', baseDir: 'dir', isDir: false, stats: { ... } }
+	 * 		{
+	 * 			path: 'some/dir/path/a.txt', name: 'a.txt'
+	 * 			baseDir: 'dir', isDir: false, stats: { ... }
+	 * 		}
+	 * 		{ path: 'some/dir/path/b.txt', name: 'b.txt', ... }
 	 * 	]
 	 * 	stats: {
 	 * 		size: 527
@@ -372,7 +385,7 @@ nofs = _.extend {}, {
 	 * 	}
 	 * }
 	 * ```
-	 * The `stats` is a native `nofs.Stats` object.
+	 * The `stats` is a native `fs.Stats` object.
 	 * @return {Promise} Resolves a directory tree object.
 	 * @example
 	 * ```coffee
