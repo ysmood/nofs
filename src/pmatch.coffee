@@ -41,12 +41,14 @@ _.extend minimatch, {
 		else
 			negates.map (p) -> new minimatch.Minimatch(p[1..], opts)
 
+		match = (path, partial) ->
+			_.any pmatches, (pm) -> pm.match path, partial
 
 		negateMath = (path, partial) ->
 			return if not negates
 			_.any negates, (pm) -> pm.match path, partial
 
-		{ pmatches, negateMath }
+		{ pmatches, negateMath, match }
 
 	###*
 	 * Get the plain path of the pattern.

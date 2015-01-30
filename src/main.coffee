@@ -1255,7 +1255,7 @@ nofs = _.extend {}, {
 	 * 	# If the "path" ends with '/' it's a directory, else a file.
 	 * 	handler: (type, path, oldPath) ->
 	 *
-	 * 	pattern: '**' # minimatch, string or array
+	 * 	patterns: '**' # minimatch, string or array
 	 *
 	 * 	# Whether to watch POSIX hidden file.
 	 * 	all: false
@@ -1280,7 +1280,7 @@ nofs = _.extend {}, {
 	###
 	watchDir: (root, opts = {}) ->
 		_.defaults opts, {
-			pattern: '**'
+			patterns: '**'
 			pmatch: {}
 			all: false
 			error: (err) ->
@@ -1288,6 +1288,19 @@ nofs = _.extend {}, {
 		}
 
 		opts.pmatch.dot = opts.all
+
+		if _.isString opts.patterns
+			opts.patterns = [opts.patterns]
+		opts.patterns = opts.patterns.map (p) ->
+			if p[0] == '!'
+				'!' + npath.join(root, p[1..])
+			else
+				npath.join root, p
+
+		{ match, negateMath } = nofs.pmatch.matchMultiple(
+			opts.patterns
+			opts.pmatch
+		)
 
 		watchedList = {}
 
@@ -1303,9 +1316,6 @@ nofs = _.extend {}, {
 			statsA.mtime.getTime() == statsB.mtime.getTime() and
 			statsA.ctime.getTime() == statsB.ctime.getTime() and
 			statsA.size == statsB.size
-
-		match = (path, pattern) ->
-			nofs.pmatch path, pattern, opts.pmatch
 
 		dirPath = (dir) -> npath.join dir, '/'
 
@@ -1328,8 +1338,6 @@ nofs = _.extend {}, {
 				delete watchedList[dir]
 				return
 
-			pattern = npath.join dir, opts.pattern
-
 			# Prevent high frequency concurrent fs changes,
 			# we should to use Sync function here. But for
 			# now if we don't need `move` event, everything is OK.
@@ -1338,17 +1346,16 @@ nofs = _.extend {}, {
 				if watchedList[path]
 					return
 
-				(if fileInfo.isDir
+				if fileInfo.isDir
 					opts.handler 'create', dirPath(path) if curr
 					nofs.watchPath path, { handler: dirHandler }
-				else
-					if match path, pattern
-						opts.handler 'create', path if curr
-						nofs.watchPath path, { handler: fileHandler }
-					else
-						Promise.resolve()
-				).then (listener) ->
-					watchedList[path] = listener if listener
+					.then (listener) ->
+						watchedList[path] = listener if listener
+				else if not negateMath(path) and match(path)
+					opts.handler 'create', path if curr
+					nofs.watchPath path, { handler: fileHandler }
+					.then (listener) ->
+						watchedList[path] = listener if listener
 			}
 
 		dirHandler(root).then -> watchedList

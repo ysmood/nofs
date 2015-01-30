@@ -462,7 +462,7 @@ describe 'Watch:', ->
 
 		nofs.copySync 'test/fixtures/watchDir', tmp
 		nofs.watchDir tmp, {
-			pattern: '*'
+			patterns: '*'
 			handler: (type, path) ->
 				shouldDeepEqualDone tdone, { type, path: normalizePath(path) }, {
 					type: 'modify'
@@ -477,7 +477,7 @@ describe 'Watch:', ->
 
 		nofs.copySync 'test/fixtures/watchDir', tmp
 		nofs.watchDir tmp, {
-			pattern: ['a']
+			patterns: ['/dir0/*']
 			handler: (type, path) ->
 				shouldDeepEqualDone tdone, { type, path: normalizePath(path) }, {
 					type: 'create'
@@ -492,6 +492,7 @@ describe 'Watch:', ->
 
 		nofs.copySync 'test/fixtures/watchDir', tmp
 		nofs.watchDir tmp, {
+			patterns: ['**', '!a']
 			handler: (type, path) ->
 				shouldDeepEqualDone tdone, { type, path: normalizePath(path) }, {
 					type: 'delete'
@@ -499,4 +500,5 @@ describe 'Watch:', ->
 				}
 		}
 		wait().then ->
+			nofs.removeSync tmp + '/a'
 			nofs.removeSync tmp + '/dir0/c'
