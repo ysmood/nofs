@@ -22,6 +22,32 @@ _.extend minimatch, {
 	isNotPlain: (pm) ->
 		pm.set.length > 1 or !_.all(pm.set[0], _.isString)
 
+	matchMultiple: (patterns, opts) ->
+		# Hanle negate patterns.
+		# Only when there are both negate and non-negate patterns,
+		# the exclusion will work.
+		negates = []
+		pmatches = []
+		if not opts.nonegate
+			for p in patterns
+				(if p[0] == '!' then negates else pmatches).push p
+
+			if pmatches.length == 0
+				pmatches = negates
+				negates = []
+		pmatches = pmatches.map (p) -> new minimatch.Minimatch(p, opts)
+		negates = if negates.length == 0
+			null
+		else
+			negates.map (p) -> new minimatch.Minimatch(p[1..], opts)
+
+
+		negateMath = (path, partial) ->
+			return if not negates
+			_.any negates, (pm) -> pm.match path, partial
+
+		{ pmatches, negateMath }
+
 	###*
 	 * Get the plain path of the pattern.
 	 * @param  {Pmatch} pm

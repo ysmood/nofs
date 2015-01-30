@@ -672,26 +672,7 @@ nofs = _.extend {}, {
 
 		list = []
 
-		# Hanle negate patterns.
-		# Only when there are both negate and non-negate patterns,
-		# the exclusion will work.
-		negatePms = []
-		pms = []
-		if not opts.pmatch.nonegate
-			for p in patterns
-				(if p[0] == '!' then negatePms else pms).push p
-
-			if pms.length == 0
-				pms = negatePms
-				negatePms = []
-		pms = pms.map (p) -> new nofs.pmatch.Minimatch(p, opts.pmatch)
-		negatePms = if negatePms.length == 0
-			null
-		else
-			negatePms.map (p) -> new nofs.pmatch.Minimatch(p[1..], opts.pmatch)
-
-		negateMath = (path) ->
-			_.any negatePms, (pm) -> pm.match path
+		{ pmatches, negateMath } = nofs.pmatch.matchMultiple patterns, opts.pmatch
 
 		iter = opts.iter
 		opts.iter = (fileInfo) ->
@@ -699,13 +680,12 @@ nofs = _.extend {}, {
 
 		glob = (pm) ->
 			opts.filter = (fileInfo) ->
-				return if negatePms and negateMath fileInfo.path
+				return if negateMath fileInfo.path
 				if fileInfo.path == '.'
 					return pm.match ''
 				pm.match fileInfo.path
 
 			opts.searchFilter = (fileInfo) ->
-				return if negatePms and negateMath(fileInfo.path, true)
 				if fileInfo.path == '.'
 					return true
 				pm.match fileInfo.path, true
@@ -715,7 +695,7 @@ nofs = _.extend {}, {
 				if err.code != 'ENOENT'
 					Promise.reject err
 
-		pms.reduce((p, pm) ->
+		pmatches.reduce((p, pm) ->
 			p.then -> glob(pm)
 		, Promise.resolve())
 		.then -> list
@@ -734,26 +714,7 @@ nofs = _.extend {}, {
 
 		list = []
 
-		# Hanle negate patterns.
-		# Only when there are both negate and non-negate patterns,
-		# the exclusion will work.
-		negatePms = []
-		pms = []
-		if not opts.pmatch.nonegate
-			for p in patterns
-				(if p[0] == '!' then negatePms else pms).push p
-
-			if pms.length == 0
-				pms = negatePms
-				negatePms = []
-		pms = pms.map (p) -> new nofs.pmatch.Minimatch(p, opts.pmatch)
-		negatePms = if negatePms.length == 0
-			null
-		else
-			negatePms.map (p) -> new nofs.pmatch.Minimatch(p[1..], opts.pmatch)
-
-		negateMath = (path) ->
-			_.any negatePms, (pm) -> pm.match path
+		{ pmatches, negateMath } = nofs.pmatch.matchMultiple patterns, opts.pmatch
 
 		iter = opts.iter
 		opts.iter = (fileInfo) ->
@@ -761,17 +722,15 @@ nofs = _.extend {}, {
 
 		glob = (pm) ->
 			opts.filter = (fileInfo) ->
-				return if negatePms and negateMath fileInfo.path
+				return if negateMath fileInfo.path
 				if fileInfo.path == '.'
 					return pm.match ''
 				pm.match fileInfo.path
 
 			opts.searchFilter = (fileInfo) ->
-				return if negatePms and negateMath(fileInfo.path, true)
 				if fileInfo.path == '.'
 					return true
 				pm.match fileInfo.path, true
-
 			try
 				nofs.eachDirSync(
 					nofs.pmatch.getPlainPath(pm)
@@ -781,7 +740,7 @@ nofs = _.extend {}, {
 				if err.code != 'ENOENT'
 					throw err
 
-		for pm in pms
+		for pm in pmatches
 			glob pm
 		list
 
