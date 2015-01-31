@@ -1,3 +1,5 @@
+'use strict'
+
 minimatch = require 'minimatch'
 
 _ = require './utils'

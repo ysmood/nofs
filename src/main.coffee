@@ -1,3 +1,5 @@
+'use strict'
+
 _ = require './utils'
 npath = require './path'
 

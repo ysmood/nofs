@@ -1,3 +1,5 @@
+'use strict'
+
 Promise = require 'bluebird'
 
 module.exports = _ =
