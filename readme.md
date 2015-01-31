@@ -132,52 +132,6 @@ fs.eachDir('.', {
 ```
 
 
-## Works like Gulp
-
-For more information see project [nokit][].
-
-```coffee
-fs = require 'nofs'
-
-# coffee plugin
-coffee = (path) ->
-    fs.readFile path, 'utf8'
-    .then (coffee) ->
-        # Unlike pipe, you can still control all the details esaily.
-        '/* Add Lisence Info */\n\n' + coffee
-
-# writer plugin: A simple curried function.
-writer = (path) -> (js) ->
-    fs.outputFile path, js
-
-# minify plugin
-minify = (js) ->
-    uglify = require 'uglify-js'
-    uglify.minify js, { fromString: true }
-
-# Use the plugins.
-jsTask = ->
-    # All files will be compiled concurrently.
-    fs.mapDir 'src/**/*.coffee', 'dist', {
-        iter: (src, dest) ->
-            # Here's the work flow, simple yet readable.
-            coffee src
-            .then minify
-            .then writer(dest)
-    }
-
-cssTask = -> # ...
-
-cleanTask = -> # ...
-
-# Run all tasks concurrently, and sequence groups.
-compileGroup = [jsTask(), cssTask()]
-fs.Promise.all compileGroup
-.then cleanTask # The clean will work after all compilers are settled.
-.then ->
-    console.log 'All Done!'
-```
-
 ## Changelog
 
 Goto [changelog](doc/changelog.md)
@@ -190,13 +144,13 @@ For some naming convention reasons, `nofs` also uses some common alias for fucnt
 
 __No native `fs` funtion will be listed.__
 
-- ### **[Promise](src/main.coffee?source#L9)**
+- ### **[Promise](src/main.coffee?source#L11)**
 
     Here I use [Bluebird](https://github.com/petkaantonov/bluebird) only as an ES6 shim for Promise.
     No APIs other than ES6 spec will be used. In the
     future it will be removed.
 
-- ### **[copyDir](src/main.coffee?source#L47)**
+- ### **[copyDir](src/main.coffee?source#L49)**
 
     Copy an empty directory.
 
@@ -215,7 +169,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[copyFile](src/main.coffee?source#L114)**
+- ### **[copyFile](src/main.coffee?source#L116)**
 
     Copy a single file.
 
@@ -234,7 +188,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[copy](src/main.coffee?source#L215)**
+- ### **[copy](src/main.coffee?source#L217)**
 
     Like `cp -r`.
 
@@ -260,7 +214,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[dirExists](src/main.coffee?source#L288)**
+- ### **[dirExists](src/main.coffee?source#L290)**
 
     Check if a path exists, and if it is a directory.
 
@@ -270,7 +224,7 @@ __No native `fs` funtion will be listed.__
 
         Resolves a boolean value.
 
-- ### **[eachDir](src/main.coffee?source#L426)**
+- ### **[eachDir](src/main.coffee?source#L428)**
 
     <a name='eachDir'></a>
     Concurrently walks through a path recursively with a callback.
@@ -409,7 +363,7 @@ __No native `fs` funtion will be listed.__
         }
         ```
 
-- ### **[fileExists](src/main.coffee?source#L620)**
+- ### **[fileExists](src/main.coffee?source#L646)**
 
     Check if a path exists, and if it is a file.
 
@@ -419,7 +373,7 @@ __No native `fs` funtion will be listed.__
 
         Resolves a boolean value.
 
-- ### **[glob](src/main.coffee?source#L674)**
+- ### **[glob](src/main.coffee?source#L700)**
 
     Get files by patterns.
 
@@ -474,7 +428,7 @@ __No native `fs` funtion will be listed.__
         	console.log paths
         ```
 
-- ### **[mapDir](src/main.coffee?source#L789)**
+- ### **[mapDir](src/main.coffee?source#L809)**
 
     Map file from a directory to another recursively with a
     callback.
@@ -518,7 +472,7 @@ __No native `fs` funtion will be listed.__
         }
         ```
 
-- ### **[mkdirs](src/main.coffee?source#L835)**
+- ### **[mkdirs](src/main.coffee?source#L855)**
 
     Recursively create directory path, like `mkdir -p`.
 
@@ -530,7 +484,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[move](src/main.coffee?source#L877)**
+- ### **[move](src/main.coffee?source#L897)**
 
     Moves a file or directory. Also works between partitions.
     Behaves like the Unix `mv`.
@@ -557,7 +511,7 @@ __No native `fs` funtion will be listed.__
         It will resolve a boolean value which indicates
         whether this action is taken between two partitions.
 
-- ### **[outputFile](src/main.coffee?source#L943)**
+- ### **[outputFile](src/main.coffee?source#L963)**
 
     Almost the same as `writeFile`, except that if its parent
     directories do not exist, they will be created.
@@ -573,7 +527,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[outputJson](src/main.coffee?source#L975)**
+- ### **[outputJson](src/main.coffee?source#L995)**
 
     Write a object to a file, if its parent directory doesn't
     exists, it will be created.
@@ -597,7 +551,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[path](src/main.coffee?source#L1000)**
+- ### **[path](src/main.coffee?source#L1022)**
 
     The path module nofs is using.
     It's the native [io.js](iojs.org) path lib.
@@ -606,7 +560,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>type</u>**: { _Object_ }
 
-- ### **[pmatch](src/main.coffee?source#L1015)**
+- ### **[pmatch](src/main.coffee?source#L1037)**
 
     The `minimatch` lib. It has two extra methods:
     - `isPmatch(String | Object) -> Pmatch | undefined`
@@ -620,20 +574,20 @@ __No native `fs` funtion will be listed.__
 
     [Offline Documentation](?gotoDoc=minimatch/readme.md)
 
-- ### **[Promise](src/main.coffee?source#L1021)**
+- ### **[Promise](src/main.coffee?source#L1043)**
 
     What promise this lib is using.
 
     - **<u>type</u>**: { _Bluebird_ }
 
-- ### **[promisify](src/main.coffee?source#L1028)**
+- ### **[promisify](src/main.coffee?source#L1050)**
 
     A callback style to promise helper.
     It doesn't depends on Bluebird.
 
     - **<u>type</u>**: { _Function_ }
 
-- ### **[readJson](src/main.coffee?source#L1041)**
+- ### **[readJson](src/main.coffee?source#L1063)**
 
     Read A Json file and parse it to a object.
 
@@ -654,7 +608,7 @@ __No native `fs` funtion will be listed.__
         	console.log obj.name, obj.age
         ```
 
-- ### **[reduceDir](src/main.coffee?source#L1081)**
+- ### **[reduceDir](src/main.coffee?source#L1103)**
 
     Walk through directory recursively with a iterator.
 
@@ -693,7 +647,7 @@ __No native `fs` funtion will be listed.__
         	console.log ret
         ```
 
-- ### **[remove](src/main.coffee?source#L1118)**
+- ### **[remove](src/main.coffee?source#L1140)**
 
     Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -706,7 +660,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[touch](src/main.coffee?source#L1161)**
+- ### **[touch](src/main.coffee?source#L1176)**
 
     Change file access and modification times.
     If the file does not exist, it is created.
@@ -728,7 +682,7 @@ __No native `fs` funtion will be listed.__
 
         If new file created, resolves true.
 
-- ### **[watchPath](src/main.coffee?source#L1219)**
+- ### **[watchPath](src/main.coffee?source#L1234)**
 
     <a id="writeFile-opts"></a>
     Watch a file. If the file changes, the handler will be invoked.
@@ -768,7 +722,7 @@ __No native `fs` funtion will be listed.__
         }
         ```
 
-- ### **[watchFiles](src/main.coffee?source#L1254)**
+- ### **[watchFiles](src/main.coffee?source#L1269)**
 
     Watch files, when file changes, the handler will be invoked.
     It is build on the top of `nofs.watchPath`.
@@ -793,7 +747,7 @@ __No native `fs` funtion will be listed.__
         	console.log path
         ```
 
-- ### **[watchDir](src/main.coffee?source#L1294)**
+- ### **[watchDir](src/main.coffee?source#L1309)**
 
     Watch directory and all the files in it.
     It supports three types of change: create, modify, move, delete.
@@ -838,7 +792,7 @@ __No native `fs` funtion will be listed.__
         }
         ```
 
-- ### **[writeFile](src/main.coffee?source#L1383)**
+- ### **[writeFile](src/main.coffee?source#L1398)**
 
     A `writeFile` shim for `< Node v0.10`.
 

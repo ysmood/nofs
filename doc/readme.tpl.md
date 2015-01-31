@@ -132,52 +132,6 @@ fs.eachDir('.', {
 ```
 
 
-## Works like Gulp
-
-For more information see project [nokit][].
-
-```coffee
-fs = require 'nofs'
-
-# coffee plugin
-coffee = (path) ->
-    fs.readFile path, 'utf8'
-    .then (coffee) ->
-        # Unlike pipe, you can still control all the details esaily.
-        '/* Add Lisence Info */\n\n' + coffee
-
-# writer plugin: A simple curried function.
-writer = (path) -> (js) ->
-    fs.outputFile path, js
-
-# minify plugin
-minify = (js) ->
-    uglify = require 'uglify-js'
-    uglify.minify js, { fromString: true }
-
-# Use the plugins.
-jsTask = ->
-    # All files will be compiled concurrently.
-    fs.mapDir 'src/**/*.coffee', 'dist', {
-        iter: (src, dest) ->
-            # Here's the work flow, simple yet readable.
-            coffee src
-            .then minify
-            .then writer(dest)
-    }
-
-cssTask = -> # ...
-
-cleanTask = -> # ...
-
-# Run all tasks concurrently, and sequence groups.
-compileGroup = [jsTask(), cssTask()]
-fs.Promise.all compileGroup
-.then cleanTask # The clean will work after all compilers are settled.
-.then ->
-    console.log 'All Done!'
-```
-
 ## Changelog
 
 Goto [changelog](doc/changelog.md)
