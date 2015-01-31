@@ -483,6 +483,14 @@ nofs = _.extend {}, {
 
 			opts.iter fileInfo if opts.iter? and opts.filter fileInfo
 
+		# TODO: Race Condition
+		# It's possible that the file has already gone.
+		# Here we silently ignore it, since you normally don't
+		# want to iterate a non-exists path.
+		raceResolver = (err) ->
+			if err.code != 'ENOENT'
+				Promise.reject err
+
 		decideNext = (dir, name) ->
 			path = npath.join dir, name
 			stat(resolve path).then (stats) ->
@@ -506,11 +514,13 @@ nofs = _.extend {}, {
 								fileInfo
 				else
 					execFn fileInfo
+			.catch raceResolver
 
 		readdir = (dir) ->
 			fs.readdir(resolve dir).then (names) ->
 				Promise.all opts.handleNames(names).map (name) ->
 					decideNext dir, name
+			.catch raceResolver
 
 		handleSpath()
 		handleFilter()
@@ -578,33 +588,47 @@ nofs = _.extend {}, {
 
 			opts.iter fileInfo if opts.iter? and opts.filter fileInfo
 
+		# TODO: Race Condition
+		# It's possible that the file has already gone.
+		# Here we silently ignore it, since you normally don't
+		# want to iterate a non-exists path.
+		raceResolver = (err) ->
+			if err.code != 'ENOENT'
+				throw err
+
 		decideNext = (dir, name) ->
 			path = npath.join dir, name
 
-			stats = stat(resolve path)
-			isDir = stats.isDirectory()
-			fileInfo = { path, name, baseDir: spath, isDir, stats }
+			try
+				stats = stat(resolve path)
+				isDir = stats.isDirectory()
+				fileInfo = { path, name, baseDir: spath, isDir, stats }
 
-			if isDir
-				return if not opts.searchFilter fileInfo
+				if isDir
+					return if not opts.searchFilter fileInfo
 
-				if opts.isReverse
-					children = readdir(path)
-					fileInfo.children = children
-					execFn fileInfo
+					if opts.isReverse
+						children = readdir(path)
+						fileInfo.children = children
+						execFn fileInfo
+					else
+						val = execFn fileInfo
+						children = readdir(path)
+						fileInfo.children = children
+						fileInfo.val = val
+						fileInfo
 				else
-					val = execFn fileInfo
-					children = readdir(path)
-					fileInfo.children = children
-					fileInfo.val = val
-					fileInfo
-			else
-				execFn fileInfo
+					execFn fileInfo
+			catch err
+				raceResolver err
 
 		readdir = (dir) ->
-			names = opts.handleNames fs.readdirSync(resolve dir)
-			names.map (name) ->
-				decideNext dir, name
+			try
+				names = opts.handleNames fs.readdirSync(resolve dir)
+				names.map (name) ->
+					decideNext dir, name
+			catch err
+				raceResolver err
 
 		handleSpath()
 		handleFilter()
@@ -706,9 +730,6 @@ nofs = _.extend {}, {
 				pm.match fileInfo.path, true
 
 			nofs.eachDir nofs.pmatch.getPlainPath(pm), opts
-			.catch (err) ->
-				if err.code != 'ENOENT'
-					Promise.reject err
 
 		pmatches.reduce((p, pm) ->
 			p.then -> glob(pm)
@@ -746,14 +767,11 @@ nofs = _.extend {}, {
 				if fileInfo.path == '.'
 					return true
 				pm.match fileInfo.path, true
-			try
-				nofs.eachDirSync(
-					nofs.pmatch.getPlainPath(pm)
-					opts
-				)
-			catch err
-				if err.code != 'ENOENT'
-					throw err
+
+			nofs.eachDirSync(
+				nofs.pmatch.getPlainPath(pm)
+				opts
+			)
 
 		for pm in pmatches
 			glob pm
@@ -1129,9 +1147,6 @@ nofs = _.extend {}, {
 				fs.unlink path
 
 		nofs.eachDir path, opts
-		.catch (err) ->
-			if err.code != 'ENOENT'
-				Promise.reject err
 
 	removeSync: (path, opts = {}) ->
 		opts.isReverse = true
@@ -1142,11 +1157,7 @@ nofs = _.extend {}, {
 			else
 				fs.unlinkSync path
 
-		try
-			nofs.eachDirSync path, opts
-		catch err
-			if err.code != 'ENOENT'
-				throw err
+		nofs.eachDirSync path, opts
 
 	###*
 	 * Change file access and modification times.

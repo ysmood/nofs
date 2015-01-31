@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.4.5
+
+  - Fix a race condition issue.
+
 - v0.4.4
 
   - **API CHANGE** `watchDir`'s option `pattern` renamed to `patterns`.
