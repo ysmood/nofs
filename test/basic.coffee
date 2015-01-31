@@ -220,6 +220,22 @@ describe 'Basic:', ->
 		nofs.removeSync dir
 		shouldEqual nofs.dirExistsSync(dir), false
 
+	it 'remove race condition', ->
+		dir = 'test/fixtures/remove-race'
+		nofs.mkdirsSync dir
+		nofs.touchSync dir + '/a'
+		nofs.touchSync dir + '/b'
+		nofs.touchSync dir + '/c'
+
+		Promise.all [
+			nofs.remove dir
+			nofs.remove dir + '/a'
+			nofs.remove dir + '/b'
+			nofs.remove dir + '/c'
+		]
+		.then ->
+			shouldEqual nofs.dirExistsSync(dir), false
+
 	it 'move', ->
 		dir = 'test/fixtures/dir-move'
 		dir2 = dir + '2'
