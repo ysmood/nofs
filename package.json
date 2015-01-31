@@ -32,7 +32,7 @@
     "nokit": "*"
   },
   "dependencies": {
-    "bluebird": "2.9.3",
+    "bluebird": "2.9.4",
     "minimatch": "2.0.1"
   }
 }
