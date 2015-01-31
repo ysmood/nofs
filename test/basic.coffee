@@ -370,6 +370,15 @@ describe 'Basic:', ->
 			".", "a","test0","test0/b","test0/test1","test0/test1/c","test2","test2/d"
 		]
 
+	it 'glob non-exists', ->
+		nofs.glob 'aaaaaaaaaaaaaa'
+		.then (ls) ->
+			shouldDeepEqual normalizePath(ls), []
+
+	it 'globSync non-exists', ->
+		ls = nofs.globSync 'aaaaaaaaaaaaaa'
+		shouldDeepEqual normalizePath(ls), []
+
 	it 'glob all', ->
 		nofs.glob 'test/fixtures/dir/test2/**', { all: true }
 		.then (ls) ->
