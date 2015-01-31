@@ -481,7 +481,7 @@ nofs = _.extend {}, {
 
 			return if opts.isIterFileOnly and fileInfo.isDir
 
-			opts.iter? fileInfo if opts.filter fileInfo
+			opts.iter fileInfo if opts.iter? and opts.filter fileInfo
 
 		decideNext = (dir, name) ->
 			path = npath.join dir, name
@@ -576,7 +576,7 @@ nofs = _.extend {}, {
 
 			return if opts.isIterFileOnly and fileInfo.isDir
 
-			opts.iter? fileInfo if opts.filter fileInfo
+			opts.iter fileInfo if opts.iter? and opts.filter fileInfo
 
 		decideNext = (dir, name) ->
 			path = npath.join dir, name
