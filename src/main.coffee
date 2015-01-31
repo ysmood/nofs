@@ -978,6 +978,7 @@ nofs = _.extend {}, {
 
 		try
 			str = JSON.stringify obj, opts.replacer, opts.space
+			str += '\n'
 		catch err
 			return Promise.reject err
 
@@ -988,6 +989,7 @@ nofs = _.extend {}, {
 			opts = { encoding: opts }
 
 		str = JSON.stringify obj, opts.replacer, opts.space
+		str += '\n'
 		nofs.outputFileSync path, str, opts
 
 	###*
