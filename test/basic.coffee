@@ -341,7 +341,7 @@ describe 'Basic:', ->
 		exists = nofs.dirExistsSync 'test/fixtures/make/dir/s'
 		shouldEqual exists, true
 
-	it 'writeJson readJson', ->
+	it 'outputJson readJson', ->
 		nofs.outputJson 'test/fixtures/json/json.json', { val: 'test' }
 		.then ->
 			nofs.readJson 'test/fixtures/json/json.json'
