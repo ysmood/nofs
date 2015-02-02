@@ -889,6 +889,7 @@ nofs = _.extend {}, {
 	 * ```coffee
 	 * {
 	 * 	isForce: false
+	 * 	isFollowLink: false
 	 * }
 	 * ```
 	 * @return {Promise} It will resolve a boolean value which indicates
@@ -897,6 +898,7 @@ nofs = _.extend {}, {
 	move: (from, to, opts = {}) ->
 		_.defaults opts, {
 			isForce: false
+			isFollowLink: false
 		}
 
 		moveFile = (src, dest) ->
@@ -1134,10 +1136,14 @@ nofs = _.extend {}, {
 	 * Remove a file or directory peacefully, same with the `rm -rf`.
 	 * @param  {String} path
 	 * @param {Object} opts Extends the options of [eachDir](#eachDir-opts). But
-	 * the `isReverse` is fixed with `true`.
+	 * the `isReverse` is fixed with `true`. Defaults:
+	 * ```coffee
+	 * { isFollowLink: false }
+	 * ```
 	 * @return {Promise}
 	###
 	remove: (path, opts = {}) ->
+		_.defaults opts, { isFollowLink: false }
 		opts.isReverse = true
 
 		opts.iter = ({ path, isDir }) ->
@@ -1149,6 +1155,7 @@ nofs = _.extend {}, {
 		nofs.eachDir path, opts
 
 	removeSync: (path, opts = {}) ->
+		_.defaults opts, { isFollowLink: false }
 		opts.isReverse = true
 
 		opts.iter = ({ path, isDir }) ->

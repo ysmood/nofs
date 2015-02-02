@@ -220,6 +220,29 @@ describe 'Basic:', ->
 		nofs.removeSync dir
 		shouldEqual nofs.dirExistsSync(dir), false
 
+	it 'remove symbol link', ->
+		dir = 'test/fixtures/dir-remove-symbol-link'
+		nofs.copySync 'test/fixtures/dir', dir
+		nofs.symlinkSync dir + '/test0', dir + '/test0-link', 'dir'
+
+		nofs.remove dir + '/test0-link'
+		.then ->
+			Promise.all [
+				shouldEqual nofs.dirExistsSync(dir + '/test0-link'), false
+				shouldEqual nofs.dirExistsSync(dir + '/test0'), true
+			]
+
+	it 'removeSync symbol link', ->
+		dir = 'test/fixtures/dir-removeSync-symbol-link'
+		nofs.copySync 'test/fixtures/dir', dir
+		nofs.symlinkSync dir + '/test0', dir + '/test0-link', 'dir'
+
+		nofs.removeSync dir + '/test0-link'
+		Promise.all [
+			shouldEqual nofs.dirExistsSync(dir + '/test0-link'), false
+			shouldEqual nofs.dirExistsSync(dir + '/test0'), true
+		]
+
 	it 'remove race condition', ->
 		dir = 'test/fixtures/remove-race'
 		nofs.mkdirsSync dir
