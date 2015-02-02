@@ -32,7 +32,7 @@ task 'build', 'build project', build = ->
 	]
 
 	start().then ->
-		kit.log 'Build done.'.green
+		kit.log 'Build done.'
 
 option '-g, --grep ["."]', 'test pattern', '.'
 task 'test', 'run unit tests', (opts) ->

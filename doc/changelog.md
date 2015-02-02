@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.4.6
+
+  - Optimize the `remove`'s default behavior when hanlding symbol links.
+
 - v0.4.5
 
   - Fix a race condition issue.
