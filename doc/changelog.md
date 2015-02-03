@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.4.6
+- v0.4.7
 
   - Optimize the `remove`'s default behavior when hanlding symbol links.
 

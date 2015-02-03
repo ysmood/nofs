@@ -1,6 +1,6 @@
 {
   "name": "nofs",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "Promise to make a better fs lib.",
   "main": "dist/main.js",
   "scripts": {
@@ -32,7 +32,7 @@
     "nokit": "*"
   },
   "dependencies": {
-    "bluebird": "2.9.5",
+    "bluebird": "2.9.6",
     "minimatch": "2.0.1"
   }
 }
