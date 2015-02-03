@@ -1,3 +1,8 @@
+/**
+ * @license
+ * io.js https://github.com/iojs/io.js/blob/v1.x/LICENSE
+ */
+
 'use strict';
 
 var isWindows = process.platform === 'win32';
