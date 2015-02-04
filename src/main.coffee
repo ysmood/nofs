@@ -1225,6 +1225,9 @@ nofs = _.extend {}, {
 	 *
 	 * 	# Auto unwatch the file while file deletion.
 	 * 	autoUnwatch: true
+	 *
+	 * 	persistent: process.env.watchPersistent != 'off'
+	 * 	interval: +process.env.pollingWatch or 300
 	 * }
 	 * ```
 	 * @return {Promise} It resolves the wrapped watch listener.
@@ -1241,6 +1244,8 @@ nofs = _.extend {}, {
 	watchPath: (path, opts = {}) ->
 		_.defaults opts, {
 			autoUnwatch: true
+			persistent: process.env.watchPersistent != 'off'
+			interval: +process.env.pollingWatch or 300
 		}
 
 		listener = (curr, prev) ->
@@ -1249,14 +1254,7 @@ nofs = _.extend {}, {
 			if opts.autoUnwatch and isDeletion
 				fs.unwatchFile path, listener
 
-		fs.watchFile(
-			path
-			{
-				persistent: process.env.watchPersistent != 'off'
-				interval: +process.env.pollingWatch or 300
-			}
-			listener
-		)
+		fs.watchFile path, opts, listener
 
 		Promise.resolve listener
 
