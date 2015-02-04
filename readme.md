@@ -686,7 +686,7 @@ __No native `fs` funtion will be listed.__
 
         If new file created, resolves true.
 
-- ### **[watchPath](src/main.coffee?source#L1241)**
+- ### **[watchPath](src/main.coffee?source#L1244)**
 
     <a id="writeFile-opts"></a>
     Watch a file. If the file changes, the handler will be invoked.
@@ -708,6 +708,9 @@ __No native `fs` funtion will be listed.__
 
         	# Auto unwatch the file while file deletion.
         	autoUnwatch: true
+
+        	persistent: process.env.watchPersistent != 'off'
+        	interval: +process.env.pollingWatch or 300
         }
         ```
 
@@ -726,7 +729,7 @@ __No native `fs` funtion will be listed.__
         }
         ```
 
-- ### **[watchFiles](src/main.coffee?source#L1276)**
+- ### **[watchFiles](src/main.coffee?source#L1274)**
 
     Watch files, when file changes, the handler will be invoked.
     It is build on the top of `nofs.watchPath`.
@@ -751,7 +754,7 @@ __No native `fs` funtion will be listed.__
         	console.log path
         ```
 
-- ### **[watchDir](src/main.coffee?source#L1316)**
+- ### **[watchDir](src/main.coffee?source#L1314)**
 
     Watch directory and all the files in it.
     It supports three types of change: create, modify, move, delete.
@@ -796,7 +799,7 @@ __No native `fs` funtion will be listed.__
         }
         ```
 
-- ### **[writeFile](src/main.coffee?source#L1405)**
+- ### **[writeFile](src/main.coffee?source#L1403)**
 
     A `writeFile` shim for `< Node v0.10`.
 
