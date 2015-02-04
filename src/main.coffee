@@ -1230,7 +1230,13 @@ nofs = _.extend {}, {
 	 * 	interval: +process.env.pollingWatch or 300
 	 * }
 	 * ```
-	 * @return {Promise} It resolves the wrapped watch listener.
+	 * @return {Promise} It resolves the `StatWatcher` object:
+	 * ```
+	 * {
+	 * 	path
+	 * 	handler
+	 * }
+	 * ```
 	 * @example
 	 * ```coffee
 	 * process.env.watchPersistent = 'off'
@@ -1239,6 +1245,8 @@ nofs = _.extend {}, {
 	 * 		if curr.mtime != prev.mtime
 	 * 			console.log path
 	 * }
+	 * .then (watcher) ->
+	 * 	nofs.unwatchFile watcher.path, watcher.handler
 	 * ```
 	###
 	watchPath: (path, opts = {}) ->
@@ -1248,15 +1256,15 @@ nofs = _.extend {}, {
 			interval: +process.env.pollingWatch or 300
 		}
 
-		listener = (curr, prev) ->
+		handler = (curr, prev) ->
 			isDeletion = curr.mtime.getTime() == 0
 			opts.handler(path, curr, prev, isDeletion)
 			if opts.autoUnwatch and isDeletion
-				fs.unwatchFile path, listener
+				fs.unwatchFile path, handler
 
-		fs.watchFile path, opts, listener
+		watcher = fs.watchFile path, opts, handler
 
-		Promise.resolve listener
+		Promise.resolve _.extend(watcher, { path, handler })
 
 	###*
 	 * Watch files, when file changes, the handler will be invoked.
