@@ -1273,7 +1273,7 @@ nofs = _.extend {}, {
 	###
 	watchFiles: (patterns, opts = {}) ->
 		nofs.glob(patterns).then (paths) ->
-			paths.map (path) ->
+			Promise.all paths.map (path) ->
 				nofs.watchPath path, opts
 
 	###*
