@@ -1,8 +1,9 @@
 # Changelog
 
-- v0.5.1
+- v0.5.2
 
   - Optimize the `remove`'s default behavior when hanlding symbol links.
+  - Fix a `baseDir` issue.
 
 - v0.4.5
 
