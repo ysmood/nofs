@@ -440,7 +440,6 @@ nofs = _.extend {}, {
 		}
 
 		stat = if opts.isFollowLink then fs.stat else fs.lstat
-		baseDir = null
 
 		handleSpath = ->
 			if opts.isAutoMimimatch and
@@ -448,7 +447,6 @@ nofs = _.extend {}, {
 				if nofs.pmatch.isNotPlain pm
 					opts.filter = pm
 				spath = nofs.pmatch.getPlainPath pm
-			baseDir = npath.dirname spath
 
 		handleFilter = ->
 			if _.isRegExp opts.filter
@@ -497,7 +495,9 @@ nofs = _.extend {}, {
 			path = npath.join dir, name
 			stat(resolve path).then (stats) ->
 				isDir = stats.isDirectory()
-				fileInfo = { path, name, baseDir, isDir, stats }
+				if opts.baseDir == undefined
+					opts.baseDir = if isDir then spath else npath.dirname spath
+				fileInfo = { path, name, baseDir: opts.baseDir, isDir, stats }
 
 				if isDir
 					return if not opts.searchFilter fileInfo
@@ -547,7 +547,6 @@ nofs = _.extend {}, {
 		}
 
 		stat = if opts.isFollowLink then fs.statSync else fs.lstatSync
-		baseDir = null
 
 		handleSpath = ->
 			if opts.isAutoMimimatch and
@@ -555,7 +554,6 @@ nofs = _.extend {}, {
 				if nofs.pmatch.isNotPlain pm
 					opts.filter = pm
 				spath = nofs.pmatch.getPlainPath pm
-			baseDir = npath.dirname spath
 
 		handleFilter = ->
 			if _.isRegExp opts.filter
@@ -606,7 +604,9 @@ nofs = _.extend {}, {
 			try
 				stats = stat(resolve path)
 				isDir = stats.isDirectory()
-				fileInfo = { path, name, baseDir, isDir, stats }
+				if opts.baseDir == undefined
+					opts.baseDir = if isDir then spath else npath.dirname spath
+				fileInfo = { path, name, baseDir: opts.baseDir, isDir, stats }
 
 				if isDir
 					return if not opts.searchFilter fileInfo
