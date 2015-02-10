@@ -6,7 +6,7 @@
   "scripts": {
     "no": "no",
     "test": "no test",
-    "prepublish": "no build"
+    "prepublish": "no build -a"
   },
   "repository": {
     "type": "git",
@@ -32,7 +32,7 @@
     "nokit": "*"
   },
   "dependencies": {
-    "bluebird": "2.9.6",
+    "bluebird": "2.9.7",
     "minimatch": "2.0.1"
   }
 }

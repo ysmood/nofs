@@ -1,4 +1,4 @@
-process.chdir __dirname
+require 'nokit/global'
 
 task 'default', ['build'], 'default task is "build"'
 
@@ -8,31 +8,30 @@ task 'dev', 'lab', ->
 		args: ['test/lab.coffee']
 	}
 
-task 'build', 'build project', build = ->
-	compileCoffee = ->
-		kit.spawn 'coffee', [
-			'-o', 'dist'
-			'-cb', 'src'
-		]
+task 'build', ['clean'], 'build project', ->
+	compile = ->
+		kit.warp 'src/**'
+		.load drives.auto 'compile'
+		.run 'dist'
 
 	createDoc = ->
-		kit.flow([
-			kit.parseFileComment 'src/main.coffee'
-			(doc) ->
-				tpl = kit.readFileSync 'doc/readme.tpl.md', 'utf8'
+		kit.warp 'src/main.coffee'
+		.load kit.drives.comment2md
+			tpl: 'doc/readme.jst.md'
+		.run()
 
-				kit.outputFile 'readme.md', _.template(tpl)({ api: doc })
-		])()
-
-	start = kit.flow [
-		-> kit.remove 'dist'
-		-> kit.copy 'src/**/*.js', 'dist'
-		compileCoffee
-		createDoc
+	kit.async [
+		compile()
+		createDoc()
 	]
 
-	start().then ->
-		kit.log 'Build done.'
+option '-a, --all', 'clean all'
+task 'clean', (opts) ->
+	if opts.all
+		kit.async [
+			kit.remove 'dist'
+			kit.remove '.nokit'
+		]
 
 option '-g, --grep ["."]', 'test pattern', '.'
 task 'test', 'run unit tests', (opts) ->
