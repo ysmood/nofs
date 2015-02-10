@@ -220,6 +220,23 @@ describe 'Basic:', ->
 		nofs.removeSync dir
 		shouldEqual nofs.dirExistsSync(dir), false
 
+	it 'remove pattern', ->
+		dir = 'test/fixtures/dir-remove-pattern'
+		nofs.copySync 'test/fixtures/dir', dir
+
+		nofs.remove 'test/fixtures/dir-remove-pattern/test*'
+		.then ->
+			shouldDeepEqual nofs.globSync(dir + '/**'),
+				['test/fixtures/dir-remove-pattern/a']
+
+	it 'removeSync pattern', ->
+		dir = 'test/fixtures/dir-removeSync-pattern'
+		nofs.copySync 'test/fixtures/dir', dir
+
+		nofs.removeSync 'test/fixtures/dir-removeSync-pattern/test*'
+		shouldDeepEqual nofs.globSync(dir + '/**'),
+			['test/fixtures/dir-removeSync-pattern/a']
+
 	it 'remove symbol link', ->
 		dir = 'test/fixtures/dir-remove-symbol-link'
 		nofs.copySync 'test/fixtures/dir', dir

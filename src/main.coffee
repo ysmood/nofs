@@ -312,7 +312,7 @@ nofs = _.extend {}, {
 	 * 	iter: (fileInfo) -> Promise | Any
 	 *
 	 * 	# Auto check if the spath is a minimatch pattern.
-	 * 	isAutoMimimatch: true
+	 * 	isAutoPmatch: true
 	 *
 	 * 	# Include entries whose names begin with a dot (.), the posix hidden files.
 	 * 	all: true
@@ -427,7 +427,7 @@ nofs = _.extend {}, {
 	###
 	eachDir: (spath, opts = {}) ->
 		_.defaults opts, {
-			isAutoMimimatch: true
+			isAutoPmatch: true
 			all: true
 			filter: -> true
 			searchFilter: -> true
@@ -443,7 +443,7 @@ nofs = _.extend {}, {
 
 		handleSpath = ->
 			spath = npath.normalize spath
-			if opts.isAutoMimimatch and
+			if opts.isAutoPmatch and
 			pm = nofs.pmatch.isPmatch(spath)
 				if nofs.pmatch.isNotPlain pm
 					opts.filter = pm
@@ -535,7 +535,7 @@ nofs = _.extend {}, {
 
 	eachDirSync: (spath, opts = {}) ->
 		_.defaults opts, {
-			isAutoMimimatch: true
+			isAutoPmatch: true
 			all: true
 			filter: -> true
 			searchFilter: -> true
@@ -551,7 +551,7 @@ nofs = _.extend {}, {
 
 		handleSpath = ->
 			spath = npath.normalize spath
-			if opts.isAutoMimimatch and
+			if opts.isAutoPmatch and
 			pm = nofs.pmatch.isPmatch(spath)
 				if nofs.pmatch.isNotPlain pm
 					opts.filter = pm
@@ -1153,10 +1153,21 @@ nofs = _.extend {}, {
 	remove: (path, opts = {}) ->
 		_.defaults opts, { isFollowLink: false }
 		opts.isReverse = true
+		removeOpts = _.extend {
+			iter: ({ path, isDir }) ->
+				if isDir
+					fs.rmdir path
+				else
+					fs.unlink path
+		}, opts, { isAutoPmatch: false }
 
 		opts.iter = ({ path, isDir }) ->
 			if isDir
 				fs.rmdir path
+				.catch (err) ->
+					if err.code == 'ENOTEMPTY'
+						return nofs.eachDir path, removeOpts
+					Promise.reject err
 			else
 				fs.unlink path
 
@@ -1165,10 +1176,22 @@ nofs = _.extend {}, {
 	removeSync: (path, opts = {}) ->
 		_.defaults opts, { isFollowLink: false }
 		opts.isReverse = true
+		removeOpts = _.extend {
+			iter: ({ path, isDir }) ->
+				if isDir
+					fs.rmdirSync path
+				else
+					fs.unlinkSync path
+		}, opts, { isAutoPmatch: false }
 
 		opts.iter = ({ path, isDir }) ->
 			if isDir
-				fs.rmdirSync path
+				try
+					fs.rmdirSync path
+				catch err
+					if err.code == 'ENOTEMPTY'
+						return nofs.eachDirSync path, removeOpts
+					Promise.reject err
 			else
 				fs.unlinkSync path
 
