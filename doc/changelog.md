@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.5.3
+
+  - Fix `./dir/path` and `dir/path` issue
+  - Optimize remove pattern.
+
 - v0.5.2
 
   - Optimize the `remove`'s default behavior when hanlding symbol links.
