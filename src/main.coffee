@@ -442,6 +442,7 @@ nofs = _.extend {}, {
 		stat = if opts.isFollowLink then fs.stat else fs.lstat
 
 		handleSpath = ->
+			spath = npath.normalize spath
 			if opts.isAutoMimimatch and
 			pm = nofs.pmatch.isPmatch(spath)
 				if nofs.pmatch.isNotPlain pm
@@ -549,6 +550,7 @@ nofs = _.extend {}, {
 		stat = if opts.isFollowLink then fs.statSync else fs.lstatSync
 
 		handleSpath = ->
+			spath = npath.normalize spath
 			if opts.isAutoMimimatch and
 			pm = nofs.pmatch.isPmatch(spath)
 				if nofs.pmatch.isNotPlain pm
@@ -712,6 +714,7 @@ nofs = _.extend {}, {
 
 		if _.isString patterns
 			patterns = [patterns]
+		patterns = patterns.map npath.normalize
 
 		list = []
 
@@ -751,6 +754,7 @@ nofs = _.extend {}, {
 
 		if _.isString patterns
 			patterns = [patterns]
+		patterns = patterns.map npath.normalize
 
 		list = []
 

@@ -166,7 +166,7 @@ describe 'Basic:', ->
 			}
 		.then (ls) ->
 			shouldDeepEqual normalizePath(ls), [
-				".", "a", "test0", "test0/b", "test0/test1"
+				"a", "test0", "test0/b", "test0/test1"
 				"test0/test1/c", "test2", "test2/d"
 			]
 
@@ -177,7 +177,7 @@ describe 'Basic:', ->
 			cwd: dir
 		}
 		shouldDeepEqual normalizePath(ls), [
-			".", "a", "test0", "test0/b", "test0/test1"
+			"a", "test0", "test0/b", "test0/test1"
 			"test0/test1/c", "test2", "test2/d"
 		]
 
@@ -190,7 +190,7 @@ describe 'Basic:', ->
 			}
 		.then (ls) ->
 			shouldDeepEqual normalizePath(ls), [
-				".", "test0", "test0/b", "test0/test1"
+				"test0", "test0/b", "test0/test1"
 				"test0/test1/c"
 			]
 
@@ -201,7 +201,7 @@ describe 'Basic:', ->
 			cwd: dir
 		}
 		shouldDeepEqual normalizePath(ls), [
-			".", "test0", "test0/b", "test0/test1"
+			"test0", "test0/b", "test0/test1"
 			"test0/test1/c"
 		]
 
@@ -271,7 +271,7 @@ describe 'Basic:', ->
 			}
 			.then (ls) ->
 				shouldDeepEqual normalizePath(ls), [
-					".", "a", "test0", "test0/b", "test0/test1"
+					"a", "test0", "test0/b", "test0/test1"
 					"test0/test1/c", "test2", "test2/d"
 				]
 
@@ -284,7 +284,7 @@ describe 'Basic:', ->
 			cwd: dir2
 		}
 		shouldDeepEqual normalizePath(ls), [
-			".", "a", "test0", "test0/b", "test0/test1"
+			"a", "test0", "test0/b", "test0/test1"
 			"test0/test1/c", "test2", "test2/d"
 		]
 
@@ -398,7 +398,7 @@ describe 'Basic:', ->
 		}
 		.then (ls) ->
 			shouldDeepEqual normalizePath(ls), [
-				".", "a","test0","test0/b","test0/test1","test0/test1/c","test2","test2/d"
+				"a","test0","test0/b","test0/test1","test0/test1/c","test2","test2/d"
 			]
 
 	it 'globSync', ->
@@ -406,7 +406,7 @@ describe 'Basic:', ->
 			cwd: 'test/fixtures/dir'
 		}
 		shouldDeepEqual normalizePath(ls), [
-			".", "a","test0","test0/b","test0/test1","test0/test1/c","test2","test2/d"
+			"a","test0","test0/b","test0/test1","test0/test1/c","test2","test2/d"
 		]
 
 	it 'glob non-exists', ->
@@ -428,12 +428,12 @@ describe 'Basic:', ->
 		shouldDeepEqual normalizePath(ls), ["test/fixtures/dir/test2/.e","test/fixtures/dir/test2/d"]
 
 	it 'glob a file', ->
-		nofs.glob 'test/fixtures/sample.txt'
+		nofs.glob './test/fixtures/sample.txt'
 		.then (ls) ->
 			shouldDeepEqual normalizePath(ls), ['test/fixtures/sample.txt']
 
 	it 'globSync a file', ->
-		ls = nofs.globSync 'test/fixtures/sample.txt'
+		ls = nofs.globSync './test/fixtures/sample.txt'
 		shouldDeepEqual normalizePath(ls), ['test/fixtures/sample.txt']
 
 	it 'glob patterns', ->
