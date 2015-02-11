@@ -226,7 +226,7 @@ describe 'Basic:', ->
 
 		nofs.remove 'test/fixtures/dir-remove-pattern/test*'
 		.then ->
-			shouldDeepEqual nofs.globSync(dir + '/**'),
+			shouldDeepEqual normalizePath(nofs.globSync dir + '/**'),
 				['test/fixtures/dir-remove-pattern/a']
 
 	it 'removeSync pattern', ->
@@ -234,7 +234,7 @@ describe 'Basic:', ->
 		nofs.copySync 'test/fixtures/dir', dir
 
 		nofs.removeSync 'test/fixtures/dir-removeSync-pattern/test*'
-		shouldDeepEqual nofs.globSync(dir + '/**'),
+		shouldDeepEqual normalizePath(nofs.globSync dir + '/**'),
 			['test/fixtures/dir-removeSync-pattern/a']
 
 	it 'remove symbol link', ->
