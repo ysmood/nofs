@@ -116,8 +116,9 @@ fs.reduceDir 'dir/**/*.css', {
 patterns = fs.readFileSync('.gitignore', 'utf8').split '\n'
 
 filter = ({ path }) ->
-    for ptn in patterns
-        if fs.pmatch.minimath path, ptn
+    for p in patterns
+        # This is only a demo, not full git syntax.
+        if path.indexOf(p) == 0
             return false
     return true
 
