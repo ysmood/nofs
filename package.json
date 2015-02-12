@@ -18,6 +18,9 @@
     "helpers",
     "promise"
   ],
+  "files": [
+    "doc/changelog.md", "src/**/*.coffee", "dist"
+  ],
   "author": "http://ysmood.org",
   "license": "BSD",
   "bugs": {
