@@ -494,7 +494,9 @@ nofs = _.extend {}, {
 
 		decideNext = (dir, name) ->
 			path = npath.join dir, name
-			stat(resolve path).then (stats) ->
+			stat(resolve path).catch(raceResolver).then (stats) ->
+				return if not stats
+
 				isDir = stats.isDirectory()
 				if opts.baseDir == undefined
 					opts.baseDir = if isDir then spath else npath.dirname spath
@@ -517,13 +519,12 @@ nofs = _.extend {}, {
 								fileInfo
 				else
 					execFn fileInfo
-			.catch raceResolver
 
 		readdir = (dir) ->
-			fs.readdir(resolve dir).then (names) ->
+			fs.readdir(resolve dir).catch(raceResolver).then (names) ->
+				return if not names
 				Promise.all opts.handleNames(names).map (name) ->
 					decideNext dir, name
-			.catch raceResolver
 
 		handleSpath()
 		handleFilter()
@@ -606,35 +607,39 @@ nofs = _.extend {}, {
 			try
 				stats = stat(resolve path)
 				isDir = stats.isDirectory()
-				if opts.baseDir == undefined
-					opts.baseDir = if isDir then spath else npath.dirname spath
-				fileInfo = { path, name, baseDir: opts.baseDir, isDir, stats }
-
-				if isDir
-					return if not opts.searchFilter fileInfo
-
-					if opts.isReverse
-						children = readdir(path)
-						fileInfo.children = children
-						execFn fileInfo
-					else
-						val = execFn fileInfo
-						children = readdir(path)
-						fileInfo.children = children
-						fileInfo.val = val
-						fileInfo
-				else
-					execFn fileInfo
 			catch err
 				raceResolver err
+				return
+
+			if opts.baseDir == undefined
+				opts.baseDir = if isDir then spath else npath.dirname spath
+			fileInfo = { path, name, baseDir: opts.baseDir, isDir, stats }
+
+			if isDir
+				return if not opts.searchFilter fileInfo
+
+				if opts.isReverse
+					children = readdir(path)
+					fileInfo.children = children
+					execFn fileInfo
+				else
+					val = execFn fileInfo
+					children = readdir(path)
+					fileInfo.children = children
+					fileInfo.val = val
+					fileInfo
+			else
+				execFn fileInfo
 
 		readdir = (dir) ->
 			try
-				names = opts.handleNames fs.readdirSync(resolve dir)
-				names.map (name) ->
-					decideNext dir, name
+				names = fs.readdirSync resolve dir
 			catch err
 				raceResolver err
+				return
+
+			opts.handleNames(names).map (name) ->
+				decideNext dir, name
 
 		handleSpath()
 		handleFilter()

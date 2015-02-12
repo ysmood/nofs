@@ -1,9 +1,10 @@
 # Changelog
 
-- v0.5.3
+- v0.5.4
 
   - Fix `./dir/path` and `dir/path` issue
   - Optimize remove pattern.
+  - Fix an error handler issue.
 
 - v0.5.2
 
