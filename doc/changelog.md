@@ -1,10 +1,11 @@
 # Changelog
 
-- v0.5.4
+- v0.5.5
 
   - Fix `./dir/path` and `dir/path` issue
   - Optimize remove pattern.
   - Fix an error handler issue.
+  - Fix a `writeFile` promise issue.
 
 - v0.5.2
 
