@@ -1,52 +1,54 @@
-require 'nokit/global'
+kit = require 'nokit'
 
-task 'default', ['build'], 'default task is "build"'
+module.exports = (task, option) ->
 
-task 'dev', 'lab', ->
-	kit.monitorApp {
-		bin: 'coffee'
-		args: ['test/lab.coffee']
-	}
+	task 'default', ['build'], 'default task is "build"'
 
-task 'build', ['clean'], 'build project', ->
-	compile = ->
-		kit.warp 'src/**'
-		.load drives.auto 'compile'
-		.run 'dist'
+	task 'dev', 'lab', ->
+		kit.monitorApp {
+			bin: 'coffee'
+			args: ['test/lab.coffee']
+		}
 
-	createDoc = ->
-		kit.warp 'src/main.coffee'
-		.load kit.drives.comment2md
-			tpl: 'doc/readme.jst.md'
-		.run()
+	task 'build', ['clean'], 'build project', ->
+		compile = ->
+			kit.warp 'src/**'
+			.load drives.auto 'compile'
+			.run 'dist'
 
-	kit.async [
-		compile()
-		createDoc()
-	]
+		createDoc = ->
+			kit.warp 'src/main.coffee'
+			.load kit.drives.comment2md
+				tpl: 'doc/readme.jst.md'
+			.run()
 
-option '-a, --all', 'clean all'
-task 'clean', (opts) ->
-	if opts.all
 		kit.async [
-			kit.remove 'dist'
-			kit.remove '.nokit'
+			compile()
+			createDoc()
 		]
 
-option '-g, --grep ["."]', 'test pattern', '.'
-task 'test', 'run unit tests', (opts) ->
-	clean = ->
-		kit.spawn 'git', ['clean', '-fd', kit.path.normalize('test/fixtures')]
+	option '-a, --all', 'clean all'
+	task 'clean', (opts) ->
+		if opts.all
+			kit.async [
+				kit.remove 'dist'
+				kit.remove '.nokit'
+			]
 
-	clean()
-	.then ->
-		kit.spawn('mocha', [
-			'-t', '5000'
-			'-r', 'coffee-script/register'
-			'-R', 'spec'
-			'-g', opts.grep
-			'test/basic.coffee'
-		])
-	.then -> clean()
-	.catch ({ code }) ->
-		process.exit code
+	option '-g, --grep ["."]', 'test pattern', '.'
+	task 'test', 'run unit tests', (opts) ->
+		clean = ->
+			kit.spawn 'git', ['clean', '-fd', kit.path.normalize('test/fixtures')]
+
+		clean()
+		.then ->
+			kit.spawn('mocha', [
+				'-t', '5000'
+				'-r', 'coffee-script/register'
+				'-R', 'spec'
+				'-g', opts.grep
+				'test/basic.coffee'
+			])
+		.then -> clean()
+		.catch ({ code }) ->
+			process.exit code
