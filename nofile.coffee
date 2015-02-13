@@ -1,4 +1,5 @@
 kit = require 'nokit'
+kit.require 'drives'
 
 module.exports = (task, option) ->
 
@@ -13,7 +14,7 @@ module.exports = (task, option) ->
 	task 'build', ['clean'], 'build project', ->
 		compile = ->
 			kit.warp 'src/**'
-			.load drives.auto 'compile'
+			.load kit.drives.auto 'compile'
 			.run 'dist'
 
 		createDoc = ->

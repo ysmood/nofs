@@ -1451,7 +1451,7 @@ nofs = _.extend {}, {
 			when 'object'
 				{ encoding, flag, mode } = opts
 			else
-				throw new TypeError('Bad arguments')
+				return Promise.reject new TypeError('Bad arguments')
 
 		flag ?= 'w'
 		mode ?= 0o666
