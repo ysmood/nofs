@@ -19,7 +19,9 @@
     "promise"
   ],
   "files": [
-    "doc/changelog.md", "src/**/*.coffee", "dist"
+    "doc/changelog.md",
+    "src/**/*.coffee",
+    "dist"
   ],
   "author": "http://ysmood.org",
   "license": "BSD",
@@ -35,7 +37,7 @@
     "nokit": "*"
   },
   "dependencies": {
-    "bluebird": "2.9.7",
+    "bluebird": "2.9.12",
     "minimatch": "2.0.1"
   }
 }
