@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.5.5
+- v0.5.6
 
   - Fix `./dir/path` and `dir/path` issue
   - Optimize remove pattern.
