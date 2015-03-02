@@ -1,17 +1,13 @@
-
 glob = require 'glob'
-nofs = require '../src/main'
+pattern = '../**/*.js'
 
-pattern = 'node_modules/**/*.js'
+nodeGLob = ->
+	console.time 'node-glob'
+	glob pattern, { nosort: true, nounique: true }, (err, files) ->
+		if err
+			console.log err
+		else
+			console.timeEnd 'node-glob'
+			console.log files.length
 
-console.time('node-glob')
-glob pattern, (err, files) ->
-	if err
-		console.log err
-	else
-		console.timeEnd('node-glob')
-
-	console.time 'nofs-glob'
-	nofs.glob pattern
-	.then (list) ->
-		console.timeEnd 'nofs-glob'
+nodeGLob()

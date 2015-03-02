@@ -34,7 +34,6 @@
     "commander": "*",
     "glob": "4.4.1",
     "mocha": "*",
-    "ncp": "*",
     "nokit": "*"
   },
   "dependencies": {

@@ -828,7 +828,16 @@ You can use `process.env.gracefulFs == 'off'` to disable it.
 
 ## Benckmark
 
-[`nofs.copy` vs `ncp`](benchmark/ncp.coffee)
+See the `benchmark` folder.
+
+```
+Node v0.10, Intel Core i7 2.3GHz SSD, find 91,852 js files in 191,585 files:
+
+node-glob: 9939ms
+nofs-glob: 8787ms
+```
+
+Nofs is slightly faster.
 
 ## Lisence
 
