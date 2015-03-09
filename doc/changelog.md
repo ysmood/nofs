@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.5.7
+
+  - Add 'stats' to `watchDir`'s handler.
+
 - v0.5.6
 
   - Fix `./dir/path` and `dir/path` issue

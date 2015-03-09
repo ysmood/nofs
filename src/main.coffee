@@ -1330,7 +1330,7 @@ nofs = _.extend {}, {
 	 * ```coffee
 	 * {
 	 * 	# If the "path" ends with '/' it's a directory, else a file.
-	 * 	handler: (type, path, oldPath) ->
+	 * 	handler: (type, path, oldPath, stats) ->
 	 *
 	 * 	patterns: '**' # minimatch, string or array
 	 *
@@ -1398,10 +1398,10 @@ nofs = _.extend {}, {
 
 		fileHandler = (path, curr, prev, isDelete) ->
 			if isDelete
-				opts.handler 'delete', path
+				opts.handler 'delete', path, null, curr
 				delete watchedList[path]
 			else
-				opts.handler 'modify', path
+				opts.handler 'modify', path, null, curr
 
 		dirHandler = (dir, curr, prev, isDelete) ->
 			# Possible Event Order
@@ -1411,7 +1411,7 @@ nofs = _.extend {}, {
 			# 4.   move event: file delete -> parent modify -> file create.
 
 			if isDelete
-				opts.handler 'delete', dirPath(dir)
+				opts.handler 'delete', dirPath(dir), null, curr
 				delete watchedList[dir]
 				return
 
@@ -1424,12 +1424,14 @@ nofs = _.extend {}, {
 					return
 
 				if fileInfo.isDir
-					opts.handler 'create', dirPath(path) if curr
+					if curr
+						opts.handler 'create', dirPath(path), null, curr
 					nofs.watchPath path, { handler: dirHandler }
 					.then (listener) ->
 						watchedList[path] = listener if listener
 				else if not negateMath(path) and match(path)
-					opts.handler 'create', path if curr
+					if curr
+						opts.handler 'create', path, null, curr
 					nofs.watchPath path, { handler: fileHandler }
 					.then (listener) ->
 						watchedList[path] = listener if listener
