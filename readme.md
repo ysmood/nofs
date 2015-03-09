@@ -778,7 +778,7 @@ __No native `fs` funtion will be listed.__
         ```coffee
         {
         	# If the "path" ends with '/' it's a directory, else a file.
-        	handler: (type, path, oldPath) ->
+        	handler: (type, path, oldPath, stats) ->
 
         	patterns: '**' # minimatch, string or array
 
@@ -808,7 +808,7 @@ __No native `fs` funtion will be listed.__
         }
         ```
 
-- ### **[writeFile](src/main.coffee?source#L1447)**
+- ### **[writeFile](src/main.coffee?source#L1449)**
 
     A `writeFile` shim for `< Node v0.10`.
 
