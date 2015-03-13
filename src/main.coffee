@@ -1048,6 +1048,15 @@ nofs = _.extend {}, {
 	 * [Documentation](https://github.com/isaacs/minimatch)
 	 *
 	 * [Offline Documentation](?gotoDoc=minimatch/readme.md)
+	 * @example
+	 * ```coffee
+	 * nofs.pmatch 'a/b/c.js', '**\/*.js'
+	 * # output => true
+	 * nofs.pmatch.isPmatch 'test*'
+	 * # output => true
+	 * nofs.pmatch.isPmatch 'test/b'
+	 * # output => false
+	 * ```
 	###
 	pmatch: require './pmatch'
 

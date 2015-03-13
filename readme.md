@@ -562,7 +562,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>type</u>**: { _Object_ }
 
-- ### **[pmatch](src/main.coffee?source#L1052)**
+- ### **[pmatch](src/main.coffee?source#L1061)**
 
     The `minimatch` lib. It has two extra methods:
     - `isPmatch(String | Object) -> Pmatch | undefined`
@@ -576,20 +576,31 @@ __No native `fs` funtion will be listed.__
 
     [Offline Documentation](?gotoDoc=minimatch/readme.md)
 
-- ### **[Promise](src/main.coffee?source#L1058)**
+    - **<u>example</u>**:
+
+        ```coffee
+        nofs.pmatch 'a/b/c.js', '**/*.js'
+        # output => true
+        nofs.pmatch.isPmatch 'test*'
+        # output => true
+        nofs.pmatch.isPmatch 'test/b'
+        # output => false
+        ```
+
+- ### **[Promise](src/main.coffee?source#L1067)**
 
     What promise this lib is using.
 
     - **<u>type</u>**: { _Bluebird_ }
 
-- ### **[promisify](src/main.coffee?source#L1065)**
+- ### **[promisify](src/main.coffee?source#L1074)**
 
     A callback style to promise helper.
     It doesn't depends on Bluebird.
 
     - **<u>type</u>**: { _Function_ }
 
-- ### **[readJson](src/main.coffee?source#L1078)**
+- ### **[readJson](src/main.coffee?source#L1087)**
 
     Read A Json file and parse it to a object.
 
@@ -610,7 +621,7 @@ __No native `fs` funtion will be listed.__
         	console.log obj.name, obj.age
         ```
 
-- ### **[reduceDir](src/main.coffee?source#L1118)**
+- ### **[reduceDir](src/main.coffee?source#L1127)**
 
     Walk through directory recursively with a iterator.
 
@@ -649,7 +660,7 @@ __No native `fs` funtion will be listed.__
         	console.log ret
         ```
 
-- ### **[remove](src/main.coffee?source#L1158)**
+- ### **[remove](src/main.coffee?source#L1167)**
 
     Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -665,7 +676,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[touch](src/main.coffee?source#L1219)**
+- ### **[touch](src/main.coffee?source#L1228)**
 
     Change file access and modification times.
     If the file does not exist, it is created.
@@ -687,7 +698,7 @@ __No native `fs` funtion will be listed.__
 
         If new file created, resolves true.
 
-- ### **[watchPath](src/main.coffee?source#L1288)**
+- ### **[watchPath](src/main.coffee?source#L1297)**
 
     <a id="writeFile-opts"></a>
     Watch a file. If the file changes, the handler will be invoked.
@@ -738,7 +749,7 @@ __No native `fs` funtion will be listed.__
         	nofs.unwatchFile watcher.path, watcher.handler
         ```
 
-- ### **[watchFiles](src/main.coffee?source#L1318)**
+- ### **[watchFiles](src/main.coffee?source#L1327)**
 
     Watch files, when file changes, the handler will be invoked.
     It is build on the top of `nofs.watchPath`.
@@ -763,7 +774,7 @@ __No native `fs` funtion will be listed.__
         	console.log path
         ```
 
-- ### **[watchDir](src/main.coffee?source#L1358)**
+- ### **[watchDir](src/main.coffee?source#L1367)**
 
     Watch directory and all the files in it.
     It supports three types of change: create, modify, move, delete.
@@ -808,7 +819,7 @@ __No native `fs` funtion will be listed.__
         }
         ```
 
-- ### **[writeFile](src/main.coffee?source#L1449)**
+- ### **[writeFile](src/main.coffee?source#L1458)**
 
     A `writeFile` shim for `< Node v0.10`.
 
