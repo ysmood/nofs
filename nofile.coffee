@@ -3,15 +3,7 @@ kit.require 'drives'
 
 module.exports = (task, option) ->
 
-	task 'default', ['build'], 'default task is "build"'
-
-	task 'dev', 'lab', ->
-		kit.monitorApp {
-			bin: 'coffee'
-			args: ['test/lab.coffee']
-		}
-
-	task 'build', ['clean'], 'build project', ->
+	task 'default build', ['clean'], 'build project', ->
 		compile = ->
 			kit.warp 'src/**'
 			.load kit.drives.auto 'compile'
@@ -27,6 +19,12 @@ module.exports = (task, option) ->
 			compile()
 			createDoc()
 		]
+
+	task 'lab l', 'lab', ->
+		kit.monitorApp {
+			bin: 'coffee'
+			args: ['test/lab.coffee']
+		}
 
 	option '-a, --all', 'clean all'
 	task 'clean', (opts) ->
