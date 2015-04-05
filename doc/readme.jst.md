@@ -137,9 +137,9 @@ fs.eachDir('.', {
 
 Goto [changelog](doc/changelog.md)
 
-## Function Alias
+## Function Name Alias
 
-For some naming convention reasons, `nofs` also uses some common alias for fucntions. See [src/alias.coffee](src/alias.coffee).
+For some naming convention reasons, `nofs` also uses some common alias for fucntion names. See [src/alias.coffee](src/alias.coffee).
 
 ## API
 
