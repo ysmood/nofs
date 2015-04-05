@@ -32,12 +32,12 @@
   "devDependencies": {
     "coffee-script": "*",
     "commander": "*",
-    "glob": "5.0.1",
+    "glob": "5.0.3",
     "mocha": "*",
     "nokit": "*"
   },
   "dependencies": {
     "bluebird": "2.9.12",
-    "minimatch": "2.0.1"
+    "minimatch": "2.0.4"
   }
 }
