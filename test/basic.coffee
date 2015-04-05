@@ -336,11 +336,11 @@ describe 'Basic:', ->
 			]
 
 	it 'copySync filter', ->
-		dir = 'test/fixtures/copyFilter'
+		dir = 'test/fixtures/copyFilterSync'
 		nofs.copySync 'test/fixtures/dir', dir, { filter: '**/b' }
 		ls = nofs.globSync dir + '/**'
 		shouldDeepEqual normalizePath(ls), [
-			"test/fixtures/copyFilter/test0","test/fixtures/copyFilter/test0/b"
+			"test/fixtures/copyFilterSync/test0","test/fixtures/copyFilterSync/test0/b"
 		]
 
 	it 'touch time', ->
