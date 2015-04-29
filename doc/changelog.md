@@ -1,8 +1,9 @@
 # Changelog
 
-- v0.5.8
+- v0.5.9
 
   - fix: a bug when glob match multiple patterns
+  - upd deps
 
 - v0.5.7
 
