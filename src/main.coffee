@@ -729,25 +729,28 @@ nofs = _.extend {}, {
 
 		list = []
 
-		{ pmatches, negateMath } = nofs.pmatch.matchMultiple patterns, opts.pmatch
+		{ pmatches, negateMath } =
+			nofs.pmatch.matchMultiple patterns, opts.pmatch
 
 		iter = opts.iter
 		opts.iter = (fileInfo) ->
 			iter fileInfo, list
 
 		glob = (pm) ->
-			opts.filter = (fileInfo) ->
-				return if negateMath fileInfo.path
-				if fileInfo.path == '.'
-					return pm.match ''
-				pm.match fileInfo.path
+			newOpts = _.defaults {
+				filter: (fileInfo) ->
+					return if negateMath fileInfo.path
+					if fileInfo.path == '.'
+						return pm.match ''
+					pm.match fileInfo.path
 
-			opts.searchFilter = (fileInfo) ->
-				if fileInfo.path == '.'
-					return true
-				pm.match fileInfo.path, true
+				searchFilter: (fileInfo) ->
+					if fileInfo.path == '.'
+						return true
+					pm.match fileInfo.path, true
+			}, opts
 
-			nofs.eachDir nofs.pmatch.getPlainPath(pm), opts
+			nofs.eachDir nofs.pmatch.getPlainPath(pm), newOpts
 
 		pmatches.reduce((p, pm) ->
 			p.then -> glob(pm)
@@ -769,28 +772,28 @@ nofs = _.extend {}, {
 
 		list = []
 
-		{ pmatches, negateMath } = nofs.pmatch.matchMultiple patterns, opts.pmatch
+		{ pmatches, negateMath } =
+			nofs.pmatch.matchMultiple patterns, opts.pmatch
 
 		iter = opts.iter
 		opts.iter = (fileInfo) ->
 			iter fileInfo, list
 
 		glob = (pm) ->
-			opts.filter = (fileInfo) ->
-				return if negateMath fileInfo.path
-				if fileInfo.path == '.'
-					return pm.match ''
-				pm.match fileInfo.path
+			newOpts = _.defaults {
+				filter: (fileInfo) ->
+					return if negateMath fileInfo.path
+					if fileInfo.path == '.'
+						return pm.match ''
+					pm.match fileInfo.path
 
-			opts.searchFilter = (fileInfo) ->
-				if fileInfo.path == '.'
-					return true
-				pm.match fileInfo.path, true
+				searchFilter: (fileInfo) ->
+					if fileInfo.path == '.'
+						return true
+					pm.match fileInfo.path, true
+			}, opts
 
-			nofs.eachDirSync(
-				nofs.pmatch.getPlainPath(pm)
-				opts
-			)
+			nofs.eachDirSync nofs.pmatch.getPlainPath(pm), newOpts
 
 		for pm in pmatches
 			glob pm

@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.5.8
+
+  - fix: a bug when glob match multiple patterns
+
 - v0.5.7
 
   - Add 'stats' to `watchDir`'s handler.
