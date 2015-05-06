@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.6.0
+
+ - **BIG CHANGE** Now use `yaku` instead of `bluebird`.
+
 - v0.5.9
 
   - fix: a bug when glob match multiple patterns

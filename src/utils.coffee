@@ -1,6 +1,6 @@
 'use strict'
 
-Promise = require 'bluebird'
+Promise = require 'yaku'
 
 module.exports = _ =
 
