@@ -15,7 +15,7 @@ lib of [nokit][].
 - Recursive `glob`, `move`, `copy`, `remove`, etc.
 - **Promise** by default.
 - Unified intuitive API. Supports both **Promise**, **Sync** and **Callback** paradigms.
-- Very light weight. Only depends on `bluebird` and `minimath`.
+- Very light weight. Only depends on `yaku` and `minimath`.
 
 ## Install
 
@@ -147,7 +147,7 @@ __No native `fs` funtion will be listed.__
 
 - ### **[Promise](src/main.coffee?source#L11)**
 
-    Here I use [Bluebird](https://github.com/petkaantonov/bluebird) only as an ES6 shim for Promise.
+    Here I use [Yaku](https://github.com/ysmood/yaku) only as an ES6 shim for Promise.
     No APIs other than ES6 spec will be used. In the
     future it will be removed.
 

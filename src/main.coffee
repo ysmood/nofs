@@ -4,7 +4,7 @@ _ = require './utils'
 npath = require './path'
 
 ###*
- * Here I use [Bluebird](https://github.com/petkaantonov/bluebird) only as an ES6 shim for Promise.
+ * Here I use [Yaku](https://github.com/ysmood/yaku) only as an ES6 shim for Promise.
  * No APIs other than ES6 spec will be used. In the
  * future it will be removed.
 ###
