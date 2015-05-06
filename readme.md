@@ -591,12 +591,12 @@ __No native `fs` funtion will be listed.__
 
     What promise this lib is using.
 
-    - **<u>type</u>**: { _Bluebird_ }
+    - **<u>type</u>**: { _Promise_ }
 
 - ### **[promisify](src/main.coffee?source#L1089)**
 
     A callback style to promise helper.
-    It doesn't depends on Bluebird.
+    It doesn't depends on Promise.
 
     - **<u>type</u>**: { _Function_ }
 

@@ -1077,13 +1077,13 @@ nofs = _.extend {}, {
 
 	###*
 	 * What promise this lib is using.
-	 * @type {Bluebird}
+	 * @type {Promise}
 	###
 	Promise: Promise
 
 	###*
 	 * A callback style to promise helper.
-	 * It doesn't depends on Bluebird.
+	 * It doesn't depends on Promise.
 	 * @type {Function}
 	###
 	promisify: _.promisify
