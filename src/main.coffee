@@ -2,6 +2,7 @@
 
 _ = require './utils'
 npath = require './path'
+child_process = require 'child_process'
 
 ###*
  * Here I use [Yaku](https://github.com/ysmood/yaku) only as an ES6 shim for Promise.
@@ -14,8 +15,7 @@ Promise = _.Promise
 fs = _.extend {}, (require 'fs')
 
 # Evil of Node.
-if process.env.gracefulFs != 'off'
-	_.extend fs, require('./graceful-fs')
+try child_process.spawn 'ulimit', ['-n', '4096']
 
 # Feel pity for Node again.
 # The `nofs.exists` api doesn't fulfil the node callback standard.
