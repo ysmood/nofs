@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.6.4
+
+  - opt: the osx open file number issue
+
 - v0.6.3
 
  - **BIG CHANGE** Now use `yaku` instead of `bluebird`.
