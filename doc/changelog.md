@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.6.0
+- v0.6.3
 
  - **BIG CHANGE** Now use `yaku` instead of `bluebird`.
 
