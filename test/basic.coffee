@@ -418,10 +418,10 @@ describe 'Basic:', ->
 
 	it 'alias', ->
 		nofs.createFile 'test/fixtures/alias/file/path'
-        .then ->
-            nofs.fileExists 'test/fixtures/alias/file/path'
-        .then (exists) ->
-            shouldEqual exists, true
+		.then ->
+			nofs.fileExists 'test/fixtures/alias/file/path'
+		.then (exists) ->
+			shouldEqual exists, true
 
 	it 'glob', ->
 		nofs.glob '**', {
