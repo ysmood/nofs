@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.6.4
+- v0.6.6
 
   - opt: the osx open file number issue
 
