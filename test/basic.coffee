@@ -343,6 +343,18 @@ describe 'Basic:', ->
 			"test/fixtures/copyFilterSync/test0","test/fixtures/copyFilterSync/test0/b"
 		]
 
+	it 'ensureFile', ->
+		nofs.ensureFile 'test/fixtures/ensureFile'
+		.then ->
+			nofs.fileExists 'test/fixtures/ensureFile'
+		.then (exists) ->
+			shouldEqual exists, true
+
+	it 'ensureFileSync', ->
+		nofs.ensureFileSync 'test/fixtures/ensureFileSync'
+		exists = nofs.fileExistsSync 'test/fixtures/ensureFileSync'
+		shouldEqual exists, true
+
 	it 'touch time', ->
 		t = Date.now() // 1000
 		nofs.touch 'test/fixtures/touch', {
@@ -405,9 +417,11 @@ describe 'Basic:', ->
 				shouldDeepEqual obj, { val: 'test' }
 
 	it 'alias', ->
-		nofs.ensureFile 'test/fixtures/alias/file/path'
-		.then (created) ->
-			shouldEqual created, true
+		nofs.createFile 'test/fixtures/alias/file/path'
+        .then ->
+            nofs.fileExists 'test/fixtures/alias/file/path'
+        .then (exists) ->
+            shouldEqual exists, true
 
 	it 'glob', ->
 		nofs.glob '**', {
