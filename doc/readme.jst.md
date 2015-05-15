@@ -141,15 +141,19 @@ Goto [changelog](doc/changelog.md)
 
 For some naming convention reasons, `nofs` also uses some common alias for fucntion names. See [src/alias.coffee](src/alias.coffee).
 
+## FAQ
+
+- `Error: EMFILE`?
+
+  > This is due to system's default file descriptor number settings for one process.
+  > Latest node will increase the value automatically.
+  > See the [issue list](https://github.com/joyent/node/search?q=EMFILE&type=Issues&utf8=%E2%9C%93) of `node`.
+
 ## API
 
 __No native `fs` funtion will be listed.__
 
 <%= doc['src/main.coffee'] %>
-
-## `graceful-fs`
-
-You can use `process.env.gracefulFs == 'off'` to disable it.
 
 ## Benckmark
 

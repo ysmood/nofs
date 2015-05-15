@@ -14,9 +14,6 @@ Promise = _.Promise
 # nofs won't pollute the native fs.
 fs = _.extend {}, (require 'fs')
 
-# Evil of Node.
-try child_process.spawn 'ulimit', ['-n', '4096']
-
 # Feel pity for Node again.
 # The `nofs.exists` api doesn't fulfil the node callback standard.
 fs_exists = fs.exists
