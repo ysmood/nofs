@@ -2,7 +2,7 @@ module.exports = (fs) ->
 
 	aliasList = {
 		# Origin    # Alias
-		touch:      ['createFile', 'ensureFile']
+		ensureFile: ['createFile']
 		mkdirs:     ['ensureDir', 'mkdirp']
 		outputJson: ['outputJSON']
 		readJson:   ['readJSON']

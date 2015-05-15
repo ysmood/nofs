@@ -372,7 +372,20 @@ __No native `fs` funtion will be listed.__
         }
         ```
 
-- ### **[fileExists(path)](src/main.coffee?source#L660)**
+- ### **[ensureFile(path, opts)](src/main.coffee?source#L664)**
+
+    Ensures that the file exists.
+    Change file access and modification times.
+    If the file does not exist, it is created.
+    If the file exists, it is NOT MODIFIED.
+
+    - **<u>param</u>**: `path` { _String_ }
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+    - **<u>return</u>**: { _Promise_ }
+
+- ### **[fileExists(path)](src/main.coffee?source#L680)**
 
     Check if a path exists, and if it is a file.
 
@@ -382,7 +395,7 @@ __No native `fs` funtion will be listed.__
 
         Resolves a boolean value.
 
-- ### **[glob(pattern, opts)](src/main.coffee?source#L714)**
+- ### **[glob(pattern, opts)](src/main.coffee?source#L734)**
 
     Get files by patterns.
 
@@ -437,7 +450,7 @@ __No native `fs` funtion will be listed.__
         	console.log paths
         ```
 
-- ### **[mapDir(from, to, opts)](src/main.coffee?source#L828)**
+- ### **[mapDir(from, to, opts)](src/main.coffee?source#L848)**
 
     Map file from a directory to another recursively with a
     callback.
@@ -481,7 +494,7 @@ __No native `fs` funtion will be listed.__
         }
         ```
 
-- ### **[mkdirs(path, mode)](src/main.coffee?source#L874)**
+- ### **[mkdirs(path, mode)](src/main.coffee?source#L894)**
 
     Recursively create directory path, like `mkdir -p`.
 
@@ -493,7 +506,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[move(from, to, opts)](src/main.coffee?source#L917)**
+- ### **[move(from, to, opts)](src/main.coffee?source#L937)**
 
     Moves a file or directory. Also works between partitions.
     Behaves like the Unix `mv`.
@@ -521,7 +534,7 @@ __No native `fs` funtion will be listed.__
         It will resolve a boolean value which indicates
         whether this action is taken between two partitions.
 
-- ### **[outputFile(path, data, opts)](src/main.coffee?source#L990)**
+- ### **[outputFile(path, data, opts)](src/main.coffee?source#L1010)**
 
     Almost the same as `writeFile`, except that if its parent
     directories do not exist, they will be created.
@@ -537,7 +550,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[outputJson(path, obj, opts)](src/main.coffee?source#L1022)**
+- ### **[outputJson(path, obj, opts)](src/main.coffee?source#L1042)**
 
     Write a object to a file, if its parent directory doesn't
     exists, it will be created.
@@ -561,7 +574,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[path](src/main.coffee?source#L1049)**
+- ### **[path](src/main.coffee?source#L1069)**
 
     The path module nofs is using.
     It's the native [io.js](iojs.org) path lib.
@@ -570,7 +583,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>type</u>**: { _Object_ }
 
-- ### **[pmatch](src/main.coffee?source#L1073)**
+- ### **[pmatch](src/main.coffee?source#L1093)**
 
     The `minimatch` lib. It has two extra methods:
     - `isPmatch(String | Object) -> Pmatch | undefined`
@@ -595,20 +608,20 @@ __No native `fs` funtion will be listed.__
         # output => false
         ```
 
-- ### **[Promise](src/main.coffee?source#L1079)**
+- ### **[Promise](src/main.coffee?source#L1099)**
 
     What promise this lib is using.
 
     - **<u>type</u>**: { _Promise_ }
 
-- ### **[promisify](src/main.coffee?source#L1086)**
+- ### **[promisify](src/main.coffee?source#L1106)**
 
     A callback style to promise helper.
     It doesn't depends on Promise.
 
     - **<u>type</u>**: { _Function_ }
 
-- ### **[readJson(path, opts)](src/main.coffee?source#L1099)**
+- ### **[readJson(path, opts)](src/main.coffee?source#L1119)**
 
     Read A Json file and parse it to a object.
 
@@ -629,7 +642,7 @@ __No native `fs` funtion will be listed.__
         	console.log obj.name, obj.age
         ```
 
-- ### **[reduceDir(path, opts)](src/main.coffee?source#L1139)**
+- ### **[reduceDir(path, opts)](src/main.coffee?source#L1159)**
 
     Walk through directory recursively with a iterator.
 
@@ -668,7 +681,7 @@ __No native `fs` funtion will be listed.__
         	console.log ret
         ```
 
-- ### **[remove(path, opts)](src/main.coffee?source#L1179)**
+- ### **[remove(path, opts)](src/main.coffee?source#L1199)**
 
     Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -684,7 +697,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[touch(path, opts)](src/main.coffee?source#L1240)**
+- ### **[touch(path, opts)](src/main.coffee?source#L1260)**
 
     Change file access and modification times.
     If the file does not exist, it is created.
@@ -706,7 +719,7 @@ __No native `fs` funtion will be listed.__
 
         If new file created, resolves true.
 
-- ### **[watchPath(path, opts)](src/main.coffee?source#L1309)**
+- ### **[watchPath(path, opts)](src/main.coffee?source#L1329)**
 
     <a id="writeFile-opts"></a>
     Watch a file. If the file changes, the handler will be invoked.
@@ -757,7 +770,7 @@ __No native `fs` funtion will be listed.__
         	nofs.unwatchFile watcher.path, watcher.handler
         ```
 
-- ### **[watchFiles(patterns, opts)](src/main.coffee?source#L1339)**
+- ### **[watchFiles(patterns, opts)](src/main.coffee?source#L1359)**
 
     Watch files, when file changes, the handler will be invoked.
     It is build on the top of `nofs.watchPath`.
@@ -782,7 +795,7 @@ __No native `fs` funtion will be listed.__
         	console.log path
         ```
 
-- ### **[watchDir(root, opts)](src/main.coffee?source#L1379)**
+- ### **[watchDir(root, opts)](src/main.coffee?source#L1399)**
 
     Watch directory and all the files in it.
     It supports three types of change: create, modify, move, delete.
@@ -827,7 +840,7 @@ __No native `fs` funtion will be listed.__
         }
         ```
 
-- ### **[writeFile(path, data, opts)](src/main.coffee?source#L1470)**
+- ### **[writeFile(path, data, opts)](src/main.coffee?source#L1490)**
 
     A `writeFile` shim for `< Node v0.10`.
 

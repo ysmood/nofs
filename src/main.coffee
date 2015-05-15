@@ -653,6 +653,26 @@ nofs = _.extend {}, {
 			readdir spath
 
 	###*
+	 * Ensures that the file exists.
+	 * Change file access and modification times.
+	 * If the file does not exist, it is created.
+	 * If the file exists, it is NOT MODIFIED.
+	 * @param  {String} path
+	 * @param  {Object} opts
+	 * @return {Promise}
+	###
+	ensureFile: (path, opts = {}) ->
+		nofs.fileExists(path).then (exists) ->
+			if exists
+				Promise.resolve()
+			else
+				nofs.outputFile path, new Buffer(0), opts
+
+	ensureFileSync: (path, opts = {}) ->
+		if not nofs.fileExistsSync path
+			nofs.outputFileSync path, new Buffer(0), opts
+
+	###*
 	 * Check if a path exists, and if it is a file.
 	 * @param  {String}  path
 	 * @return {Promise} Resolves a boolean value.
