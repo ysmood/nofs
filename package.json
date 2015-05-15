@@ -34,7 +34,7 @@
     "commander": "*",
     "glob": "5.0.5",
     "mocha": "*",
-    "nokit": "*"
+    "nokit": "0.6.7"
   },
   "dependencies": {
     "minimatch": "2.0.7",
