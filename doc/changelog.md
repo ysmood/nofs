@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.6.7
+
+  - fix: ensureFile shouldn't change atime and mtime
+
 - v0.6.6
 
   - opt: the osx open file number issue
