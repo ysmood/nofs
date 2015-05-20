@@ -1,6 +1,6 @@
 {
   "name": "nofs",
-  "version": "0.6.8",
+  "version": "0.6.9",
   "description": "Promise to make a better fs lib.",
   "main": "dist/main.js",
   "scripts": {
@@ -37,6 +37,6 @@
   },
   "dependencies": {
     "minimatch": "2.0.8",
-    "yaku": "0.1.7"
+    "yaku": "0.1.8"
   }
 }
