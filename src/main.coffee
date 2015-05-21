@@ -1127,6 +1127,20 @@ nofs = _.extend {}, {
 		data = fs.readFileSync path, opts
 		JSON.parse data + ''
 
+	readWatch: (path, opts = {}) ->
+		if not fs.readWatch.pool
+			fs.readWatch.pool = {}
+
+		handler = (path, curr, prev, isDeletion) ->
+			fs.readFile(path, opts).then (content) ->
+				fs.readWatch.pool[path] = content
+
+		fs.readFile(path, opts).then (content) ->
+			fs.readWatch.pool[path] = content
+			wOpts = if _.isString opts then {} else opts
+			wOpts.handler = handler
+			fs.watchPath path, wOpts
+
 	###*
 	 * Walk through directory recursively with a iterator.
 	 * @param  {String}   path
