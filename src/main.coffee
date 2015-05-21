@@ -1352,7 +1352,7 @@ nofs = _.extend {}, {
 	 * @return {Promise} It contains the wrapped watch listeners.
 	 * @example
 	 * ```coffee
-	 * nofs.watchFiles '*.js', (path, curr, prev, isDeletion) ->
+	 * nofs.watchFiles '*.js', handler: (path, curr, prev, isDeletion) ->
 	 * 	console.log path
 	 * ```
 	###

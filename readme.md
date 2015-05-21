@@ -791,7 +791,7 @@ __No native `fs` funtion will be listed.__
     - **<u>example</u>**:
 
         ```coffee
-        nofs.watchFiles '*.js', (path, curr, prev, isDeletion) ->
+        nofs.watchFiles '*.js', handler: (path, curr, prev, isDeletion) ->
         	console.log path
         ```
 
