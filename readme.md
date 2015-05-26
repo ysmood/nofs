@@ -27,7 +27,7 @@ npm install nofs
 
 ### Path & Pattern
 
-Any path that can be a pattern it will do.
+Only functions like `readFile` which may confuse the user don't support pattern.
 
 ### Promise & Callback
 
