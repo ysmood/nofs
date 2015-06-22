@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.6.9
+- v0.7.0
 
   - fix: ensureFile shouldn't change atime and mtime
   - upd: deps
