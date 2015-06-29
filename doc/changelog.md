@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.8.0
+
+  - **API CHANGE** The `promisify` is now available with `nofs.PromiseUtils.promisify`,
+    thus you can access all the helpers of `yaku/lib/utils` now.
+
 - v0.7.0
 
   - fix: ensureFile shouldn't change atime and mtime

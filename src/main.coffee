@@ -26,7 +26,7 @@ do ->
 	for k of fs
 		if k.slice(-4) == 'Sync'
 			name = k[0...-4]
-			fs[name] = _.promisify fs[name]
+			fs[name] = _.PromiseUtils.promisify fs[name]
 
 nofs = _.extend {}, {
 
@@ -1098,12 +1098,7 @@ nofs = _.extend {}, {
 	###
 	Promise: Promise
 
-	###*
-	 * A callback style to promise helper.
-	 * It doesn't depends on Promise.
-	 * @type {Function}
-	###
-	promisify: _.promisify
+	PromiseUtils: _.PromiseUtils
 
 	###*
 	 * Read A Json file and parse it to a object.
@@ -1536,7 +1531,7 @@ do ->
 	for k of nofs
 		if k.slice(-4) == 'Sync'
 			name = k[0...-4]
-			fs[name] = _.callbackify nofs[name]
+			fs[name] = _.PromiseUtils.callbackify nofs[name]
 		fs[k] = nofs[k]
 
 require('./alias')(fs)
