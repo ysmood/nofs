@@ -614,14 +614,13 @@ __No native `fs` funtion will be listed.__
 
     - **<u>type</u>**: { _Promise_ }
 
-- ### **[promisify](src/main.coffee?source#L1106)**
+- ### **[PromiseUtils](src/main.coffee?source#L1105)**
 
-    A callback style to promise helper.
-    It doesn't depends on Promise.
+    Same as the [`yaku/lib/utils`](https://github.com/ysmood/yaku#utils).
 
-    - **<u>type</u>**: { _Function_ }
+    - **<u>type</u>**: { _Object_ }
 
-- ### **[readJson(path, opts)](src/main.coffee?source#L1119)**
+- ### **[readJson(path, opts)](src/main.coffee?source#L1118)**
 
     Read A Json file and parse it to a object.
 
@@ -642,7 +641,7 @@ __No native `fs` funtion will be listed.__
         	console.log obj.name, obj.age
         ```
 
-- ### **[reduceDir(path, opts)](src/main.coffee?source#L1159)**
+- ### **[reduceDir(path, opts)](src/main.coffee?source#L1158)**
 
     Walk through directory recursively with a iterator.
 
@@ -681,7 +680,7 @@ __No native `fs` funtion will be listed.__
         	console.log ret
         ```
 
-- ### **[remove(path, opts)](src/main.coffee?source#L1199)**
+- ### **[remove(path, opts)](src/main.coffee?source#L1198)**
 
     Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -697,7 +696,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[touch(path, opts)](src/main.coffee?source#L1260)**
+- ### **[touch(path, opts)](src/main.coffee?source#L1259)**
 
     Change file access and modification times.
     If the file does not exist, it is created.
@@ -719,7 +718,7 @@ __No native `fs` funtion will be listed.__
 
         If new file created, resolves true.
 
-- ### **[watchPath(path, opts)](src/main.coffee?source#L1329)**
+- ### **[watchPath(path, opts)](src/main.coffee?source#L1328)**
 
     <a id="writeFile-opts"></a>
     Watch a file. If the file changes, the handler will be invoked.
@@ -770,7 +769,7 @@ __No native `fs` funtion will be listed.__
         	nofs.unwatchFile watcher.path, watcher.handler
         ```
 
-- ### **[watchFiles(patterns, opts)](src/main.coffee?source#L1359)**
+- ### **[watchFiles(patterns, opts)](src/main.coffee?source#L1358)**
 
     Watch files, when file changes, the handler will be invoked.
     It is build on the top of `nofs.watchPath`.
@@ -795,7 +794,7 @@ __No native `fs` funtion will be listed.__
         	console.log path
         ```
 
-- ### **[watchDir(root, opts)](src/main.coffee?source#L1399)**
+- ### **[watchDir(root, opts)](src/main.coffee?source#L1398)**
 
     Watch directory and all the files in it.
     It supports three types of change: create, modify, move, delete.
@@ -840,7 +839,7 @@ __No native `fs` funtion will be listed.__
         }
         ```
 
-- ### **[writeFile(path, data, opts)](src/main.coffee?source#L1490)**
+- ### **[writeFile(path, data, opts)](src/main.coffee?source#L1489)**
 
     A `writeFile` shim for `< Node v0.10`.
 

@@ -1098,6 +1098,10 @@ nofs = _.extend {}, {
 	###
 	Promise: Promise
 
+	###*
+	 * Same as the [`yaku/lib/utils`](https://github.com/ysmood/yaku#utils).
+	 * @type {Object}
+	###
 	PromiseUtils: _.PromiseUtils
 
 	###*
