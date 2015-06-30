@@ -1,9 +1,10 @@
 # Changelog
 
-- v0.8.0
+- v0.8.1
 
   - **API CHANGE** The `promisify` is now available with `nofs.PromiseUtils.promisify`,
     thus you can access all the helpers of `yaku/lib/utils` now.
+  - upd: deps
 
 - v0.7.0
 
