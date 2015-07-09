@@ -557,10 +557,13 @@ describe 'Watch:', ->
 		nofs.copySync 'test/fixtures/watchDir', tmp
 		nofs.watchDir tmp, {
 			patterns: ['/dir0/*']
-			handler: (type, path) ->
-				shouldDeepEqualDone tdone, { type, path: normalizePath(path) }, {
+			handler: (type, path, oldPath, stats) ->
+				shouldDeepEqualDone tdone, {
+					type, path: normalizePath(path), isDir: stats.isDirectory()
+				}, {
 					type: 'create'
 					path: tmp + '/dir0/d'
+					isDir: true
 				}
 		}
 		wait(1000).then ->

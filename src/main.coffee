@@ -1369,7 +1369,6 @@ nofs = _.extend {}, {
 	 * @param  {Object} opts Defaults:
 	 * ```coffee
 	 * {
-	 * 	# If the "path" ends with '/' it's a directory, else a file.
 	 * 	handler: (type, path, oldPath, stats) ->
 	 *
 	 * 	patterns: '**' # minimatch, string or array
@@ -1390,8 +1389,8 @@ nofs = _.extend {}, {
 	 * # Only current folder, and only watch js and css file.
 	 * nofs.watchDir 'lib', {
 	 * 	pattern: '*.+(js|css)'
-	 * 	handler: (type, path) ->
-	 * 		console.log type, path
+	 * 	handler: (type, path, oldPath, stats) ->
+	 * 		console.log type, path, stats.isDirectory()
 	 * }
 	 * ```
 	###
@@ -1434,8 +1433,6 @@ nofs = _.extend {}, {
 			statsA.ctime.getTime() == statsB.ctime.getTime() and
 			statsA.size == statsB.size
 
-		dirPath = (dir) -> npath.join dir, '/'
-
 		fileHandler = (path, curr, prev, isDelete) ->
 			if isDelete
 				opts.handler 'delete', path, null, curr
@@ -1451,7 +1448,7 @@ nofs = _.extend {}, {
 			# 4.   move event: file delete -> parent modify -> file create.
 
 			if isDelete
-				opts.handler 'delete', dirPath(dir), null, curr
+				opts.handler 'delete', dir, null, curr
 				delete watchedList[dir]
 				return
 
@@ -1465,7 +1462,7 @@ nofs = _.extend {}, {
 
 				if fileInfo.isDir
 					if curr
-						opts.handler 'create', dirPath(path), null, curr
+						opts.handler 'create', path, null, curr
 					nofs.watchPath path, { handler: dirHandler }
 					.then (listener) ->
 						watchedList[path] = listener if listener
