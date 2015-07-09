@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.9.0
+
+   - **API CHANGE** `watchDir`'s handler now use `stats` to detect if the
+     path is a directory.
+
 - v0.8.3
 
   - **API CHANGE** The `promisify` is now available with `nofs.PromiseUtils.promisify`,

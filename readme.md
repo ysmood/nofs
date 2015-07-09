@@ -794,7 +794,7 @@ __No native `fs` funtion will be listed.__
         	console.log path
         ```
 
-- ### **[watchDir(root, opts)](src/main.coffee?source#L1398)**
+- ### **[watchDir(root, opts)](src/main.coffee?source#L1397)**
 
     Watch directory and all the files in it.
     It supports three types of change: create, modify, move, delete.
@@ -808,7 +808,6 @@ __No native `fs` funtion will be listed.__
         Defaults:
         ```coffee
         {
-        	# If the "path" ends with '/' it's a directory, else a file.
         	handler: (type, path, oldPath, stats) ->
 
         	patterns: '**' # minimatch, string or array
@@ -834,12 +833,12 @@ __No native `fs` funtion will be listed.__
         # Only current folder, and only watch js and css file.
         nofs.watchDir 'lib', {
         	pattern: '*.+(js|css)'
-        	handler: (type, path) ->
-        		console.log type, path
+        	handler: (type, path, oldPath, stats) ->
+        		console.log type, path, stats.isDirectory()
         }
         ```
 
-- ### **[writeFile(path, data, opts)](src/main.coffee?source#L1489)**
+- ### **[writeFile(path, data, opts)](src/main.coffee?source#L1486)**
 
     A `writeFile` shim for `< Node v0.10`.
 
