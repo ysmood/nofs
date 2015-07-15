@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.9.1
+
+  - upd: deps
+
 - v0.9.0
 
    - **API CHANGE** `watchDir`'s handler now use `stats` to detect if the
