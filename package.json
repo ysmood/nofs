@@ -37,6 +37,6 @@
   },
   "dependencies": {
     "minimatch": "2.0.10",
-    "yaku": "0.3.5"
+    "yaku": "0.3.6"
   }
 }
