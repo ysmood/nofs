@@ -107,6 +107,23 @@ describe 'Basic:', ->
 
 		shouldEqual v.split('').sort().join(''), 'abcde'
 
+	it 'eachDir pattern with filter', ->
+		ls = []
+		nofs.eachDir 'test/fixtures/dir/**', {
+			filter: ({ isDir }) -> isDir
+			iter: (fileInfo) -> ls.push fileInfo.name
+		}
+		.then ->
+			shouldDeepEqual normalizePath(ls), ['test0', 'test1', 'test2']
+
+	it 'eachDirSync pattern with filter', ->
+		ls = []
+		nofs.eachDirSync 'test/fixtures/dir/**', {
+			filter: ({ isDir }) -> isDir
+			iter: (fileInfo) -> ls.push fileInfo.name
+		}
+		shouldDeepEqual normalizePath(ls), ['test0', 'test1', 'test2']
+
 	it 'eachDir searchFilter', ->
 		ls = []
 		nofs.eachDir 'test/fixtures/dir', {

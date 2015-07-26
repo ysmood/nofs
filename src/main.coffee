@@ -449,6 +449,8 @@ nofs = _.extend {}, {
 			if opts.isAutoPmatch and
 			pm = nofs.pmatch.isPmatch(spath)
 				if nofs.pmatch.isNotPlain pm
+					# keep the user defined filter
+					opts._filter = opts.filter
 					opts.filter = pm
 				spath = nofs.pmatch.getPlainPath pm
 
@@ -469,14 +471,24 @@ nofs = _.extend {}, {
 					if fileInfo.path == '.'
 						return pm.match ''
 
-					pm.match fileInfo.path
+					pm.match(fileInfo.path) and (
+						if _.isFunction opts._filter
+							opts._filter fileInfo
+						else
+							true
+					)
 
 				opts.searchFilter = (fileInfo) ->
 					# Hot fix for minimatch, it should match '**' to '.'.
 					if fileInfo.path == '.'
 						return true
 
-					pm.match fileInfo.path, true
+					pm.match(fileInfo.path, true)  and (
+						if _.isFunction opts._searchFilter
+							opts._searchFilter fileInfo
+						else
+							true
+					)
 
 		resolve = (path) -> npath.join opts.cwd, path
 
@@ -558,6 +570,8 @@ nofs = _.extend {}, {
 			if opts.isAutoPmatch and
 			pm = nofs.pmatch.isPmatch(spath)
 				if nofs.pmatch.isNotPlain pm
+					# keep the user defined filter
+					opts._filter = opts.filter
 					opts.filter = pm
 				spath = nofs.pmatch.getPlainPath pm
 
@@ -578,14 +592,24 @@ nofs = _.extend {}, {
 					if fileInfo.path == '.'
 						return pm.match ''
 
-					pm.match fileInfo.path
+					pm.match(fileInfo.path) and (
+						if _.isFunction opts._filter
+							opts._filter fileInfo
+						else
+							true
+					)
 
 				opts.searchFilter = (fileInfo) ->
 					# Hot fix for minimatch, it should match '**' to '.'.
 					if fileInfo.path == '.'
 						return true
 
-					pm.match fileInfo.path, true
+					pm.match(fileInfo.path, true)  and (
+						if _.isFunction opts._searchFilter
+							opts._searchFilter fileInfo
+						else
+							true
+					)
 
 		resolve = (path) -> npath.join opts.cwd, path
 
