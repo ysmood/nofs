@@ -1,39 +1,15 @@
 process.env.pollingWatch = 30
 
+kit = require 'nokit'
+ken = kit.require 'ken'
+it = ken()
+
 nofs = require '../src/main'
 { Promise } = require '../src/utils'
 npath = require 'path'
 
-assert = require 'assert'
-
 isWin = process.platform == 'win32'
 regSep = ///#{'\\' + npath.sep}///g
-
-shouldEqual = (args...) ->
-	try
-		assert.strictEqual.apply assert, args
-	catch err
-		Promise.reject err
-
-shouldEqualDone = (done, args...) ->
-	try
-		assert.strictEqual.apply assert, args
-		done()
-	catch err
-		done err
-
-shouldDeepEqual = (args...) ->
-	try
-		assert.deepEqual.apply assert, args
-	catch err
-		Promise.reject err
-
-shouldDeepEqualDone = (done, args...) ->
-	try
-		assert.deepEqual.apply assert, args
-		done()
-	catch err
-		done err
 
 normalizePath = (val) ->
 	if val instanceof Array
@@ -47,46 +23,42 @@ wait = (time = 500) ->
 			resolve()
 		, time
 
-describe 'Basic:', ->
+it.async [
 	it 'exists', ->
 		nofs.exists('readme.md')
 		.then (ret) ->
-			shouldEqual ret, true
+			ken.eq ret, true
 
 	it 'dirExists exists', ->
 		nofs.dirExists('src').then (ret) ->
-			shouldEqual ret, true
+			ken.eq ret, true
 
 	it 'dirExists non-exists', ->
 		nofs.dirExists('asdlkfjf').then (ret) ->
-			shouldEqual ret, false
+			ken.eq ret, false
 
 	it 'dirExistsSync', ->
-		assert.equal nofs.dirExistsSync('src'), true
+		ken.eq nofs.dirExistsSync('src'), true
 
 	it 'fileExists exists', ->
 		nofs.fileExists('readme.md').then (ret) ->
-			shouldEqual ret, true
+			ken.eq ret, true
 
 	it 'fileExists non-exists', ->
 		nofs.fileExists('src').then (ret) ->
-			shouldEqual ret, false
+			ken.eq ret, false
 
 	it 'fileExistsSync', ->
-		assert.equal nofs.fileExistsSync('readme.md'), true
+		ken.eq nofs.fileExistsSync('readme.md'), true
 
-	it 'readFile', (tdone) ->
+	it 'readFile', -> new Promise (resolve) ->
 		nofs.readFile 'test/fixtures/sample.txt', 'utf8', (err, ret) ->
-			try
-				assert.equal ret, 'test'
-				tdone()
-			catch err
-				tdone err
+			resolve ken.eq ret, 'test'
 
 	it 'readFile', ->
 		nofs.readFile 'test/fixtures/sample.txt', 'utf8'
 		.then (ret) ->
-			shouldEqual ret, 'test'
+			ken.eq ret, 'test'
 
 	it 'reduceDir', ->
 		nofs.reduceDir 'test/fixtures/dir', {
@@ -96,7 +68,7 @@ describe 'Basic:', ->
 				sum += path.slice(-1)
 		}
 		.then (v) ->
-			shouldEqual v.split('').sort().join(''), 'abcde'
+			ken.eq v.split('').sort().join(''), 'abcde'
 
 	it 'reduceDirSync', ->
 		v = nofs.reduceDirSync 'test/fixtures/dir', {
@@ -105,7 +77,7 @@ describe 'Basic:', ->
 				sum += path.slice(-1)
 		}
 
-		shouldEqual v.split('').sort().join(''), 'abcde'
+		ken.eq v.split('').sort().join(''), 'abcde'
 
 	it 'eachDir pattern with filter', ->
 		ls = []
@@ -114,7 +86,7 @@ describe 'Basic:', ->
 			iter: (fileInfo) -> ls.push fileInfo.name
 		}
 		.then ->
-			shouldDeepEqual normalizePath(ls), ['test0', 'test1', 'test2']
+			ken.deepEq normalizePath(ls), ['test0', 'test1', 'test2']
 
 	it 'eachDirSync pattern with filter', ->
 		ls = []
@@ -122,7 +94,7 @@ describe 'Basic:', ->
 			filter: ({ isDir }) -> isDir
 			iter: (fileInfo) -> ls.push fileInfo.name
 		}
-		shouldDeepEqual normalizePath(ls), ['test0', 'test1', 'test2']
+		ken.deepEq normalizePath(ls), ['test0', 'test1', 'test2']
 
 	it 'eachDir searchFilter', ->
 		ls = []
@@ -134,7 +106,7 @@ describe 'Basic:', ->
 				ls.push fileInfo.name
 		}
 		.then ->
-			shouldDeepEqual normalizePath(ls), ["a", "d", "dir", "test2"]
+			ken.deepEq normalizePath(ls), ["a", "d", "dir", "test2"]
 
 	it 'eachDirSync searchFilter', ->
 		ls = []
@@ -144,7 +116,7 @@ describe 'Basic:', ->
 			iter: (fileInfo) ->
 				ls.push fileInfo.name
 		}
-		shouldDeepEqual normalizePath(ls), [".e", "a", "d", "dir", "test2"]
+		ken.deepEq normalizePath(ls), [".e", "a", "d", "dir", "test2"]
 
 	it 'mapDir pattern', ->
 		ls = []
@@ -155,7 +127,7 @@ describe 'Basic:', ->
 			iter: (src, dest) ->
 				ls.push src + '/' + dest
 		).then ->
-			shouldDeepEqual normalizePath(ls), [
+			ken.deepEq normalizePath(ls), [
 				'test/fixtures/dir/test0/b/test/fixtures/other/test0/b'
 				'test/fixtures/dir/test0/test1/c/test/fixtures/other/test0/test1/c'
 			]
@@ -169,7 +141,7 @@ describe 'Basic:', ->
 			iter: (src, dest) ->
 				ls.push src + '/' + dest
 		)
-		shouldDeepEqual normalizePath(ls), [
+		ken.deepEq normalizePath(ls), [
 			'test/fixtures/dir/test0/b/test/fixtures/other/test0/b'
 			'test/fixtures/dir/test0/test1/c/test/fixtures/other/test0/test1/c'
 		]
@@ -182,7 +154,7 @@ describe 'Basic:', ->
 				cwd: dir
 			}
 		.then (ls) ->
-			shouldDeepEqual normalizePath(ls), [
+			ken.deepEq normalizePath(ls), [
 				"a", "test0", "test0/b", "test0/test1"
 				"test0/test1/c", "test2", "test2/d"
 			]
@@ -193,7 +165,7 @@ describe 'Basic:', ->
 		ls = nofs.globSync '**', {
 			cwd: dir
 		}
-		shouldDeepEqual normalizePath(ls), [
+		ken.deepEq normalizePath(ls), [
 			"a", "test0", "test0/b", "test0/test1"
 			"test0/test1/c", "test2", "test2/d"
 		]
@@ -206,7 +178,7 @@ describe 'Basic:', ->
 				cwd: dir
 			}
 		.then (ls) ->
-			shouldDeepEqual normalizePath(ls), [
+			ken.deepEq normalizePath(ls), [
 				"test0", "test0/b", "test0/test1"
 				"test0/test1/c"
 			]
@@ -217,7 +189,7 @@ describe 'Basic:', ->
 		ls = nofs.globSync '**', {
 			cwd: dir
 		}
-		shouldDeepEqual normalizePath(ls), [
+		ken.deepEq normalizePath(ls), [
 			"test0", "test0/b", "test0/test1"
 			"test0/test1/c"
 		]
@@ -228,14 +200,14 @@ describe 'Basic:', ->
 
 		nofs.remove dir
 		.then ->
-			shouldEqual nofs.dirExistsSync(dir), false
+			ken.eq nofs.dirExistsSync(dir), false
 
 	it 'removeSync', ->
 		dir = 'test/fixtures/dir-removeSync'
 		nofs.copySync 'test/fixtures/dir', dir
 
 		nofs.removeSync dir
-		shouldEqual nofs.dirExistsSync(dir), false
+		ken.eq nofs.dirExistsSync(dir), false
 
 	it 'remove pattern', ->
 		dir = 'test/fixtures/dir-remove-pattern'
@@ -243,7 +215,7 @@ describe 'Basic:', ->
 
 		nofs.remove 'test/fixtures/dir-remove-pattern/test*'
 		.then ->
-			shouldDeepEqual normalizePath(nofs.globSync dir + '/**'),
+			ken.deepEq normalizePath(nofs.globSync dir + '/**'),
 				['test/fixtures/dir-remove-pattern/a']
 
 	it 'removeSync pattern', ->
@@ -251,7 +223,7 @@ describe 'Basic:', ->
 		nofs.copySync 'test/fixtures/dir', dir
 
 		nofs.removeSync 'test/fixtures/dir-removeSync-pattern/test*'
-		shouldDeepEqual normalizePath(nofs.globSync dir + '/**'),
+		ken.deepEq normalizePath(nofs.globSync dir + '/**'),
 			['test/fixtures/dir-removeSync-pattern/a']
 
 	it 'remove symbol link', ->
@@ -262,8 +234,8 @@ describe 'Basic:', ->
 		nofs.remove dir + '/test0-link'
 		.then ->
 			Promise.all [
-				shouldEqual nofs.dirExistsSync(dir + '/test0-link'), false
-				shouldEqual nofs.dirExistsSync(dir + '/test0'), true
+				ken.eq nofs.dirExistsSync(dir + '/test0-link'), false
+				ken.eq nofs.dirExistsSync(dir + '/test0'), true
 			]
 
 	it 'removeSync symbol link', ->
@@ -273,8 +245,8 @@ describe 'Basic:', ->
 
 		nofs.removeSync dir + '/test0-link'
 		Promise.all [
-			shouldEqual nofs.dirExistsSync(dir + '/test0-link'), false
-			shouldEqual nofs.dirExistsSync(dir + '/test0'), true
+			ken.eq nofs.dirExistsSync(dir + '/test0-link'), false
+			ken.eq nofs.dirExistsSync(dir + '/test0'), true
 		]
 
 	it 'remove race condition', ->
@@ -291,7 +263,7 @@ describe 'Basic:', ->
 			nofs.remove dir + '/c'
 		]
 		.then ->
-			shouldEqual nofs.dirExistsSync(dir), false
+			ken.eq nofs.dirExistsSync(dir), false
 
 	it 'move', ->
 		dir = 'test/fixtures/dir-move'
@@ -304,7 +276,7 @@ describe 'Basic:', ->
 				cwd: dir2
 			}
 			.then (ls) ->
-				shouldDeepEqual normalizePath(ls), [
+				ken.deepEq normalizePath(ls), [
 					"a", "test0", "test0/b", "test0/test1"
 					"test0/test1/c", "test2", "test2/d"
 				]
@@ -317,7 +289,7 @@ describe 'Basic:', ->
 		ls = nofs.globSync '**', {
 			cwd: dir2
 		}
-		shouldDeepEqual normalizePath(ls), [
+		ken.deepEq normalizePath(ls), [
 			"a", "test0", "test0/b", "test0/test1"
 			"test0/test1/c", "test2", "test2/d"
 		]
@@ -330,7 +302,7 @@ describe 'Basic:', ->
 		.then ->
 			nofs.fileExists 'test/fixtures/copySample2/sample'
 			.then (exists) ->
-				shouldEqual exists, true
+				ken.eq exists, true
 
 	it 'copySync moveSync a file', ->
 
@@ -340,7 +312,7 @@ describe 'Basic:', ->
 		.then ->
 			nofs.fileExists 'test/fixtures/copySampleSync2/sample'
 			.then (exists) ->
-				shouldEqual exists, true
+				ken.eq exists, true
 
 	it 'copy filter', ->
 		dir = 'test/fixtures/copyFilter'
@@ -348,7 +320,7 @@ describe 'Basic:', ->
 		.then ->
 			nofs.glob dir + '/**'
 		.then (ls) ->
-			shouldDeepEqual normalizePath(ls), [
+			ken.deepEq normalizePath(ls), [
 				"test/fixtures/copyFilter/test0","test/fixtures/copyFilter/test0/b"
 			]
 
@@ -356,7 +328,7 @@ describe 'Basic:', ->
 		dir = 'test/fixtures/copyFilterSync'
 		nofs.copySync 'test/fixtures/dir', dir, { filter: '**/b' }
 		ls = nofs.globSync dir + '/**'
-		shouldDeepEqual normalizePath(ls), [
+		ken.deepEq normalizePath(ls), [
 			"test/fixtures/copyFilterSync/test0","test/fixtures/copyFilterSync/test0/b"
 		]
 
@@ -365,12 +337,12 @@ describe 'Basic:', ->
 		.then ->
 			nofs.fileExists 'test/fixtures/ensureFile'
 		.then (exists) ->
-			shouldEqual exists, true
+			ken.eq exists, true
 
 	it 'ensureFileSync', ->
 		nofs.ensureFileSync 'test/fixtures/ensureFileSync'
 		exists = nofs.fileExistsSync 'test/fixtures/ensureFileSync'
-		shouldEqual exists, true
+		ken.eq exists, true
 
 	it 'touch time', ->
 		t = Date.now() // 1000
@@ -380,7 +352,7 @@ describe 'Basic:', ->
 		.then ->
 			nofs.stat 'test/fixtures/touch'
 			.then (stats) ->
-				shouldEqual stats.mtime.getTime() // 1000, t
+				ken.eq stats.mtime.getTime() // 1000, t
 
 	it 'touchSync time', ->
 		t = Date.now() // 1000
@@ -388,64 +360,64 @@ describe 'Basic:', ->
 			mtime: t
 		}
 		stats = nofs.statSync 'test/fixtures/touchSync'
-		shouldEqual stats.mtime.getTime() // 1000, t
+		ken.eq stats.mtime.getTime() // 1000, t
 
 	it 'touch create', ->
 		nofs.touch 'test/fixtures/touchCreate'
 		.then ->
 			nofs.fileExists 'test/fixtures/touchCreate'
 		.then (exists) ->
-			shouldEqual exists, true
+			ken.eq exists, true
 
 	it 'touchSync create', ->
 		nofs.touchSync 'test/fixtures/touchCreate'
 		exists = nofs.fileExistsSync 'test/fixtures/touchCreate'
-		shouldEqual exists, true
+		ken.eq exists, true
 
 	it 'outputFile', ->
 		nofs.outputFile 'test/fixtures/out/put/file', 'ok'
 		.then ->
 			nofs.readFile 'test/fixtures/out/put/file', 'utf8'
 		.then (str) ->
-			shouldEqual str, 'ok'
+			ken.eq str, 'ok'
 
 	it 'outputFileSync', ->
 		nofs.outputFileSync 'test/fixtures/out/put/file', 'ok'
 		str = nofs.readFileSync 'test/fixtures/out/put/file', 'utf8'
-		shouldEqual str, 'ok'
+		ken.eq str, 'ok'
 
 	it 'mkdirs', ->
 		nofs.mkdirs 'test/fixtures/make/dir/s'
 		.then ->
 			nofs.dirExists 'test/fixtures/make/dir/s'
 		.then (exists) ->
-			shouldEqual exists, true
+			ken.eq exists, true
 
 	it 'mkdirsSync', ->
 		nofs.mkdirsSync 'test/fixtures/make/dir/s'
 		exists = nofs.dirExistsSync 'test/fixtures/make/dir/s'
-		shouldEqual exists, true
+		ken.eq exists, true
 
 	it 'outputJson readJson', ->
 		nofs.outputJson 'test/fixtures/json/json.json', { val: 'test' }
 		.then ->
 			nofs.readJson 'test/fixtures/json/json.json'
 			.then (obj) ->
-				shouldDeepEqual obj, { val: 'test' }
+				ken.deepEq obj, { val: 'test' }
 
 	it 'alias', ->
 		nofs.createFile 'test/fixtures/alias/file/path'
 		.then ->
 			nofs.fileExists 'test/fixtures/alias/file/path'
 		.then (exists) ->
-			shouldEqual exists, true
+			ken.eq exists, true
 
 	it 'glob', ->
 		nofs.glob '**', {
 			cwd: 'test/fixtures/dir'
 		}
 		.then (ls) ->
-			shouldDeepEqual normalizePath(ls), [
+			ken.deepEq normalizePath(ls), [
 				"a","test0","test0/b","test0/test1","test0/test1/c","test2","test2/d"
 			]
 
@@ -453,36 +425,36 @@ describe 'Basic:', ->
 		ls = nofs.globSync '**', {
 			cwd: 'test/fixtures/dir'
 		}
-		shouldDeepEqual normalizePath(ls), [
+		ken.deepEq normalizePath(ls), [
 			"a","test0","test0/b","test0/test1","test0/test1/c","test2","test2/d"
 		]
 
 	it 'glob non-exists', ->
 		nofs.glob 'aaaaaaaaaaaaaa'
 		.then (ls) ->
-			shouldDeepEqual normalizePath(ls), []
+			ken.deepEq normalizePath(ls), []
 
 	it 'globSync non-exists', ->
 		ls = nofs.globSync 'aaaaaaaaaaaaaa'
-		shouldDeepEqual normalizePath(ls), []
+		ken.deepEq normalizePath(ls), []
 
 	it 'glob all', ->
 		nofs.glob 'test/fixtures/dir/test2/**', { all: true }
 		.then (ls) ->
-			shouldDeepEqual normalizePath(ls), ["test/fixtures/dir/test2/.e","test/fixtures/dir/test2/d"]
+			ken.deepEq normalizePath(ls), ["test/fixtures/dir/test2/.e","test/fixtures/dir/test2/d"]
 
 	it 'globSync all', ->
 		ls = nofs.globSync 'test/fixtures/dir/test2/**', { all: true }
-		shouldDeepEqual normalizePath(ls), ["test/fixtures/dir/test2/.e","test/fixtures/dir/test2/d"]
+		ken.deepEq normalizePath(ls), ["test/fixtures/dir/test2/.e","test/fixtures/dir/test2/d"]
 
 	it 'glob a file', ->
 		nofs.glob './test/fixtures/sample.txt'
 		.then (ls) ->
-			shouldDeepEqual normalizePath(ls), ['test/fixtures/sample.txt']
+			ken.deepEq normalizePath(ls), ['test/fixtures/sample.txt']
 
 	it 'globSync a file', ->
 		ls = nofs.globSync './test/fixtures/sample.txt'
-		shouldDeepEqual normalizePath(ls), ['test/fixtures/sample.txt']
+		ken.deepEq normalizePath(ls), ['test/fixtures/sample.txt']
 
 	it 'glob patterns', ->
 		nofs.glob [
@@ -490,7 +462,7 @@ describe 'Basic:', ->
 			'test/fixtures/dir/test0/**'
 		]
 		.then (ls) ->
-			shouldDeepEqual normalizePath(ls), [
+			ken.deepEq normalizePath(ls), [
 				"test/fixtures/dir/test0/b","test/fixtures/dir/test0/test1",
 				"test/fixtures/dir/test0/test1/c","test/fixtures/dir/test2/d"
 			]
@@ -500,7 +472,7 @@ describe 'Basic:', ->
 			'test/fixtures/dir/test2/**'
 			'test/fixtures/dir/test0/**'
 		]
-		shouldDeepEqual normalizePath(ls), [
+		ken.deepEq normalizePath(ls), [
 			"test/fixtures/dir/test0/b","test/fixtures/dir/test0/test1",
 			"test/fixtures/dir/test0/test1/c","test/fixtures/dir/test2/d"
 		]
@@ -512,7 +484,7 @@ describe 'Basic:', ->
 			'!**/c'
 		]
 		.then (ls) ->
-			shouldDeepEqual normalizePath(ls), [
+			ken.deepEq normalizePath(ls), [
 				"test/fixtures/dir/test0/b","test/fixtures/dir/test0/test1",
 				"test/fixtures/dir/test2/d"
 			]
@@ -523,44 +495,43 @@ describe 'Basic:', ->
 			'test/fixtures/dir/test0/**'
 			'!**/c'
 		]
-		shouldDeepEqual normalizePath(ls), [
+		ken.deepEq normalizePath(ls), [
 			"test/fixtures/dir/test0/b","test/fixtures/dir/test0/test1",
 			"test/fixtures/dir/test2/d"
 		]
 
-describe 'Watch:', ->
-	it 'watchPath', (tdone) ->
+	it 'watchPath', () -> new Promise (resolve) ->
 		path = 'test/fixtures/watchFileTmp.txt'
-
 		nofs.copySync 'test/fixtures/watchFile.txt', path
+
 		nofs.watchPath path, {
 			handler: (p, curr, prev, isDelete) ->
 				return if isDelete
-				shouldEqualDone tdone, normalizePath(p), path
+				resolve ken.eq normalizePath(p), path
 		}
 		wait().then ->
 			nofs.outputFileSync path, 'test'
 
-	it 'watchFiles', (tdone) ->
+	it 'watchFiles', () -> new Promise (resolve) ->
 		path = 'test/fixtures/watchFilesTmp.txt'
 
 		nofs.copySync 'test/fixtures/watchFile.txt', path
 		nofs.watchFiles 'test/fixtures/**/*.txt', {
 			handler: (p, curr, prev, isDelete) ->
 				return if isDelete
-				shouldEqualDone tdone, normalizePath(p), path
+				resolve ken.eq normalizePath(p), path
 		}
 		wait().then ->
 			nofs.outputFileSync path, 'test'
 
-	it 'watchDir modify', (tdone) ->
+	it 'watchDir modify', () -> new Promise (resolve) ->
 		tmp = 'test/fixtures/watchDirModify'
 
 		nofs.copySync 'test/fixtures/watchDir', tmp
 		nofs.watchDir tmp, {
 			patterns: '*'
 			handler: (type, path) ->
-				shouldDeepEqualDone tdone, { type, path: normalizePath(path) }, {
+				resolve ken.deepEq { type, path: normalizePath(path) }, {
 					type: 'modify'
 					path: tmp + '/a'
 				}
@@ -568,14 +539,14 @@ describe 'Watch:', ->
 		wait().then ->
 			nofs.outputFileSync tmp + '/a', 'ok'
 
-	it 'watchDir create', (tdone) ->
+	it 'watchDir create', () -> new Promise (resolve) ->
 		tmp = 'test/fixtures/watchDirCreate'
 
 		nofs.copySync 'test/fixtures/watchDir', tmp
 		nofs.watchDir tmp, {
 			patterns: ['/dir0/*']
 			handler: (type, path, oldPath, stats) ->
-				shouldDeepEqualDone tdone, {
+				resolve ken.deepEq {
 					type, path: normalizePath(path), isDir: stats.isDirectory()
 				}, {
 					type: 'create'
@@ -586,14 +557,14 @@ describe 'Watch:', ->
 		wait(1000).then ->
 			nofs.outputFileSync tmp + '/dir0/d', 'ok'
 
-	it 'watchDir delete', (tdone) ->
+	it 'watchDir delete', () -> new Promise (resolve) ->
 		tmp = 'test/fixtures/watchDirDelete'
 
 		nofs.copySync 'test/fixtures/watchDir', tmp
 		nofs.watchDir tmp, {
 			patterns: ['**', '!a']
 			handler: (type, path) ->
-				shouldDeepEqualDone tdone, { type, path: normalizePath(path) }, {
+				resolve ken.deepEq { type, path: normalizePath(path) }, {
 					type: 'delete'
 					path: tmp + '/dir0/c'
 				}
@@ -601,3 +572,6 @@ describe 'Watch:', ->
 		wait().then ->
 			nofs.removeSync tmp + '/a'
 			nofs.removeSync tmp + '/dir0/c'
+]
+.then ({ failed }) ->
+	process.exit failed

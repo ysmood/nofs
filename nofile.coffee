@@ -41,13 +41,7 @@ module.exports = (task, option) ->
 
 		clean()
 		.then ->
-			kit.spawn('mocha', [
-				'-t', '5000'
-				'-r', 'coffee-script/register'
-				'-R', 'spec'
-				'-g', opts.grep
-				'test/basic.coffee'
-			])
+			kit.spawn('coffee', ['test/basic.coffee'])
 		.then -> clean()
 		.catch ({ code }) ->
 			process.exit code
