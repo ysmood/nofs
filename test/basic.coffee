@@ -23,7 +23,7 @@ wait = (time = 500) ->
 			resolve()
 		, time
 
-it.async [
+it.sync [
 	it 'exists', ->
 		nofs.exists('readme.md')
 		.then (ret) ->
