@@ -32,11 +32,11 @@
   "devDependencies": {
     "coffee-script": "1.9.3",
     "glob": "5.0.14",
-    "mocha": "2.2.5",
-    "nokit": "0.10.0"
+    "mocha": "2.3.0",
+    "nokit": "0.11.3"
   },
   "dependencies": {
     "minimatch": "2.0.10",
-    "yaku": "0.6.2"
+    "yaku": "0.7.4"
   }
 }
