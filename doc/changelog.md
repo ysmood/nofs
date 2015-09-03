@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.10.0
+
+  - upd: deps
+
 - v0.9.9
 
   - opt: #9 more intuitive api, never override user settings completely
