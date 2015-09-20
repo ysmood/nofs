@@ -1,8 +1,9 @@
 process.env.pollingWatch = 30
 
 kit = require 'nokit'
-it = kit.require('ken')()
+junit = require 'junit'
 
+it = junit()
 nofs = require '../src/main'
 { Promise } = require '../src/utils'
 npath = require 'path'
@@ -22,7 +23,7 @@ wait = (time = 500) ->
 			resolve()
 		, time
 
-it.async [
+it.run [
 	it 'exists', ->
 		nofs.exists('readme.md')
 		.then (ret) ->
@@ -499,80 +500,103 @@ it.async [
 			"test/fixtures/dir/test2/d"
 		]
 
-	kit.flow([
-		it 'watchPath', () -> new Promise (resolve) ->
+	kit.flow [
+		it 'watchPath', () ->
 			path = 'test/fixtures/watchFileTmp.txt'
-			nofs.copySync 'test/fixtures/watchFile.txt', path
 
-			nofs.watchPath path, {
-				handler: (p, curr, prev, isDelete) ->
-					return if isDelete
-					resolve it.eq normalizePath(p), path
-			}
-			wait().then ->
-				nofs.outputFileSync path, 'test'
+			new Promise (resolve) ->
+				nofs.copySync 'test/fixtures/watchFile.txt', path
 
-		it 'watchFiles', () -> new Promise (resolve) ->
+				nofs.watchPath path, {
+					handler: (p, curr, prev, isDelete) ->
+						return if isDelete
+						resolve it.eq normalizePath(p), path
+				}
+				wait().then ->
+					nofs.outputFileSync path, 'test'
+			.then ->
+				nofs.unwatchFile path
+
+		it 'watchFiles', () ->
 			path = 'test/fixtures/watchFilesTmp.txt'
+			pattern = 'test/fixtures/**/*.txt'
 
-			nofs.copySync 'test/fixtures/watchFile.txt', path
-			nofs.watchFiles 'test/fixtures/**/*.txt', {
-				handler: (p, curr, prev, isDelete) ->
-					return if isDelete
-					resolve it.eq normalizePath(p), path
-			}
-			wait().then ->
-				nofs.outputFileSync path, 'test'
+			new Promise (resolve) ->
+				nofs.copySync 'test/fixtures/watchFile.txt', path
+				nofs.watchFiles pattern, {
+					handler: (p, curr, prev, isDelete) ->
+						return if isDelete
+						resolve it.eq normalizePath(p), path
+				}
+				wait().then ->
+					nofs.outputFileSync path, 'test'
+			.then ->
+				for path in nofs.globSync(pattern)
+					nofs.unwatchFile path
 
-		it 'watchDir modify', () -> new Promise (resolve) ->
+		it 'watchDir modify', () ->
 			tmp = 'test/fixtures/watchDirModify'
 
-			nofs.copySync 'test/fixtures/watchDir', tmp
-			nofs.watchDir tmp, {
-				patterns: '*'
-				handler: (type, path) ->
-					resolve it.eq { type, path: normalizePath(path) }, {
-						type: 'modify'
-						path: tmp + '/a'
-					}
-			}
-			wait().then ->
-				nofs.outputFileSync tmp + '/a', 'ok'
+			new Promise (resolve) ->
+				nofs.copySync 'test/fixtures/watchDir', tmp
+				nofs.watchDir tmp, {
+					patterns: '*'
+					handler: (type, path) ->
+						resolve it.eq { type, path: normalizePath(path) }, {
+							type: 'modify'
+							path: tmp + '/a'
+						}
+				}
+				wait().then ->
+					nofs.outputFileSync tmp + '/a', 'ok'
+			.then ->
+				nofs.unwatchFile tmp
+				for path in nofs.globSync(tmp + '/*')
+					nofs.unwatchFile path
 
-		it 'watchDir create', () -> new Promise (resolve) ->
+		it 'watchDir create', () ->
 			tmp = 'test/fixtures/watchDirCreate'
 
-			nofs.copySync 'test/fixtures/watchDir', tmp
-			nofs.watchDir tmp, {
-				patterns: ['/dir0/*']
-				handler: (type, path, oldPath, stats) ->
-					resolve it.eq {
-						type, path: normalizePath(path), isDir: stats.isDirectory()
-					}, {
-						type: 'create'
-						path: tmp + '/dir0/d'
-						isDir: true
-					}
-			}
-			wait(1000).then ->
-				nofs.outputFileSync tmp + '/dir0/d', 'ok'
+			new Promise (resolve) ->
+				nofs.copySync 'test/fixtures/watchDir', tmp
+				nofs.watchDir tmp, {
+					patterns: ['/dir0/*']
+					handler: (type, path, oldPath, stats) ->
+						resolve it.eq {
+							type, path: normalizePath(path), isDir: stats.isDirectory()
+						}, {
+							type: 'create'
+							path: tmp + '/dir0/d'
+							isDir: true
+						}
+				}
+				wait(1000).then ->
+					nofs.outputFileSync tmp + '/dir0/d', 'ok'
+			.then ->
+				nofs.unwatchFile tmp
+				nofs.unwatchFile tmp + '/dir0'
+				for path in nofs.globSync(tmp + '/dir0/*')
+					nofs.unwatchFile path
 
-		it 'watchDir delete', () -> new Promise (resolve) ->
+		it 'watchDir delete', () ->
 			tmp = 'test/fixtures/watchDirDelete'
 
-			nofs.copySync 'test/fixtures/watchDir', tmp
-			nofs.watchDir tmp, {
-				patterns: ['**', '!a']
-				handler: (type, path) ->
-					resolve it.eq { type, path: normalizePath(path) }, {
-						type: 'delete'
-						path: tmp + '/dir0/c'
-					}
-			}
-			wait().then ->
-				nofs.removeSync tmp + '/a'
-				nofs.removeSync tmp + '/dir0/c'
-	])()
+			new Promise (resolve) ->
+				nofs.copySync 'test/fixtures/watchDir', tmp
+				nofs.watchDir tmp, {
+					patterns: ['**', '!a']
+					handler: (type, path) ->
+						resolve it.eq { type, path: normalizePath(path) }, {
+							type: 'delete'
+							path: tmp + '/dir0/c'
+						}
+				}
+				wait().then ->
+					nofs.removeSync tmp + '/a'
+					nofs.removeSync tmp + '/dir0/c'
+			.then ->
+				nofs.unwatchFile tmp
+				for path in nofs.globSync(tmp + '/**')
+					nofs.unwatchFile path
+	]
 ]
-.then ({ failed }) ->
-	process.exit failed

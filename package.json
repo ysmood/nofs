@@ -33,6 +33,7 @@
     "coffee-script": "1.10.0",
     "glob": "5.0.14",
     "nokit": "0.13.0"
+    "junit": "0.5.1",
   },
   "dependencies": {
     "minimatch": "2.0.10",
