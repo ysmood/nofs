@@ -34,14 +34,17 @@ module.exports = (task, option) ->
 				kit.remove '.nokit'
 			]
 
-	option '-g, --grep ["."]', 'test pattern', '.'
+	option '-g, --grep <pattern>', 'test pattern', ''
 	task 'test', 'run unit tests', (opts) ->
 		clean = ->
 			kit.spawn 'git', ['clean', '-fd', kit.path.normalize('test/fixtures')]
 
 		clean()
 		.then ->
-			kit.spawn('coffee', ['test/basic.coffee'])
+			kit.spawn('junit', [
+				'-r', 'coffee-script/register'
+				'test/basic.coffee', '-g', opts.grep
+			])
 		.then -> clean()
 		.catch ({ code }) ->
 			process.exit code

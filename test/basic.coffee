@@ -1,9 +1,6 @@
 process.env.pollingWatch = 30
 
 kit = require 'nokit'
-junit = require 'junit'
-
-it = junit()
 nofs = require '../src/main'
 { Promise } = require '../src/utils'
 npath = require 'path'
@@ -23,7 +20,7 @@ wait = (time = 500) ->
 			resolve()
 		, time
 
-it.run [
+module.exports = (it) -> [
 	it 'exists', ->
 		nofs.exists('readme.md')
 		.then (ret) ->
