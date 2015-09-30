@@ -167,6 +167,30 @@ module.exports = (it) -> [
 			"test0/test1/c", "test2", "test2/d"
 		]
 
+	it 'copy self', ->
+		dir = 'test/fixtures/dir-copy-self'
+		nofs.mkdirsSync dir
+		nofs.copy 'test/fixtures/dir/**', dir
+		.then ->
+			nofs.glob '**', { cwd: dir }
+		.then (ls) ->
+			it.eq normalizePath(ls), [
+				"a", "test0", "test0/b", "test0/test1"
+				"test0/test1/c", "test2", "test2/d"
+			]
+
+	it 'copySync self', ->
+		dir = 'test/fixtures/dir-copySync-self'
+		nofs.mkdirsSync dir
+		nofs.copySync 'test/fixtures/dir/**', dir
+
+		nofs.glob '**', { cwd: dir }
+		.then (ls) ->
+			it.eq normalizePath(ls), [
+				"a", "test0", "test0/b", "test0/test1"
+				"test0/test1/c", "test2", "test2/d"
+			]
+
 	it 'copy pattern', ->
 		dir = 'test/fixtures/dir-copy-pattern'
 		nofs.copy 'test/fixtures/dir/*0/**', dir

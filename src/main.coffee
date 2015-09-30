@@ -210,6 +210,11 @@ nofs = _.extend {}, {
 	 * }
 	 * ```
 	 * @return {Promise}
+	 * @example
+	 * Copy the contents of the directory rather than copy the directory itself.
+	 * ```coffee
+	 * nofs.copy('dir/path/**', 'dest/path');
+	 * ```
 	###
 	copy: (from, to, opts = {}) ->
 		_.defaults opts, {
@@ -220,27 +225,23 @@ nofs = _.extend {}, {
 		flags = if opts.isForce then 'w' else 'wx'
 
 		opts.iter = (src, dest, { isDir, stats }) ->
-			opts = {
-				isForce: opts.isForce
-				mode: stats.mode
-			}
 			if isDir
-				nofs.copyDir src, dest, opts
+				nofs.copyDir src, dest, { isForce: true, mode: opts.mode }
 			else
-				nofs.copyFile src, dest, opts
+				nofs.copyFile src, dest, { isForce: opts.isForce, mode: opts.mode }
+
+		if pm = nofs.pmatch.isPmatch(from)
+			from = nofs.pmatch.getPlainPath pm
+			pm = npath.relative from, pm.pattern
+			opts.filter = pm
 
 		nofs.dirExists(to).then (exists) ->
 			if exists
-				nofs.mkdirs to
-				to = npath.join to, npath.basename(from)
+				if not pm
+					to = npath.join to, npath.basename(from)
 			else
 				nofs.mkdirs npath.dirname(to)
 		.then ->
-			if pm = nofs.pmatch.isPmatch(from)
-				from = nofs.pmatch.getPlainPath pm
-				pm = npath.relative from, pm.pattern
-				opts.filter = pm
-
 			fs.stat(from)
 		.then (stats) ->
 			isDir = stats.isDirectory()
@@ -258,25 +259,21 @@ nofs = _.extend {}, {
 		flags = if opts.isForce then 'w' else 'wx'
 
 		opts.iter = (src, dest, { isDir, stats }) ->
-			opts = {
-				isForce: opts.isForce
-				mode: stats.mode
-			}
 			if isDir
-				nofs.copyDirSync src, dest, opts
+				nofs.copyDirSync src, dest, { isForce: true, mode: opts.mode }
 			else
-				nofs.copyFileSync src, dest, opts
-
-		if nofs.dirExistsSync to
-			nofs.mkdirsSync to
-			to = npath.join to, npath.basename(from)
-		else
-			nofs.mkdirsSync npath.dirname(to)
+				nofs.copyFileSync src, dest, { isForce: opts.isForce, mode: opts.mode }
 
 		if pm = nofs.pmatch.isPmatch(from)
 			from = nofs.pmatch.getPlainPath pm
 			pm = npath.relative from, pm.pattern
 			opts.filter = pm
+
+		if nofs.dirExistsSync to
+			if not pm
+				to = npath.join to, npath.basename(from)
+		else
+			nofs.mkdirsSync npath.dirname(to)
 
 		stats = fs.statSync from
 		isDir = stats.isDirectory()
