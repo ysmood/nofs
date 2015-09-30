@@ -1,5 +1,10 @@
 # Changelog
 
+- v0.10.5
+
+  - fix: a copy self bug
+  - upd: deps
+
 - v0.10.3
 
   - upd: deps
