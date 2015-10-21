@@ -1,9 +1,10 @@
 # Changelog
 
-- v0.10.6
+- v0.10.7
 
   - fix: a copy self bug
   - upd: deps
+  - fix: a watch stats bug
 
 - v0.10.3
 
