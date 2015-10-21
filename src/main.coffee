@@ -1483,13 +1483,13 @@ nofs = _.extend {}, {
 
 				if fileInfo.isDir
 					if curr
-						opts.handler 'create', path, null, curr
+						opts.handler 'create', path, null, fileInfo.stats
 					nofs.watchPath path, { handler: dirHandler }
 					.then (listener) ->
 						watchedList[path] = listener if listener
 				else if not negateMath(path) and match(path)
 					if curr
-						opts.handler 'create', path, null, curr
+						opts.handler 'create', path, null, fileInfo.stats
 					nofs.watchPath path, { handler: fileHandler }
 					.then (listener) ->
 						watchedList[path] = listener if listener

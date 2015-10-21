@@ -588,7 +588,7 @@ module.exports = (it) -> [
 						}, {
 							type: 'create'
 							path: tmp + '/dir0/d'
-							isDir: true
+							isDir: false
 						}
 				}
 				wait(1000).then ->
