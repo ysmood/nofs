@@ -1,6 +1,6 @@
 # Changelog
 
-- v0.10.7
+- v0.10.9
 
   - fix: a copy self bug
   - upd: deps
