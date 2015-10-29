@@ -20,7 +20,7 @@ wait = (time = 500) ->
 			resolve()
 		, time
 
-module.exports = (it) -> [
+module.exports = (it) -> Promise.all [
 	it 'exists', ->
 		nofs.exists('readme.md')
 		.then (ret) ->
@@ -521,8 +521,8 @@ module.exports = (it) -> [
 			"test/fixtures/dir/test2/d"
 		]
 
-	kit.flow [
-		it 'watchPath', () ->
+	kit.flow([
+		-> it 'watchPath', () ->
 			path = 'test/fixtures/watchFileTmp.txt'
 
 			new Promise (resolve) ->
@@ -538,7 +538,7 @@ module.exports = (it) -> [
 			.then ->
 				nofs.unwatchFile path
 
-		it 'watchFiles', () ->
+		-> it 'watchFiles', () ->
 			path = 'test/fixtures/watchFilesTmp.txt'
 			pattern = 'test/fixtures/**/*.txt'
 
@@ -555,7 +555,7 @@ module.exports = (it) -> [
 				for path in nofs.globSync(pattern)
 					nofs.unwatchFile path
 
-		it 'watchDir modify', () ->
+		-> it 'watchDir modify', () ->
 			tmp = 'test/fixtures/watchDirModify'
 
 			new Promise (resolve) ->
@@ -575,7 +575,7 @@ module.exports = (it) -> [
 				for path in nofs.globSync(tmp + '/*')
 					nofs.unwatchFile path
 
-		it 'watchDir create', () ->
+		-> it 'watchDir create', () ->
 			tmp = 'test/fixtures/watchDirCreate'
 
 			new Promise (resolve) ->
@@ -599,7 +599,7 @@ module.exports = (it) -> [
 				for path in nofs.globSync(tmp + '/dir0/*')
 					nofs.unwatchFile path
 
-		it 'watchDir delete', () ->
+		-> it 'watchDir delete', () ->
 			tmp = 'test/fixtures/watchDirDelete'
 
 			new Promise (resolve) ->
@@ -619,5 +619,5 @@ module.exports = (it) -> [
 				nofs.unwatchFile tmp
 				for path in nofs.globSync(tmp + '/**')
 					nofs.unwatchFile path
-	]
+	])()
 ]
