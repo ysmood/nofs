@@ -1,6 +1,6 @@
 {
   "name": "nofs",
-  "version": "0.10.10",
+  "version": "0.10.11",
   "description": "Promise to make a better fs lib.",
   "main": "dist/main.js",
   "scripts": {
