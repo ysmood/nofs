@@ -32,8 +32,8 @@ Only functions like `readFile` which may confuse the user don't support pattern.
 ### Promise & Callback
 
 If you call an async function without callback, it will return a promise.
-For example the `nofs.remove('dir', -> 'done!' )` are the same with
-`nofs.remove('dir').then -> 'done!'`.
+For example the `nofs.remove('dir', () => 'done!')` are the same with
+`nofs.remove('dir').then(() => 'done!')`.
 
 ### [eachDir](#eachDir)
 
@@ -56,80 +56,86 @@ option, therefore `glob` also has a `filter` option.
 
 ## Quick Start
 
-```coffee
-# You can replace "require('fs')" with "require('nofs')"
-fs = require 'nofs'
+```js
+// You can replace "require('fs')" with "require('nofs')"
+let fs = require('nofs');
+
+/*
+ * Callback
+ */
+fs.outputFile('x.txt', 'test', (err) => {
+    console.log('done');
+});
 
 
-###
-# Callback
-###
-fs.outputFile 'x.txt', 'test', (err) ->
-    console.log 'done'
+/*
+ * Sync
+ */
+fs.readFileSync('x.txt');
+fs.copySync('dir/a', 'dir/b');
 
 
-###
-# Sync
-###
-fs.readFileSync 'x.txt'
-fs.copySync 'dir/a', 'dir/b'
+/*
+ * Promise
+ */
+fs.mkdirs('deep/dir/path')
+.then(() =>
+    fs.outputFile('a.txt', 'hello world')
+).then(() =>
+    fs.move('dir/path', 'other')
+).then(() =>
+    fs.copy('one/**/*.js', 'two')
+).then(() =>
+    // Get all files, except js files.
+    fs.glob(['deep/**', '!**/*.js'])
+).then((list) =>
+    console.log(list)
+).then(() =>
+    // Remove only js files.
+    fs.remove('deep/**/*.js')
+);
 
 
-###
-# Promise
-###
-fs.mkdirs 'deep/dir/path'
-.then ->
-    fs.outputFile 'a.txt', 'hello world'
-.then ->
-    fs.move 'dir/path', 'other'
-.then ->
-    fs.copy 'one/**/*.js', 'two'
-.then ->
-    # Get all files, except js files.
-    fs.glob ['deep/**', '!**/*.js']
-.then (list) ->
-    console.log list
-.then ->
-    # Remove only js files.
-    fs.remove 'deep/**/*.js'
-
-
-###
-# Concat all css files.
-###
-fs.reduceDir 'dir/**/*.css', {
-    init: '/* Concated by nofs */\n'
-    iter: (sum, { path }) ->
-        fs.readFile(path).then (str) ->
+/*
+ * Concat all css files.
+ */
+fs.reduceDir('dir/**/*.css', {
+    init: '/* Concated by nofs */\n',
+    iter (sum, { path }) {
+        return fs.readFile(path).then(str =>
             sum += str + '\n'
+        );
+    }
+}).then(concated =>
+    console.log(concated)
+);
+
+
+
+/*
+ * Play with the low level api.
+ * Filter all the ignored files with high performance.
+ */
+let patterns = fs.readFileSync('.gitignore', 'utf8').split('\n');
+
+let filter = ({ path }) => {
+    for (let p of patterns) {
+        // This is only a demo, not full git syntax.
+        if (path.indexOf(p) === 0)
+            return false;
+    }
+    return true;
 }
-.then (concated) ->
-    console.log concated
-
-
-
-###
-# Play with the low level api.
-# Filter all the ignored files with high performance.
-###
-patterns = fs.readFileSync('.gitignore', 'utf8').split '\n'
-
-filter = ({ path }) ->
-    for p in patterns
-        # This is only a demo, not full git syntax.
-        if path.indexOf(p) == 0
-            return false
-    return true
 
 fs.eachDir('.', {
-    searchFilter: filter # Ensure subdirectory won't be searched.
-    filter: filter
-    iter: (info) -> info  # Directly return the file info object.
-}).then (tree) ->
-    # Instead a list as usual,
-    # here we get a file tree for further usage.
-    console.log tree
+    searchFilter: filter, // Ensure subdirectory won't be searched.
+    filter: filter,
+    iter: (info) => info  // Directly return the file info object.
+}).then((tree) =>
+    // Instead a list as usual,
+    // here we get a file tree for further usage.
+    console.log(tree)
+);
 ```
 
 
@@ -139,7 +145,7 @@ Goto [changelog](doc/changelog.md)
 
 ## Function Name Alias
 
-For some naming convention reasons, `nofs` also uses some common alias for fucntion names. See [src/alias.coffee](src/alias.coffee).
+For some naming convention reasons, `nofs` also uses some common alias for fucntion names. See [src/alias.js](src/alias.js).
 
 ## FAQ
 
@@ -153,7 +159,7 @@ For some naming convention reasons, `nofs` also uses some common alias for fucnt
 
 __No native `fs` funtion will be listed.__
 
-<%= doc['src/main.coffee'] %>
+<%= doc['src/main.js'] %>
 
 ## Benckmark
 

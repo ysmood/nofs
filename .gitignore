@@ -3,4 +3,3 @@ node_modules
 *.sublime-*
 .nobone
 .nokit
-.coffee
