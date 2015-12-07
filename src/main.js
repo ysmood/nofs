@@ -537,12 +537,14 @@ nofs = _.extend({}, {
             spath = npath.normalize(spath);
             if (opts.isAutoPmatch && (pm = nofs.pmatch.isPmatch(spath))) {
                 if (nofs.pmatch.isNotPlain(pm)) {
+                    // keep the user defined filter
                     opts._filter = opts.filter;
                     opts.filter = pm;
                 }
                 return spath = nofs.pmatch.getPlainPath(pm);
             }
         };
+
         handleFilter = function() {
             var pm, reg;
             if (_.isRegExp(opts.filter)) {
@@ -561,12 +563,14 @@ nofs = _.extend({}, {
             }
             if (pm) {
                 opts.filter = function(fileInfo) {
+                    // Hot fix for minimatch, it should match '**' to '.'.
                     if (fileInfo.path === '.') {
                         return pm.match('');
                     }
                     return pm.match(fileInfo.path) && (_.isFunction(opts._filter) ? opts._filter(fileInfo) : true);
                 };
                 return opts.searchFilter = function(fileInfo) {
+                    // Hot fix for minimatch, it should match '**' to '.'.
                     if (fileInfo.path === '.') {
                         return true;
                     }
@@ -574,9 +578,11 @@ nofs = _.extend({}, {
                 };
             }
         };
+
         resolve = function(path) {
             return npath.join(opts.cwd, path);
         };
+
         execFn = function(fileInfo) {
             if (!opts.all && fileInfo.name[0] === '.') {
                 return;
@@ -588,11 +594,17 @@ nofs = _.extend({}, {
                 return opts.iter(fileInfo);
             }
         };
+
+        // TODO: Race Condition
+        // It's possible that the file has already gone.
+        // Here we silently ignore it, since you normally don't
+        // want to iterate a non-exists path.
         raceResolver = function(err) {
             if (err.code !== 'ENOENT') {
                 return Promise.reject(err);
             }
         };
+
         decideNext = function(dir, name) {
             var path;
             path = npath.join(dir, name);
@@ -1088,6 +1100,12 @@ nofs = _.extend({}, {
             mode = 0x1ff & ~process.umask();
         }
         makedir = function(path) {
+            // ys TODO:
+            // Sometimes I think this async operation is
+            // useless, since during the next process tick, the
+            // dir may be created.
+            // We may use dirExistsSync to avoid this bug, but
+            // for the sake of pure async, I leave it still.
             return nofs.dirExists(path).then(function(exists) {
                 var parentPath;
                 if (exists) {
@@ -1726,6 +1744,7 @@ nofs = _.extend({}, {
         if (opts == null) {
             opts = {};
         }
+
         _.defaults(opts, {
             patterns: '**',
             pmatch: {},
@@ -1734,10 +1753,12 @@ nofs = _.extend({}, {
                 return console.error(err);
             }
         });
+
         opts.pmatch.dot = opts.all;
         if (_.isString(opts.patterns)) {
             opts.patterns = [opts.patterns];
         }
+
         opts.patterns = opts.patterns.map(function(p) {
             if (p[0] === '!') {
                 return '!' + npath.join(root, p.slice(1));
@@ -1746,13 +1767,22 @@ nofs = _.extend({}, {
             }
         });
         ref = nofs.pmatch.matchMultiple(opts.patterns, opts.pmatch), match = ref.match, negateMath = ref.negateMath;
+
         watchedList = {};
+
+        // TODO: move event
         isSameFile = function(statsA, statsB) {
+            // On Unix just "ino" will do the trick, but on Windows
+            // "ino" is always zero.
             if (statsA.ctime.ino !== 0 && statsA.ctime.ino === statsB.ctime.ino) {
                 return true;
             }
+
+            // Since "size" for Windows is always zero, and the unit of "time"
+            // is second, the code below is not reliable.
             return statsA.mtime.getTime() === statsB.mtime.getTime() && statsA.ctime.getTime() === statsB.ctime.getTime() && statsA.size === statsB.size;
         };
+
         fileHandler = function(path, curr, prev, isDelete) {
             if (isDelete) {
                 opts.handler('delete', path, null, curr);
@@ -1761,12 +1791,23 @@ nofs = _.extend({}, {
                 return opts.handler('modify', path, null, curr);
             }
         };
+
         dirHandler = function(dir, curr, prev, isDelete) {
+            // Possible Event Order
+            // 1. modify event: file modify.
+            // 2. delete event: file delete -> parent modify.
+            // 3. create event: parent modify -> file create.
+            // 4.   move event: file delete -> parent modify -> file create.
+
             if (isDelete) {
                 opts.handler('delete', dir, null, curr);
                 delete watchedList[dir];
                 return;
             }
+
+            // Prevent high frequency concurrent fs changes,
+            // we should to use Sync function here. But for
+            // now if we don't need `move` event, everything is OK.
             return nofs.eachDir(dir, {
                 all: opts.all,
                 iter: function(fileInfo) {
@@ -1801,6 +1842,7 @@ nofs = _.extend({}, {
                 }
             });
         };
+
         return dirHandler(root).then(function() {
             return watchedList;
         });
