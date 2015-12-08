@@ -159,6 +159,8 @@ For some naming convention reasons, `nofs` also uses some common alias for fucnt
 
 __No native `fs` funtion will be listed.__
 
+<%= doc['src/main.js-toc'] %>
+
 <%= doc['src/main.js'] %>
 
 ## Benckmark
