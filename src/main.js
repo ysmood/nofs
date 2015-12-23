@@ -872,7 +872,7 @@ nofs = _.extend({}, {
          * Patterns that starts with '!' in the array will be used
          * to exclude paths.
          * @param {Object} opts Extends the options of [eachDir](#eachDir-opts).
-         * But the `filter` property will be fixed with the pattern.
+         * **The `filter` property is fixed with the pattern, use `iter` instead**.
          * Defaults:
          * ```js
          * {

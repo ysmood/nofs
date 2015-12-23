@@ -449,7 +449,7 @@ __No native `fs` funtion will be listed.__
     - **<u>param</u>**: `opts` { _Object_ }
 
         Extends the options of [eachDir](#eachDir-opts).
-        But the `filter` property will be fixed with the pattern.
+        **The `filter` property is fixed with the pattern, use `iter` instead**.
         Defaults:
         ```js
         {
