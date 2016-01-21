@@ -34,20 +34,14 @@ module.exports = function(task, option) {
     });
 
     return task('test', 'run unit tests', function(opts) {
-        var clean;
-        clean = function() {
+        function clean () {
             return kit.spawn('git', ['clean', '-fd', kit.path.normalize('test/fixtures')]);
         };
+
         return clean().then(function() {
             return kit.spawn('junit', [
                 'test/basic.js', '-g', opts.grep
             ]);
-        }).then(function() {
-            return clean();
-        })["catch"](function(arg) {
-            var code;
-            code = arg.code;
-            return process.exit(code);
-        });
+        })
     });
 };
