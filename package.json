@@ -1,6 +1,6 @@
 {
   "name": "nofs",
-  "version": "0.10.11",
+  "version": "0.10.12",
   "description": "Promise to make a better fs lib.",
   "main": "dist/main.js",
   "scripts": {
@@ -29,10 +29,10 @@
   "homepage": "https://github.com/ysmood/nofs",
   "devDependencies": {
     "junit": "1.1.1",
-    "nokit": "0.16.14"
+    "nokit": "0.17.1"
   },
   "dependencies": {
     "minimatch": "3.0.0",
-    "yaku": "0.11.7"
+    "yaku": "0.11.8"
   }
 }
