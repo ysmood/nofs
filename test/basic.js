@@ -35,7 +35,7 @@ wait = function(time) {
     });
 };
 
-module.exports = function(it) {
+module.exports = function (it) {
 
     it('exists', function() {
         return nofs.exists('readme.md').then(function(ret) {
@@ -392,11 +392,13 @@ module.exports = function(it) {
         var dir;
         dir = 'test/fixtures/copyFilter';
         return nofs.copy('test/fixtures/dir', dir, {
-            filter: '**/b'
+            filter: function (f) {
+                return /\/b$/.test(f.path);
+            }
         }).then(function() {
             return nofs.glob(dir + '/**');
         }).then(function(ls) {
-            return it.eq(normalizePath(ls), ["test/fixtures/copyFilter/test0", "test/fixtures/copyFilter/test0/b"]);
+            return it.eq(normalizePath(ls), [dir + "/test0", dir + "/test0/b"]);
         });
     });
 
@@ -404,10 +406,56 @@ module.exports = function(it) {
         var dir, ls;
         dir = 'test/fixtures/copyFilterSync';
         nofs.copySync('test/fixtures/dir', dir, {
-            filter: '**/b'
+            filter: function (f) {
+                return /\/b$/.test(f.path);
+            }
         });
         ls = nofs.globSync(dir + '/**');
-        return it.eq(normalizePath(ls), ["test/fixtures/copyFilterSync/test0", "test/fixtures/copyFilterSync/test0/b"]);
+        return it.eq(normalizePath(ls), [dir + "/test0", dir + "/test0/b"]);
+    });
+
+    it('copy pattern filter', function() {
+        var dir;
+        dir = 'test/fixtures/copyPatternFilter';
+        return nofs.copy('test/fixtures/dir/**', dir, {
+            filter: function (f) {
+                return /\/b$/.test(f.path);
+            }
+        }).then(function() {
+            return nofs.glob(dir + '/**');
+        }).then(function(ls) {
+            return it.eq(normalizePath(ls), [dir + "/test0", dir + "/test0/b"]);
+        });
+    });
+
+    it('copySync pattern filter', function() {
+        var dir, ls;
+        dir = 'test/fixtures/copyPatternFilterSync';
+        nofs.copySync('test/fixtures/dir/**', dir, {
+            filter: function (f) {
+                return /\/b$/.test(f.path);
+            }
+        });
+        ls = nofs.globSync(dir + '/**');
+        return it.eq(normalizePath(ls), [dir + "/test0", dir + "/test0/b"]);
+    });
+
+    it('copy pattern', function() {
+        var dir;
+        dir = 'test/fixtures/copyPatternFilter';
+        return nofs.copy('test/fixtures/dir/**/*b', dir).then(function() {
+            return nofs.glob(dir + '/**');
+        }).then(function(ls) {
+            return it.eq(normalizePath(ls), [dir + "/test0", dir + "/test0/b"]);
+        });
+    });
+
+    it('copySync pattern', function() {
+        var dir, ls;
+        dir = 'test/fixtures/copyPatternFilterSync';
+        nofs.copySync('test/fixtures/dir/**/*b', dir);
+        ls = nofs.globSync(dir + '/**');
+        return it.eq(normalizePath(ls), [dir + "/test0", dir + "/test0/b"]);
     });
 
     it('ensureFile', function() {

@@ -249,6 +249,8 @@ nofs = _.extend({}, {
          *     // Overwrite file if exists.
          *     isForce: false,
          *     isIterFileOnly: false
+         *
+         *     filter: (fileInfo) => true
          * }
          * ```
          * @return {Promise}
@@ -256,21 +258,35 @@ nofs = _.extend({}, {
          * Copy the contents of the directory rather than copy the directory itself.
          * ```js
          * nofs.copy('dir/path/**', 'dest/path');
+         *
+         * nofs.copy('dir/path', 'dest/path', {
+         *     filter: (fileInfo) => {
+         *         return /\d+/.test(fileInfo.path);
+         *     }
+         * });
          * ```
      */
     copy: function(from, to, opts) {
-        var flags, pm;
+        var flags, pm, filter;
         if (opts == null) {
             opts = {};
         }
         _.defaults(opts, {
             isForce: false,
-            isIterFileOnly: false
+            isIterFileOnly: false,
+            filter: function () { return true; }
         });
+
         flags = opts.isForce ? 'w' : 'wx';
+
+        filter = opts.filter;
+
         opts.iter = function(src, dest, arg) {
+            if (_.isFunction(filter) && !filter(arg)) return;
+
             var isDir, stats;
             isDir = arg.isDir, stats = arg.stats;
+
             if (isDir) {
                 return nofs.copyDir(src, dest, {
                     isForce: true,
@@ -312,18 +328,26 @@ nofs = _.extend({}, {
         });
     },
     copySync: function(from, to, opts) {
-        var flags, isDir, pm, stats;
+        var flags, isDir, pm, stats, filter;
         if (opts == null) {
             opts = {};
         }
         _.defaults(opts, {
             isForce: false,
-            isIterFileOnly: false
+            isIterFileOnly: false,
+            filter: function () { return true; }
         });
+
         flags = opts.isForce ? 'w' : 'wx';
+
+        filter = opts.filter;
+
         opts.iter = function(src, dest, arg) {
+            if (_.isFunction(filter) && !filter(arg)) return;
+
             var isDir, stats;
             isDir = arg.isDir, stats = arg.stats;
+
             if (isDir) {
                 return nofs.copyDirSync(src, dest, {
                     isForce: true,
