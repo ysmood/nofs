@@ -1,4 +1,4 @@
-var Promise, isWin, kit, nofs, normalizePath, npath, regSep, wait;
+var Promise, isWin, kit, nofs, npath, regSep;
 
 process.env.pollingWatch = 30;
 
@@ -14,7 +14,7 @@ isWin = process.platform === 'win32';
 
 regSep = RegExp("" + ('\\' + npath.sep), "g");
 
-normalizePath = function(val) {
+function normalizePath (val) {
     if (val instanceof Array) {
         return val.map(function(p) {
             return p.replace(regSep, '/');
@@ -24,7 +24,7 @@ normalizePath = function(val) {
     }
 };
 
-wait = function(time) {
+function wait (time) {
     if (time == null) {
         time = 500;
     }
@@ -34,6 +34,13 @@ wait = function(time) {
         }, time);
     });
 };
+
+function tempPath () {
+    return 'test/temp/' + Date.now() + (Math.random() + '').slice(2);
+}
+
+kit.removeSync('test/temp');
+kit.mkdirsSync('test/temp');
 
 module.exports = function (it) {
 
@@ -208,8 +215,7 @@ module.exports = function (it) {
     });
 
     it('copy', function() {
-        var dir;
-        dir = 'test/fixtures/dir-copy';
+        var dir = tempPath() + '/fixtures/dir-copy';
         return nofs.copy('test/fixtures/dir', dir).then(function() {
             return nofs.glob('**', {
                 cwd: dir
@@ -221,7 +227,7 @@ module.exports = function (it) {
 
     it('copySync', function() {
         var dir, ls;
-        dir = 'test/fixtures/dir-copySync';
+        dir = tempPath() + '/dir-copySync';
         nofs.copySync('test/fixtures/dir', dir);
         ls = nofs.globSync('**', {
             cwd: dir
@@ -231,7 +237,7 @@ module.exports = function (it) {
 
     it('copy self', function() {
         var dir;
-        dir = 'test/fixtures/dir-copy-self';
+        dir = tempPath() + '/dir-copy-self';
         nofs.mkdirsSync(dir);
         return nofs.copy('test/fixtures/dir/**', dir).then(function() {
             return nofs.glob('**', {
@@ -244,7 +250,7 @@ module.exports = function (it) {
 
     it('copySync self', function() {
         var dir;
-        dir = 'test/fixtures/dir-copySync-self';
+        dir = tempPath() + '/dir-copySync-self';
         nofs.mkdirsSync(dir);
         nofs.copySync('test/fixtures/dir/**', dir);
         return nofs.glob('**', {
@@ -256,7 +262,7 @@ module.exports = function (it) {
 
     it('copy pattern', function() {
         var dir;
-        dir = 'test/fixtures/dir-copy-pattern';
+        dir = tempPath() + '/dir-copy-pattern';
         return nofs.copy('test/fixtures/dir/*0/**', dir).then(function() {
             return nofs.glob('**', {
                 cwd: dir
@@ -268,7 +274,7 @@ module.exports = function (it) {
 
     it('copySync pattern', function() {
         var dir, ls;
-        dir = 'test/fixtures/dir-copySync-pattern';
+        dir = tempPath() + '/dir-copySync-pattern';
         nofs.copySync('test/fixtures/dir/*0/**', dir);
         ls = nofs.globSync('**', {
             cwd: dir
@@ -278,7 +284,7 @@ module.exports = function (it) {
 
     it('remove', function() {
         var dir;
-        dir = 'test/fixtures/dir-remove';
+        dir = tempPath() + '/dir-remove';
         nofs.copySync('test/fixtures/dir', dir);
         return nofs.remove(dir).then(function() {
             return it.eq(nofs.dirExistsSync(dir), false);
@@ -287,7 +293,7 @@ module.exports = function (it) {
 
     it('removeSync', function() {
         var dir;
-        dir = 'test/fixtures/dir-removeSync';
+        dir = tempPath() + '/dir-removeSync';
         nofs.copySync('test/fixtures/dir', dir);
         nofs.removeSync(dir);
         return it.eq(nofs.dirExistsSync(dir), false);
@@ -295,24 +301,24 @@ module.exports = function (it) {
 
     it('remove pattern', function() {
         var dir;
-        dir = 'test/fixtures/dir-remove-pattern';
+        dir = tempPath() + '/dir-remove-pattern';
         nofs.copySync('test/fixtures/dir', dir);
-        return nofs.remove('test/fixtures/dir-remove-pattern/test*').then(function() {
-            return it.eq(normalizePath(nofs.globSync(dir + '/**')), ['test/fixtures/dir-remove-pattern/a']);
+        return nofs.remove(dir + '/test*').then(function() {
+            return it.eq(normalizePath(nofs.globSync(dir + '/**')), [dir + '/a']);
         });
     });
 
     it('removeSync pattern', function() {
         var dir;
-        dir = 'test/fixtures/dir-removeSync-pattern';
+        dir = tempPath() + '/dir-removeSync-pattern';
         nofs.copySync('test/fixtures/dir', dir);
-        nofs.removeSync('test/fixtures/dir-removeSync-pattern/test*');
-        return it.eq(normalizePath(nofs.globSync(dir + '/**')), ['test/fixtures/dir-removeSync-pattern/a']);
+        nofs.removeSync(dir + '/test*');
+        return it.eq(normalizePath(nofs.globSync(dir + '/**')), [dir + '/a']);
     });
 
     it('remove symbol link', function() {
         var dir;
-        dir = 'test/fixtures/dir-remove-symbol-link';
+        dir = tempPath() + '/dir-remove-symbol-link';
         nofs.copySync('test/fixtures/dir', dir);
         nofs.symlinkSync(dir + '/test0', dir + '/test0-link', 'dir');
         return nofs.remove(dir + '/test0-link').then(function() {
@@ -322,7 +328,7 @@ module.exports = function (it) {
 
     it('removeSync symbol link', function() {
         var dir;
-        dir = 'test/fixtures/dir-removeSync-symbol-link';
+        dir = tempPath() + '/dir-removeSync-symbol-link';
         nofs.copySync('test/fixtures/dir', dir);
         nofs.symlinkSync(dir + '/test0', dir + '/test0-link', 'dir');
         nofs.removeSync(dir + '/test0-link');
@@ -331,7 +337,7 @@ module.exports = function (it) {
 
     it('remove race condition', function() {
         var dir;
-        dir = 'test/fixtures/remove-race';
+        dir = tempPath() + '/remove-race';
         nofs.mkdirsSync(dir);
         nofs.touchSync(dir + '/a');
         nofs.touchSync(dir + '/b');
@@ -343,7 +349,7 @@ module.exports = function (it) {
 
     it('move', function() {
         var dir, dir2;
-        dir = 'test/fixtures/dir-move';
+        dir = tempPath() + '/dir-move';
         dir2 = dir + '2';
         return nofs.copy('test/fixtures/dir', dir).then(function() {
             return nofs.move(dir, dir2);
@@ -358,7 +364,7 @@ module.exports = function (it) {
 
     it('moveSync', function() {
         var dir, dir2, ls;
-        dir = 'test/fixtures/dir-moveSync';
+        dir = tempPath() + '/dir-moveSync';
         dir2 = dir + '2';
         nofs.copySync('test/fixtures/dir', dir);
         nofs.moveSync(dir, dir2);
@@ -369,28 +375,27 @@ module.exports = function (it) {
     });
 
     it('copy move a file', function() {
-        return nofs.copy('test/fixtures/sample.txt', 'test/fixtures/copySample/sample').then(function() {
-            return nofs.move('test/fixtures/copySample/sample', 'test/fixtures/copySample2/sample');
+        var dir = tempPath();
+        return nofs.copy('test/fixtures/sample.txt', dir + '/sample.txt')
+        .then(function() {
+            return nofs.move(dir + '/sample.txt', dir + '/sample2.txt');
         }).then(function() {
-            return nofs.fileExists('test/fixtures/copySample2/sample').then(function(exists) {
-                return it.eq(exists, true);
-            });
+            return it.eq(nofs.fileExists(dir + '/sample2.txt'), true);
         });
     });
 
     it('copySync moveSync a file', function() {
-        return nofs.copy('test/fixtures/sample.txt', 'test/fixtures/copySampleSync/sample').then(function() {
-            return nofs.move('test/fixtures/copySampleSync/sample', 'test/fixtures/copySampleSync2/sample');
-        }).then(function() {
-            return nofs.fileExists('test/fixtures/copySampleSync2/sample').then(function(exists) {
-                return it.eq(exists, true);
-            });
-        });
+        var dir = tempPath();
+
+        nofs.copySync('test/fixtures/sample.txt', dir + '/sample.txt');
+        nofs.moveSync(dir + '/sample.txt', dir + '/sample2.txt');
+
+        return it.eq(nofs.fileExists(dir + '/sample2.txt'), true);
     });
 
     it('copy filter', function() {
         var dir;
-        dir = 'test/fixtures/copyFilter';
+        dir = tempPath();
         return nofs.copy('test/fixtures/dir', dir, {
             filter: function (f) {
                 return /\/b$/.test(f.path);
@@ -404,7 +409,7 @@ module.exports = function (it) {
 
     it('copySync filter', function() {
         var dir, ls;
-        dir = 'test/fixtures/copyFilterSync';
+        dir = tempPath();
         nofs.copySync('test/fixtures/dir', dir, {
             filter: function (f) {
                 return /\/b$/.test(f.path);
@@ -416,7 +421,7 @@ module.exports = function (it) {
 
     it('copy pattern filter', function() {
         var dir;
-        dir = 'test/fixtures/copyPatternFilter';
+        dir = tempPath();
         return nofs.copy('test/fixtures/dir/**', dir, {
             filter: function (f) {
                 return /\/b$/.test(f.path);
@@ -430,7 +435,7 @@ module.exports = function (it) {
 
     it('copySync pattern filter', function() {
         var dir, ls;
-        dir = 'test/fixtures/copyPatternFilterSync';
+        dir = tempPath();
         nofs.copySync('test/fixtures/dir/**', dir, {
             filter: function (f) {
                 return /\/b$/.test(f.path);
@@ -442,7 +447,7 @@ module.exports = function (it) {
 
     it('copy pattern', function() {
         var dir;
-        dir = 'test/fixtures/copyPatternFilter';
+        dir = tempPath();
         return nofs.copy('test/fixtures/dir/**/*b', dir).then(function() {
             return nofs.glob(dir + '/**');
         }).then(function(ls) {
@@ -452,34 +457,35 @@ module.exports = function (it) {
 
     it('copySync pattern', function() {
         var dir, ls;
-        dir = 'test/fixtures/copyPatternFilterSync';
+        dir = tempPath();
         nofs.copySync('test/fixtures/dir/**/*b', dir);
         ls = nofs.globSync(dir + '/**');
         return it.eq(normalizePath(ls), [dir + "/test0", dir + "/test0/b"]);
     });
 
     it('ensureFile', function() {
-        return nofs.ensureFile('test/fixtures/ensureFile').then(function() {
-            return nofs.fileExists('test/fixtures/ensureFile');
+        var path = tempPath();
+        return nofs.ensureFile(path).then(function() {
+            return nofs.fileExists(path);
         }).then(function(exists) {
             return it.eq(exists, true);
         });
     });
 
     it('ensureFileSync', function() {
-        var exists;
-        nofs.ensureFileSync('test/fixtures/ensureFileSync');
-        exists = nofs.fileExistsSync('test/fixtures/ensureFileSync');
+        var path = tempPath();
+        nofs.ensureFileSync(path);
+        var exists = nofs.fileExistsSync(path);
         return it.eq(exists, true);
     });
 
     it('touch time', function() {
-        var t;
-        t = Math.floor(Date.now() / 1000);
-        return nofs.touch('test/fixtures/touch', {
+        var t = Math.floor(Date.now() / 1000);
+        var path = tempPath();
+        return nofs.touch(path, {
             mtime: t
         }).then(function() {
-            return nofs.stat('test/fixtures/touch').then(function(stats) {
+            return nofs.stat(path).then(function(stats) {
                 return it.eq(Math.floor(stats.mtime.getTime() / 1000), t);
             });
         });
@@ -487,17 +493,19 @@ module.exports = function (it) {
 
     it('touchSync time', function() {
         var stats, t;
+        var path = tempPath();
         t = Math.floor(Date.now() / 1000);
-        nofs.touchSync('test/fixtures/touchSync', {
+        nofs.touchSync(path, {
             mtime: t
         });
-        stats = nofs.statSync('test/fixtures/touchSync');
+        stats = nofs.statSync(path);
         return it.eq(Math.floor(stats.mtime.getTime() / 1000), t);
     });
 
     it('touch create', function() {
-        return nofs.touch('test/fixtures/touchCreate').then(function() {
-            return nofs.fileExists('test/fixtures/touchCreate');
+        var path = tempPath();
+        return nofs.touch(path).then(function() {
+            return nofs.fileExists(path);
         }).then(function(exists) {
             return it.eq(exists, true);
         });
@@ -505,46 +513,52 @@ module.exports = function (it) {
 
     it('touchSync create', function() {
         var exists;
-        nofs.touchSync('test/fixtures/touchCreate');
-        exists = nofs.fileExistsSync('test/fixtures/touchCreate');
+        var path = tempPath();
+        nofs.touchSync(path);
+        exists = nofs.fileExistsSync(path);
         return it.eq(exists, true);
     });
 
     it('outputFile', function() {
-        return nofs.outputFile('test/fixtures/out/put/file', 'ok').then(function() {
-            return nofs.readFile('test/fixtures/out/put/file', 'utf8');
+        var path = tempPath() + '/out/out/put/file'
+        return nofs.outputFile(path, 'ok').then(function() {
+            return nofs.readFile(path, 'utf8');
         }).then(function(str) {
             return it.eq(str, 'ok');
         });
     });
 
     it('outputFileSync', function() {
+        var path = tempPath() + '/out/out/put/file'
         var str;
-        nofs.outputFileSync('test/fixtures/out/put/file', 'ok');
-        str = nofs.readFileSync('test/fixtures/out/put/file', 'utf8');
+        nofs.outputFileSync(path, 'ok');
+        str = nofs.readFileSync(path, 'utf8');
         return it.eq(str, 'ok');
     });
 
     it('mkdirs', function() {
-        return nofs.mkdirs('test/fixtures/make/dir/s').then(function() {
-            return nofs.dirExists('test/fixtures/make/dir/s');
+        var path = tempPath() + '/deep/deep/path/'
+        return nofs.mkdirs(path).then(function() {
+            return nofs.dirExists(path);
         }).then(function(exists) {
             return it.eq(exists, true);
         });
     });
 
     it('mkdirsSync', function() {
+        var path = tempPath() + '/deep/deep/path/'
         var exists;
-        nofs.mkdirsSync('test/fixtures/make/dir/s');
-        exists = nofs.dirExistsSync('test/fixtures/make/dir/s');
+        nofs.mkdirsSync(path);
+        exists = nofs.dirExistsSync(path);
         return it.eq(exists, true);
     });
 
     it('outputJson readJson', function() {
-        return nofs.outputJson('test/fixtures/json/json.json', {
+        var path = tempPath() + '/out/out/put/file.json'
+        return nofs.outputJson(path, {
             val: 'test'
         }).then(function() {
-            return nofs.readJson('test/fixtures/json/json.json').then(function(obj) {
+            return nofs.readJson(path).then(function(obj) {
                 return it.eq(obj, {
                     val: 'test'
                 });
@@ -552,9 +566,22 @@ module.exports = function (it) {
         });
     });
 
+    it('outputJsonSync readJsonSync', function() {
+        var path = tempPath() + '/out/out/put/file.json'
+
+        nofs.outputJsonSync(path, {
+            val: 'test'
+        });
+
+        return it.eq(nofs.readJsonSync(path), {
+            val: 'test'
+        });
+    });
+
     it('alias', function() {
-        return nofs.createFile('test/fixtures/alias/file/path').then(function() {
-            return nofs.fileExists('test/fixtures/alias/file/path');
+        var path = tempPath() +  '/alias/file/path';
+        return nofs.createFile(path).then(function() {
+            return nofs.fileExists(path);
         }).then(function(exists) {
             return it.eq(exists, true);
         });
@@ -642,7 +669,7 @@ module.exports = function (it) {
 
     it('watchPath', function() {
         var path;
-        path = 'test/fixtures/watchFileTmpwatchPath.txt';
+        path = tempPath() + '/file.txt';
         return new Promise(function(resolve) {
             nofs.copySync('test/fixtures/watchFile.txt', path);
             nofs.watchPath(path, {
@@ -662,9 +689,9 @@ module.exports = function (it) {
     });
 
     it('watchFiles', function() {
-        var tmp = 'test/fixtures/watchFiles';
+        var tmp = tempPath();
         var tmpFile = tmp + '/a';
-        var pattern = 'test/fixtures/watchFiles/**';
+        var pattern = tmp + '/**';
         return new Promise(function(resolve) {
             nofs.copySync('test/fixtures/watchDir', tmp);
             nofs.watchFiles(pattern, {
@@ -692,7 +719,7 @@ module.exports = function (it) {
 
     it('watchDir modify', function() {
         var tmp;
-        tmp = 'test/fixtures/watchDirModify';
+        tmp = tempPath();
         return new Promise(function(resolve) {
             nofs.copySync('test/fixtures/watchDir', tmp);
             nofs.watchDir(tmp, {
@@ -725,7 +752,7 @@ module.exports = function (it) {
 
     it('watchDir create', function() {
         var tmp;
-        tmp = 'test/fixtures/watchDirCreate';
+        tmp = tempPath();
         return new Promise(function(resolve) {
             nofs.copySync('test/fixtures/watchDir', tmp);
             nofs.watchDir(tmp, {
@@ -761,7 +788,7 @@ module.exports = function (it) {
 
     it('watchDir delete', function() {
         var tmp;
-        tmp = 'test/fixtures/watchDirDelete';
+        tmp = tempPath();
         return new Promise(function(resolve) {
             nofs.copySync('test/fixtures/watchDir', tmp);
             nofs.watchDir(tmp, {

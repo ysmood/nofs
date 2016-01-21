@@ -1232,11 +1232,10 @@ nofs = _.extend({}, {
         });
         moveFile = function(src, dest) {
             if (opts.isForce) {
-                return fs.renameSync(src, dest);
+                fs.renameSync(src, dest);
             } else {
-                return fs.linkSync(src, dest).then(function() {
-                    return fs.unlinkSync(src);
-                });
+                fs.linkSync(src, dest)
+                fs.unlinkSync(src);
             }
         };
         try {
