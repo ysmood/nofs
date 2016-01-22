@@ -398,7 +398,7 @@ module.exports = function (it) {
         dir = tempPath();
         return nofs.copy('test/fixtures/dir', dir, {
             filter: function (f) {
-                return /\/b$/.test(f.path);
+                return /b$/.test(f.path);
             }
         }).then(function() {
             return nofs.glob(dir + '/**');
@@ -412,7 +412,7 @@ module.exports = function (it) {
         dir = tempPath();
         nofs.copySync('test/fixtures/dir', dir, {
             filter: function (f) {
-                return /\/b$/.test(f.path);
+                return /b$/.test(f.path);
             }
         });
         ls = nofs.globSync(dir + '/**');
@@ -424,7 +424,7 @@ module.exports = function (it) {
         dir = tempPath();
         return nofs.copy('test/fixtures/dir/**', dir, {
             filter: function (f) {
-                return /\/b$/.test(f.path);
+                return /b$/.test(f.path);
             }
         }).then(function() {
             return nofs.glob(dir + '/**');
@@ -438,7 +438,7 @@ module.exports = function (it) {
         dir = tempPath();
         nofs.copySync('test/fixtures/dir/**', dir, {
             filter: function (f) {
-                return /\/b$/.test(f.path);
+                return /b$/.test(f.path);
             }
         });
         ls = nofs.globSync(dir + '/**');
