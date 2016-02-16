@@ -1737,7 +1737,7 @@ nofs = _.extend({}, {
          * @param  {Object} opts Defaults:
          * ```js
          * {
-         *     handler: (type, path, oldPath, stats) => {},
+         *     handler: (type, path, oldPath, stats, oldStats) => {},
          *
          *     patterns: '**', // minimatch, string or array
          *
@@ -1757,8 +1757,8 @@ nofs = _.extend({}, {
          * // Only current folder, and only watch js and css file.
          * nofs.watchDir('lib', {
          *  pattern: '*.+(js|css)',
-         *  handler: (type, path, oldPath, stats) =>
-         *      console.log(type, path, stats.isDirectory())
+         *  handler: (type, path, oldPath, stats, oldStats) =>
+         *      console.log(type, path, stats.isDirectory(), oldStats.isDirectory())
          * });
          * ```
      */
@@ -1808,10 +1808,10 @@ nofs = _.extend({}, {
 
         fileHandler = function(path, curr, prev, isDelete) {
             if (isDelete) {
-                opts.handler('delete', path, null, curr);
+                opts.handler('delete', path, null, curr, prev);
                 return delete watchedList[path];
             } else {
-                return opts.handler('modify', path, null, curr);
+                return opts.handler('modify', path, null, curr, prev);
             }
         };
 
@@ -1823,7 +1823,7 @@ nofs = _.extend({}, {
             // 4.   move event: file delete -> parent modify -> file create.
 
             if (isDelete) {
-                opts.handler('delete', dir, null, curr);
+                opts.handler('delete', dir, null, curr, prev);
                 delete watchedList[dir];
                 return;
             }

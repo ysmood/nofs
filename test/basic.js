@@ -819,4 +819,41 @@ module.exports = function (it) {
             return results;
         });
     });
+
+    it('watchDir delete dir', function() {
+        var tmp;
+        tmp = tempPath();
+        return new Promise(function(resolve) {
+            nofs.copySync('test/fixtures/watchDir', tmp);
+            nofs.watchDir(tmp, {
+                patterns: ['**', '!a'],
+                handler: function(type, path, oldPath, stats, oldStats) {
+                    return resolve(it.eq({
+                        type: type,
+                        path: normalizePath(path),
+                        isDirectory: false,
+                        isOldDirectory: true
+                    }, {
+                        type: 'delete',
+                        path: tmp + '/dir0',
+                        isDirectory: stats.isDirectory(),
+                        isOldDirectory: oldStats.isDirectory()
+                    }));
+                }
+            });
+            return wait().then(function() {
+                nofs.removeSync(tmp + '/dir0');
+            });
+        }).then(function() {
+            var i, len, path, ref, results;
+            nofs.unwatchFile(tmp);
+            ref = nofs.globSync(tmp + '/**');
+            results = [];
+            for (i = 0, len = ref.length; i < len; i++) {
+                path = ref[i];
+                results.push(nofs.unwatchFile(path));
+            }
+            return results;
+        });
+    });
 };
