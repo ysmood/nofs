@@ -861,7 +861,7 @@ __No native `fs` funtion will be listed.__
         Defaults:
         ```js
         {
-            handler: (type, path, oldPath, stats) => {},
+            handler: (type, path, oldPath, stats, oldStats) => {},
 
             patterns: '**', // minimatch, string or array
 
@@ -886,8 +886,8 @@ __No native `fs` funtion will be listed.__
         // Only current folder, and only watch js and css file.
         nofs.watchDir('lib', {
          pattern: '*.+(js|css)',
-         handler: (type, path, oldPath, stats) =>
-             console.log(type, path, stats.isDirectory())
+         handler: (type, path, oldPath, stats, oldStats) =>
+             console.log(type, path, stats.isDirectory(), oldStats.isDirectory())
         });
         ```
 

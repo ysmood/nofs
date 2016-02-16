@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.11
+
+  - add: watchDir oldStats
+
 - v0.10.10
 
   - fix: a copy self bug
