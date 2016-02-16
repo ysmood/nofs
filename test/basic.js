@@ -828,6 +828,8 @@ module.exports = function (it) {
             nofs.watchDir(tmp, {
                 patterns: ['**', '!a'],
                 handler: function(type, path, oldPath, stats, oldStats) {
+                    if (kit._.endsWith(path, 'c')) return;
+
                     return resolve(it.eq({
                         type: type,
                         path: normalizePath(path),
