@@ -43,17 +43,17 @@ fs.exists = function(path, fn) {
 nofs = _.extend({}, {
 
     /**
-         * Copy an empty directory.
-         * @param  {String} src
-         * @param  {String} dest
-         * @param  {Object} opts
-         * ```js
-         * {
-         *     isForce: false,
-         *     mode: auto
-         * }
-         * ```
-         * @return {Promise}
+     * Copy an empty directory.
+     * @param  {String} src
+     * @param  {String} dest
+     * @param  {Object} opts
+     * ```js
+     * {
+     *     isForce: false,
+     *     mode: auto
+     * }
+     * ```
+     * @return {Promise}
      */
     copyDir: function(src, dest, opts) {
         var copy;
@@ -123,17 +123,17 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Copy a single file.
-         * @param  {String} src
-         * @param  {String} dest
-         * @param  {Object} opts
-         * ```js
-         * {
-         *     isForce: false,
-         *     mode: auto
-         * }
-         * ```
-         * @return {Promise}
+     * Copy a single file.
+     * @param  {String} src
+     * @param  {String} dest
+     * @param  {Object} opts
+     * ```js
+     * {
+     *     isForce: false,
+     *     mode: auto
+     * }
+     * ```
+     * @return {Promise}
      */
     copyFile: function(src, dest, opts) {
         var copy, copyFile;
@@ -239,32 +239,32 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Like `cp -r`.
-         * @param  {String} from Source path.
-         * @param  {String} to Destination path.
-         * @param  {Object} opts Extends the options of [eachDir](#eachDir-opts).
-         * Defaults:
-         * ```js
-         * {
-         *     // Overwrite file if exists.
-         *     isForce: false,
-         *     isIterFileOnly: false
-         *
-         *     filter: (fileInfo) => true
-         * }
-         * ```
-         * @return {Promise}
-         * @example
-         * Copy the contents of the directory rather than copy the directory itself.
-         * ```js
-         * nofs.copy('dir/path/**', 'dest/path');
-         *
-         * nofs.copy('dir/path', 'dest/path', {
-         *     filter: (fileInfo) => {
-         *         return /\d+/.test(fileInfo.path);
-         *     }
-         * });
-         * ```
+     * Like `cp -r`.
+     * @param  {String} from Source path.
+     * @param  {String} to Destination path.
+     * @param  {Object} opts Extends the options of [eachDir](#eachDir-opts).
+     * Defaults:
+     * ```js
+     * {
+     *     // Overwrite file if exists.
+     *     isForce: false,
+     *     isIterFileOnly: false
+     *
+     *     filter: (fileInfo) => true
+     * }
+     * ```
+     * @return {Promise}
+     * @example
+     * Copy the contents of the directory rather than copy the directory itself.
+     * ```js
+     * nofs.copy('dir/path/**', 'dest/path');
+     *
+     * nofs.copy('dir/path', 'dest/path', {
+     *     filter: (fileInfo) => {
+     *         return /\d+/.test(fileInfo.path);
+     *     }
+     * });
+     * ```
      */
     copy: function(from, to, opts) {
         var flags, pm, filter;
@@ -385,9 +385,9 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Check if a path exists, and if it is a directory.
-         * @param  {String}  path
-         * @return {Promise} Resolves a boolean value.
+     * Check if a path exists, and if it is a directory.
+     * @param  {String}  path
+     * @return {Promise} Resolves a boolean value.
      */
     dirExists: function(path) {
         return fs.stat(path).then(function(stats) {
@@ -405,132 +405,132 @@ nofs = _.extend({}, {
     },
 
     /**
-         * <a name='eachDir'></a>
-         * Concurrently walks through a path recursively with a callback.
-         * The callback can return a Promise to continue the sequence.
-         * The resolving order is also recursive, a directory path resolves
-         * after all its children are resolved.
-         * @param  {String} spath The path may point to a directory or a file.
-         * @param  {Object} opts Optional. <a id='eachDir-opts'></a> Defaults:
-         * ```js
-         * {
-         *     // Callback on each path iteration.
-         *     iter: (fileInfo) => Promise | Any,
-         *
-         *     // Auto check if the spath is a minimatch pattern.
-         *     isAutoPmatch: true,
-         *
-         *     // Include entries whose names begin with a dot (.), the posix hidden files.
-         *     all: true,
-         *
-         *     // To filter paths. It can also be a RegExp or a glob pattern string.
-         *     // When it's a string, it extends the Minimatch's options.
-         *     filter: (fileInfo) => true,
-         *
-         *     // The current working directory to search.
-         *     cwd: '',
-         *
-         *     // Call iter only when it is a file.
-         *     isIterFileOnly: false,
-         *
-         *     // Whether to include the root directory or not.
-         *     isIncludeRoot: true,
-         *
-         *     // Whehter to follow symbol links or not.
-         *     isFollowLink: true,
-         *
-         *     // Iterate children first, then parent folder.
-         *     isReverse: false,
-         *
-         *     // When isReverse is false, it will be the previous iter resolve value.
-         *     val: any,
-         *
-         *     // If it return false, sub-entries won't be searched.
-         *     // When the `filter` option returns false, its children will
-         *     // still be itered. But when `searchFilter` returns false, children
-         *     // won't be itered by the iter.
-         *     searchFilter: (fileInfo) => true,
-         *
-         *     // If you want sort the names of each level, you can hack here.
-         *     // Such as `(names) => names.sort()`.
-         *     handleNames: (names) => names
-         * }
-         * ```
-         * The argument of `opts.iter`, `fileInfo` object has these properties:
-         * ```js
-         * {
-         *     path: String,
-         *     name: String,
-         *     baseDir: String,
-         *     isDir: Boolean,
-         *     children: [fileInfo],
-         *     stats: fs.Stats,
-         *     val: Any
-         * }
-         * ```
-         * Assume we call the function: `nofs.eachDir('dir', { iter: (f) => f })`,
-         * the resolved directory object array may look like:
-         * ```js
-         * {
-         *     path: 'some/dir/path',
-         *     name: 'path',
-         *     baseDir: 'some/dir',
-         *     isDir: true,
-         *     val: 'test',
-         *     children: [
-         *         {
-         *             path: 'some/dir/path/a.txt', name: 'a.txt',
-         *             baseDir: 'dir', isDir: false, stats: { ... }
-         *         },
-         *         { path: 'some/dir/path/b.txt', name: 'b.txt', ... }
-         *     ],
-         *     stats: {
-         *         size: 527,
-         *         atime: 'Mon, 10 Oct 2011 23:24:11 GMT',
-         *         mtime: 'Mon, 10 Oct 2011 23:24:11 GMT',
-         *         ctime: 'Mon, 10 Oct 2011 23:24:11 GMT'
-         *         ...
-         *     }
-         * }
-         * ```
-         * The `stats` is a native `fs.Stats` object.
-         * @return {Promise} Resolves a directory tree object.
-         * @example
-         * ```js
-         * // Print all file and directory names, and the modification time.
-         * nofs.eachDir('dir/path', {
-         *     iter: (obj, stats) =>
-         *         console.log(obj.path, stats.mtime)
-         * });
-         *
-         * // Print path name list.
-         * nofs.eachDir('dir/path', { iter: (curr) => curr })
-         * .then((tree) =>
-         *     console.log(tree)
-         * );
-         *
-         * // Find all js files.
-         * nofs.eachDir('dir/path', {
-         *     filter: '**\/*.js',
-         *     iter: ({ path }) =>
-         *         console.log(paths)
-         * });
-         *
-         * // Find all js files.
-         * nofs.eachDir('dir/path', {
-         *     filter: /\.js$/,
-         *     iter: ({ path }) =>
-         *         console.log(paths)
-         * });
-         *
-         * // Custom filter.
-         * nofs.eachDir('dir/path', {
-         *     filter: ({ path, stats }) =>
-         *         path.slice(-1) != '/' && stats.size > 1000
-         *     iter: (path) =>
-         *         console.log(path)
-         * });
-         * ```
+     * <a name='eachDir'></a>
+     * Concurrently walks through a path recursively with a callback.
+     * The callback can return a Promise to continue the sequence.
+     * The resolving order is also recursive, a directory path resolves
+     * after all its children are resolved.
+     * @param  {String} spath The path may point to a directory or a file.
+     * @param  {Object} opts Optional. <a id='eachDir-opts'></a> Defaults:
+     * ```js
+     * {
+     *     // Callback on each path iteration.
+     *     iter: (fileInfo) => Promise | Any,
+     *
+     *     // Auto check if the spath is a minimatch pattern.
+     *     isAutoPmatch: true,
+     *
+     *     // Include entries whose names begin with a dot (.), the posix hidden files.
+     *     all: true,
+     *
+     *     // To filter paths. It can also be a RegExp or a glob pattern string.
+     *     // When it's a string, it extends the Minimatch's options.
+     *     filter: (fileInfo) => true,
+     *
+     *     // The current working directory to search.
+     *     cwd: '',
+     *
+     *     // Call iter only when it is a file.
+     *     isIterFileOnly: false,
+     *
+     *     // Whether to include the root directory or not.
+     *     isIncludeRoot: true,
+     *
+     *     // Whehter to follow symbol links or not.
+     *     isFollowLink: true,
+     *
+     *     // Iterate children first, then parent folder.
+     *     isReverse: false,
+     *
+     *     // When isReverse is false, it will be the previous iter resolve value.
+     *     val: any,
+     *
+     *     // If it return false, sub-entries won't be searched.
+     *     // When the `filter` option returns false, its children will
+     *     // still be itered. But when `searchFilter` returns false, children
+     *     // won't be itered by the iter.
+     *     searchFilter: (fileInfo) => true,
+     *
+     *     // If you want sort the names of each level, you can hack here.
+     *     // Such as `(names) => names.sort()`.
+     *     handleNames: (names) => names
+     * }
+     * ```
+     * The argument of `opts.iter`, `fileInfo` object has these properties:
+     * ```js
+     * {
+     *     path: String,
+     *     name: String,
+     *     baseDir: String,
+     *     isDir: Boolean,
+     *     children: [fileInfo],
+     *     stats: fs.Stats,
+     *     val: Any
+     * }
+     * ```
+     * Assume we call the function: `nofs.eachDir('dir', { iter: (f) => f })`,
+     * the resolved directory object array may look like:
+     * ```js
+     * {
+     *     path: 'some/dir/path',
+     *     name: 'path',
+     *     baseDir: 'some/dir',
+     *     isDir: true,
+     *     val: 'test',
+     *     children: [
+     *         {
+     *             path: 'some/dir/path/a.txt', name: 'a.txt',
+     *             baseDir: 'dir', isDir: false, stats: { ... }
+     *         },
+     *         { path: 'some/dir/path/b.txt', name: 'b.txt', ... }
+     *     ],
+     *     stats: {
+     *         size: 527,
+     *         atime: 'Mon, 10 Oct 2011 23:24:11 GMT',
+     *         mtime: 'Mon, 10 Oct 2011 23:24:11 GMT',
+     *         ctime: 'Mon, 10 Oct 2011 23:24:11 GMT'
+     *         ...
+     *     }
+     * }
+     * ```
+     * The `stats` is a native `fs.Stats` object.
+     * @return {Promise} Resolves a directory tree object.
+     * @example
+     * ```js
+     * // Print all file and directory names, and the modification time.
+     * nofs.eachDir('dir/path', {
+     *     iter: (obj, stats) =>
+     *         console.log(obj.path, stats.mtime)
+     * });
+     *
+     * // Print path name list.
+     * nofs.eachDir('dir/path', { iter: (curr) => curr })
+     * .then((tree) =>
+     *     console.log(tree)
+     * );
+     *
+     * // Find all js files.
+     * nofs.eachDir('dir/path', {
+     *     filter: '**\/*.js',
+     *     iter: ({ path }) =>
+     *         console.log(paths)
+     * });
+     *
+     * // Find all js files.
+     * nofs.eachDir('dir/path', {
+     *     filter: /\.js$/,
+     *     iter: ({ path }) =>
+     *         console.log(paths)
+     * });
+     *
+     * // Custom filter.
+     * nofs.eachDir('dir/path', {
+     *     filter: ({ path, stats }) =>
+     *         path.slice(-1) != '/' && stats.size > 1000
+     *     iter: (path) =>
+     *         console.log(path)
+     * });
+     * ```
      */
     eachDir: function(spath, opts) {
         var decideNext, execFn, handleFilter, handleSpath, raceResolver, readdir, resolve, stat;
@@ -841,13 +841,13 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Ensures that the file exists.
-         * Change file access and modification times.
-         * If the file does not exist, it is created.
-         * If the file exists, it is NOT MODIFIED.
-         * @param  {String} path
-         * @param  {Object} opts
-         * @return {Promise}
+     * Ensures that the file exists.
+     * Change file access and modification times.
+     * If the file does not exist, it is created.
+     * If the file exists, it is NOT MODIFIED.
+     * @param  {String} path
+     * @param  {Object} opts
+     * @return {Promise}
      */
     ensureFile: function(path, opts) {
         if (opts == null) {
@@ -871,9 +871,9 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Check if a path exists, and if it is a file.
-         * @param  {String}  path
-         * @return {Promise} Resolves a boolean value.
+     * Check if a path exists, and if it is a file.
+     * @param  {String}  path
+     * @return {Promise} Resolves a boolean value.
      */
     fileExists: function(path) {
         return fs.stat(path).then(function(stats) {
@@ -891,46 +891,46 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Get files by patterns.
-         * @param  {String | Array} pattern The minimatch pattern.
-         * Patterns that starts with '!' in the array will be used
-         * to exclude paths.
-         * @param {Object} opts Extends the options of [eachDir](#eachDir-opts).
-         * **The `filter` property is fixed with the pattern, use `iter` instead**.
-         * Defaults:
-         * ```js
-         * {
-         *     all: false,
-         *
-         *     // The minimatch option object.
-         *     pmatch: {},
-         *
-         *     // It will be called after each match. It can also return
-         *     // a promise.
-         *     iter: (fileInfo, list) => list.push(fileInfo.path)
-         * }
-         * ```
-         * @return {Promise} Resolves the list array.
-         * @example
-         * ```js
-         * // Get all js files.
-         * nofs.glob(['**\/*.js', '**\/*.css']).then((paths) =>
-         *     console.log(paths)
-         * );
-         *
-         * // Exclude some files. "a.js" will be ignored.
-         * nofs.glob(['**\/*.js', '!**\/a.js']).then((paths) =>
-         *     console.log(paths)
-         * );
-         *
-         * // Custom the iterator. Append '/' to each directory path.
-         * nofs.glob('**\/*.js', {
-         *     iter: (info, list) =>
-         *         list.push(info.isDir ? (info.path + '/') : info.path
-         * }).then((paths) =>
-         *     console.log(paths)
-         * );
-         * ```
+     * Get files by patterns.
+     * @param  {String | Array} pattern The minimatch pattern.
+     * Patterns that starts with '!' in the array will be used
+     * to exclude paths.
+     * @param {Object} opts Extends the options of [eachDir](#eachDir-opts).
+     * **The `filter` property is fixed with the pattern, use `iter` instead**.
+     * Defaults:
+     * ```js
+     * {
+     *     all: false,
+     *
+     *     // The minimatch option object.
+     *     pmatch: {},
+     *
+     *     // It will be called after each match. It can also return
+     *     // a promise.
+     *     iter: (fileInfo, list) => list.push(fileInfo.path)
+     * }
+     * ```
+     * @return {Promise} Resolves the list array.
+     * @example
+     * ```js
+     * // Get all js files.
+     * nofs.glob(['**\/*.js', '**\/*.css']).then((paths) =>
+     *     console.log(paths)
+     * );
+     *
+     * // Exclude some files. "a.js" will be ignored.
+     * nofs.glob(['**\/*.js', '!**\/a.js']).then((paths) =>
+     *     console.log(paths)
+     * );
+     *
+     * // Custom the iterator. Append '/' to each directory path.
+     * nofs.glob('**\/*.js', {
+     *     iter: (info, list) =>
+     *         list.push(info.isDir ? (info.path + '/') : info.path
+     * }).then((paths) =>
+     *     console.log(paths)
+     * );
+     * ```
      */
     glob: function(patterns, opts) {
         var glob, iter, list, negateMath, pmatches, ref;
@@ -1036,34 +1036,34 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Map file from a directory to another recursively with a
-         * callback.
-         * @param  {String}   from The root directory to start with.
-         * @param  {String}   to This directory can be a non-exists path.
-         * @param  {Object}   opts Extends the options of [eachDir](#eachDir-opts). But `cwd` is
-         * fixed with the same as the `from` parameter. Defaults:
-         * ```js
-         * {
-         *     // It will be called with each path. The callback can return
-         *     // a `Promise` to keep the async sequence go on.
-         *     iter: (src, dest, fileInfo) => Promise | Any,
-         *
-         *     isIterFileOnly: true
-         * }
-         * ```
-         * @return {Promise} Resolves a tree object.
-         * @example
-         * ```js
-         * // Copy and add license header for each files
-         * // from a folder to another.
-         * nofs.mapDir('from', 'to', {
-         *     iter: (src, dest) =>
-         *         nofs.readFile(src).then((buf) => {
-         *             buf += 'License MIT\n' + buf;
-         *             return nofs.outputFile(dest, buf);
-         *         })
-         * });
-         * ```
+     * Map file from a directory to another recursively with a
+     * callback.
+     * @param  {String}   from The root directory to start with.
+     * @param  {String}   to This directory can be a non-exists path.
+     * @param  {Object}   opts Extends the options of [eachDir](#eachDir-opts). But `cwd` is
+     * fixed with the same as the `from` parameter. Defaults:
+     * ```js
+     * {
+     *     // It will be called with each path. The callback can return
+     *     // a `Promise` to keep the async sequence go on.
+     *     iter: (src, dest, fileInfo) => Promise | Any,
+     *
+     *     isIterFileOnly: true
+     * }
+     * ```
+     * @return {Promise} Resolves a tree object.
+     * @example
+     * ```js
+     * // Copy and add license header for each files
+     * // from a folder to another.
+     * nofs.mapDir('from', 'to', {
+     *     iter: (src, dest) =>
+     *         nofs.readFile(src).then((buf) => {
+     *             buf += 'License MIT\n' + buf;
+     *             return nofs.outputFile(dest, buf);
+     *         })
+     * });
+     * ```
      */
     mapDir: function(from, to, opts) {
         var iter, pm;
@@ -1113,10 +1113,10 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Recursively create directory path, like `mkdir -p`.
-         * @param  {String} path
-         * @param  {String} mode Defaults: `0o777 & ~process.umask()`
-         * @return {Promise}
+     * Recursively create directory path, like `mkdir -p`.
+     * @param  {String} path
+     * @param  {String} mode Defaults: `0o777 & ~process.umask()`
+     * @return {Promise}
      */
     mkdirs: function(path, mode) {
         var makedir;
@@ -1165,19 +1165,19 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Moves a file or directory. Also works between partitions.
-         * Behaves like the Unix `mv`.
-         * @param  {String} from Source path.
-         * @param  {String} to   Destination path.
-         * @param  {Object} opts Defaults:
-         * ```js
-         * {
-         *     isForce: false,
-         *     isFollowLink: false
-         * }
-         * ```
-         * @return {Promise} It will resolve a boolean value which indicates
-         * whether this action is taken between two partitions.
+     * Moves a file or directory. Also works between partitions.
+     * Behaves like the Unix `mv`.
+     * @param  {String} from Source path.
+     * @param  {String} to   Destination path.
+     * @param  {Object} opts Defaults:
+     * ```js
+     * {
+     *     isForce: false,
+     *     isFollowLink: false
+     * }
+     * ```
+     * @return {Promise} It will resolve a boolean value which indicates
+     * whether this action is taken between two partitions.
      */
     move: function(from, to, opts) {
         var moveFile;
@@ -1263,13 +1263,13 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Almost the same as `writeFile`, except that if its parent
-         * directories do not exist, they will be created.
-         * @param  {String} path
-         * @param  {String | Buffer} data
-         * @param  {String | Object} opts <a id="outputFile-opts"></a>
-         * Same with the [writeFile](#writeFile-opts).
-         * @return {Promise}
+     * Almost the same as `writeFile`, except that if its parent
+     * directories do not exist, they will be created.
+     * @param  {String} path
+     * @param  {String | Buffer} data
+     * @param  {String | Object} opts <a id="outputFile-opts"></a>
+     * Same with the [writeFile](#writeFile-opts).
+     * @return {Promise}
      */
     outputFile: function(path, data, opts) {
         if (opts == null) {
@@ -1302,19 +1302,19 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Write a object to a file, if its parent directory doesn't
-         * exists, it will be created.
-         * @param  {String} path
-         * @param  {Any} obj  The data object to save.
-         * @param  {Object | String} opts Extends the options of [outputFile](#outputFile-opts).
-         * Defaults:
-         * ```js
-         * {
-         *     replacer: null,
-         *     space: null
-         * }
-         * ```
-         * @return {Promise}
+     * Write a object to a file, if its parent directory doesn't
+     * exists, it will be created.
+     * @param  {String} path
+     * @param  {Any} obj  The data object to save.
+     * @param  {Object | String} opts Extends the options of [outputFile](#outputFile-opts).
+     * Defaults:
+     * ```js
+     * {
+     *     replacer: null,
+     *     space: null
+     * }
+     * ```
+     * @return {Promise}
      */
     outputJson: function(path, obj, opts) {
         var err, error, str;
@@ -1351,61 +1351,61 @@ nofs = _.extend({}, {
     },
 
     /**
-         * The path module nofs is using.
-         * It's the native [io.js](iojs.org) path lib.
-         * nofs will force all the path separators to `/`,
-         * such as `C:\a\b` will be transformed to `C:/a/b`.
-         * @type {Object}
+     * The path module nofs is using.
+     * It's the native [io.js](iojs.org) path lib.
+     * nofs will force all the path separators to `/`,
+     * such as `C:\a\b` will be transformed to `C:/a/b`.
+     * @type {Object}
      */
     path: npath,
 
     /**
-         * The `minimatch` lib. It has two extra methods:
-         * - `isPmatch(String | Object) -> Pmatch | undefined`
-         *     It helps to detect if a string or an object is a minimatch.
-         *
-         * - `getPlainPath(Pmatch) -> String`
-         *     Helps to get the plain root path of a pattern. Such as `src/js/*.js`
-         *     will get `src/js`
-         *
-         * [Documentation](https://github.com/isaacs/minimatch)
-         *
-         * [Offline Documentation](?gotoDoc=minimatch/readme.md)
-         * @example
-         * ```js
-         * nofs.pmatch('a/b/c.js', '**\/*.js');
-         * // output => true
-         * nofs.pmatch.isPmatch('test*');
-         * // output => true
-         * nofs.pmatch.isPmatch('test/b');
-         * // output => false
-         * ```
+     * The `minimatch` lib. It has two extra methods:
+     * - `isPmatch(String | Object) -> Pmatch | undefined`
+     *     It helps to detect if a string or an object is a minimatch.
+     *
+     * - `getPlainPath(Pmatch) -> String`
+     *     Helps to get the plain root path of a pattern. Such as `src/js/*.js`
+     *     will get `src/js`
+     *
+     * [Documentation](https://github.com/isaacs/minimatch)
+     *
+     * [Offline Documentation](?gotoDoc=minimatch/readme.md)
+     * @example
+     * ```js
+     * nofs.pmatch('a/b/c.js', '**\/*.js');
+     * // output => true
+     * nofs.pmatch.isPmatch('test*');
+     * // output => true
+     * nofs.pmatch.isPmatch('test/b');
+     * // output => false
+     * ```
      */
     pmatch: require('./pmatch'),
 
     /**
-         * What promise this lib is using.
-         * @type {Promise}
+     * What promise this lib is using.
+     * @type {Promise}
      */
     Promise: Promise,
 
     /**
-         * Same as the [`yaku/lib/utils`](https://github.com/ysmood/yaku#utils).
-         * @type {Object}
+     * Same as the [`yaku/lib/utils`](https://github.com/ysmood/yaku#utils).
+     * @type {Object}
      */
     PromiseUtils: _.PromiseUtils,
 
     /**
-         * Read A Json file and parse it to a object.
-         * @param  {String} path
-         * @param  {Object | String} opts Same with the native `nofs.readFile`.
-         * @return {Promise} Resolves a parsed object.
-         * @example
-         * ```js
-         * nofs.readJson('a.json').then((obj) =>
-         *     console.log(obj.name, obj.age)
-         * );
-         * ```
+     * Read A Json file and parse it to a object.
+     * @param  {String} path
+     * @param  {Object | String} opts Same with the native `nofs.readFile`.
+     * @return {Promise} Resolves a parsed object.
+     * @example
+     * ```js
+     * nofs.readJson('a.json').then((obj) =>
+     *     console.log(obj.name, obj.age)
+     * );
+     * ```
      */
     readJson: function(path, opts) {
         if (opts == null) {
@@ -1431,34 +1431,34 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Walk through directory recursively with a iterator.
-         * @param  {String}   path
-         * @param  {Object}   opts Extends the options of [eachDir](#eachDir-opts),
-         * with some extra options:
-         * ```js
-         * {
-         *     iter: (prev, path, isDir, stats) -> Promise | Any,
-         *
-         *     // The init value of the walk.
-         *     init: undefined,
-         *
-         *     isIterFileOnly: true
-         * }
-         * ```
-         * @return {Promise} Final resolved value.
-         * @example
-         * ```js
-         * // Concat all files.
-         * nofs.reduceDir('dir/path', {
-         *     init: '',
-         *     iter: (val, { path }) =>
-         *         nofs.readFile(path).then((str) =>
-         *             val += str + '\n'
-         *         )
-         * }).then((ret) =>
-         *     console.log(ret)
-         * );
-         * ```
+     * Walk through directory recursively with a iterator.
+     * @param  {String}   path
+     * @param  {Object}   opts Extends the options of [eachDir](#eachDir-opts),
+     * with some extra options:
+     * ```js
+     * {
+     *     iter: (prev, path, isDir, stats) -> Promise | Any,
+     *
+     *     // The init value of the walk.
+     *     init: undefined,
+     *
+     *     isIterFileOnly: true
+     * }
+     * ```
+     * @return {Promise} Final resolved value.
+     * @example
+     * ```js
+     * // Concat all files.
+     * nofs.reduceDir('dir/path', {
+     *     init: '',
+     *     iter: (val, { path }) =>
+     *         nofs.readFile(path).then((str) =>
+     *             val += str + '\n'
+     *         )
+     * }).then((ret) =>
+     *     console.log(ret)
+     * );
+     * ```
      */
     reduceDir: function(path, opts) {
         var iter, prev;
@@ -1500,14 +1500,14 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Remove a file or directory peacefully, same with the `rm -rf`.
-         * @param  {String} path
-         * @param {Object} opts Extends the options of [eachDir](#eachDir-opts). But
-         * the `isReverse` is fixed with `true`. Defaults:
-         * ```js
-         * { isFollowLink: false }
-         * ```
-         * @return {Promise}
+     * Remove a file or directory peacefully, same with the `rm -rf`.
+     * @param  {String} path
+     * @param {Object} opts Extends the options of [eachDir](#eachDir-opts). But
+     * the `isReverse` is fixed with `true`. Defaults:
+     * ```js
+     * { isFollowLink: false }
+     * ```
+     * @return {Promise}
      */
     remove: function(path, opts) {
         var removeOpts;
@@ -1590,18 +1590,18 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Change file access and modification times.
-         * If the file does not exist, it is created.
-         * @param  {String} path
-         * @param  {Object} opts Default:
-         * ```js
-         * {
-         *     atime: Date.now(),
-         *     mtime: Date.now(),
-         *     mode: undefined
-         * }
-         * ```
-         * @return {Promise} If new file created, resolves true.
+     * Change file access and modification times.
+     * If the file does not exist, it is created.
+     * @param  {String} path
+     * @param  {Object} opts Default:
+     * ```js
+     * {
+     *     atime: Date.now(),
+     *     mtime: Date.now(),
+     *     mode: undefined
+     * }
+     * ```
+     * @return {Promise} If new file created, resolves true.
      */
     touch: function(path, opts) {
         var now;
@@ -1639,44 +1639,44 @@ nofs = _.extend({}, {
     },
 
     /**
-         * <a id="writeFile-opts"></a>
-         * Watch a file. If the file changes, the handler will be invoked.
-         * You can change the polling interval by using `process.env.pollingWatch`.
-         * Use `process.env.watchPersistent = 'off'` to disable the persistent.
-         * Why not use `nofs.watch`? Because `nofs.watch` is unstable on some file
-         * systems, such as Samba or OSX.
-         * @param  {String}   path    The file path
-         * @param  {Object} opts Defaults:
-         * ```js
-         * {
-         *     handler: (path, curr, prev, isDeletion) => {},
-         *
-         *     // Auto unwatch the file while file deletion.
-         *     autoUnwatch: true,
-         *
-         *     persistent: process.env.watchPersistent != 'off',
-         *     interval: +process.env.pollingWatch || 300
-         * }
-         * ```
-         * @return {Promise} It resolves the `StatWatcher` object:
-         * ```js
-         * {
-         *     path,
-         *     handler
-         * }
-         * ```
-         * @example
-         * ```js
-         * process.env.watchPersistent = 'off'
-         * nofs.watchPath('a.js', {
-         *     handler: (path, curr, prev, isDeletion) => {
-         *         if (curr.mtime !== prev.mtime)
-         *             console.log(path);
-         *     }
-         * }).then((watcher) =>
-         *     nofs.unwatchFile(watcher.path, watcher.handler)
-         * );
-         * ```
+     * <a id="writeFile-opts"></a>
+     * Watch a file. If the file changes, the handler will be invoked.
+     * You can change the polling interval by using `process.env.pollingWatch`.
+     * Use `process.env.watchPersistent = 'off'` to disable the persistent.
+     * Why not use `nofs.watch`? Because `nofs.watch` is unstable on some file
+     * systems, such as Samba or OSX.
+     * @param  {String}   path    The file path
+     * @param  {Object} opts Defaults:
+     * ```js
+     * {
+     *     handler: (path, curr, prev, isDeletion) => {},
+     *
+     *     // Auto unwatch the file while file deletion.
+     *     autoUnwatch: true,
+     *
+     *     persistent: process.env.watchPersistent != 'off',
+     *     interval: +process.env.pollingWatch || 300
+     * }
+     * ```
+     * @return {Promise} It resolves the `StatWatcher` object:
+     * ```js
+     * {
+     *     path,
+     *     handler
+     * }
+     * ```
+     * @example
+     * ```js
+     * process.env.watchPersistent = 'off'
+     * nofs.watchPath('a.js', {
+     *     handler: (path, curr, prev, isDeletion) => {
+     *         if (curr.mtime !== prev.mtime)
+     *             console.log(path);
+     *     }
+     * }).then((watcher) =>
+     *     nofs.unwatchFile(watcher.path, watcher.handler)
+     * );
+     * ```
      */
     watchPath: function(path, opts) {
         var handler, watcher;
@@ -1704,18 +1704,18 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Watch files, when file changes, the handler will be invoked.
-         * It is build on the top of `nofs.watchPath`.
-         * @param  {Array} patterns String array with minimatch syntax.
-         * Such as `['*\/**.css', 'lib\/**\/*.js']`.
-         * @param  {Object} opts Same as the `nofs.watchPath`.
-         * @return {Promise} It contains the wrapped watch listeners.
-         * @example
-         * ```js
-         * nofs.watchFiles('*.js', handler: (path, curr, prev, isDeletion) =>
-         *     console.log (path)
-         * );
-         * ```
+     * Watch files, when file changes, the handler will be invoked.
+     * It is build on the top of `nofs.watchPath`.
+     * @param  {Array} patterns String array with minimatch syntax.
+     * Such as `['*\/**.css', 'lib\/**\/*.js']`.
+     * @param  {Object} opts Same as the `nofs.watchPath`.
+     * @return {Promise} It contains the wrapped watch listeners.
+     * @example
+     * ```js
+     * nofs.watchFiles('*.js', handler: (path, curr, prev, isDeletion) =>
+     *     console.log (path)
+     * );
+     * ```
      */
     watchFiles: function(patterns, opts) {
         if (opts == null) {
@@ -1729,38 +1729,38 @@ nofs = _.extend({}, {
     },
 
     /**
-         * Watch directory and all the files in it.
-         * It supports three types of change: create, modify, move, delete.
-         * By default, `move` event is disabled.
-         * It is build on the top of `nofs.watchPath`.
-         * @param {String} root
-         * @param  {Object} opts Defaults:
-         * ```js
-         * {
-         *     handler: (type, path, oldPath, stats, oldStats) => {},
-         *
-         *     patterns: '**', // minimatch, string or array
-         *
-         *     // Whether to watch POSIX hidden file.
-         *     all: false,
-         *
-         *     // The minimatch options.
-         *     pmatch: {},
-         *
-         *     isEnableMoveEvent: false
-         * }
-         * ```
-         * @return {Promise} Resolves a object that keys are paths,
-         * values are listeners.
-         * @example
-         * ```js
-         * // Only current folder, and only watch js and css file.
-         * nofs.watchDir('lib', {
-         *  pattern: '*.+(js|css)',
-         *  handler: (type, path, oldPath, stats, oldStats) =>
-         *      console.log(type, path, stats.isDirectory(), oldStats.isDirectory())
-         * });
-         * ```
+     * Watch directory and all the files in it.
+     * It supports three types of change: create, modify, move, delete.
+     * By default, `move` event is disabled.
+     * It is build on the top of `nofs.watchPath`.
+     * @param {String} root
+     * @param  {Object} opts Defaults:
+     * ```js
+     * {
+     *     handler: (type, path, oldPath, stats, oldStats) => {},
+     *
+     *     patterns: '**', // minimatch, string or array
+     *
+     *     // Whether to watch POSIX hidden file.
+     *     all: false,
+     *
+     *     // The minimatch options.
+     *     pmatch: {},
+     *
+     *     isEnableMoveEvent: false
+     * }
+     * ```
+     * @return {Promise} Resolves a object that keys are paths,
+     * values are listeners.
+     * @example
+     * ```js
+     * // Only current folder, and only watch js and css file.
+     * nofs.watchDir('lib', {
+     *  pattern: '*.+(js|css)',
+     *  handler: (type, path, oldPath, stats, oldStats) =>
+     *      console.log(type, path, stats.isDirectory(), oldStats.isDirectory())
+     * });
+     * ```
      */
     watchDir: function(root, opts) {
         var dirHandler, fileHandler, isSameFile, match, negateMath, ref, watchedList;
@@ -1872,11 +1872,11 @@ nofs = _.extend({}, {
     },
 
     /**
-         * A `writeFile` shim for `< Node v0.10`.
-         * @param  {String} path
-         * @param  {String | Buffer} data
-         * @param  {String | Object} opts
-         * @return {Promise}
+     * A `writeFile` shim for `< Node v0.10`.
+     * @param  {String} path
+     * @param  {String | Buffer} data
+     * @param  {String | Object} opts
+     * @return {Promise}
      */
     writeFile: function(path, data, opts) {
         var encoding, flag, mode;
