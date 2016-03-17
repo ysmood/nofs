@@ -7,6 +7,7 @@ kit = require('nokit');
 nofs = require('../src/main');
 
 Promise = require('../src/utils').Promise;
+Promise.enableLongStackTrace();
 
 npath = require('path');
 
@@ -93,6 +94,18 @@ module.exports = function (it) {
     it('readFile', function() {
         return nofs.readFile('test/fixtures/sample.txt', 'utf8').then(function(ret) {
             return it.eq(ret, 'test');
+        });
+    });
+
+    it('readFile error', function() {
+        return nofs.readFile('test/fixtures/dsfasdfas.txt', 'utf8').catch(function(err) {
+            return it.eq(err.code, 'ENOENT');
+        });
+    });
+
+    it('readFile error longStack', function() {
+        return nofs.readFile('test/fixtures/dsfasdfas.txt', 'utf8').catch(function(err) {
+            return it.eq(err.longStack.match('From previous Error').length, 1);
         });
     });
 
