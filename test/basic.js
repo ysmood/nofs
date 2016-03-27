@@ -227,6 +227,30 @@ module.exports = function (it) {
         return it.eq(normalizePath(ls), ['test/fixtures/dir/test0/b/test/fixtures/other/test0/b', 'test/fixtures/dir/test0/test1/c/test/fixtures/other/test0/test1/c']);
     });
 
+    it('mapFiles pattern', function() {
+        var dir = tempPath() + '/mapFiles';
+        var now = Date.now() + '';
+        return nofs.mapFiles('test/fixtures/dir/*0/**', dir, {
+            iter: function(content, src, dest) {
+                return now + content;
+            }
+        }).then(function() {
+            return it.eq(kit.readFileSync(dir + '/test0/b') + '', now);
+        });
+    });
+
+    it('mapFilesSync pattern', function() {
+        var dir = tempPath() + '/mapFilesSync';
+        var now = Date.now() + '';
+        nofs.mapFilesSync('test/fixtures/dir/*0/**', dir, {
+            iter: function(content, src, dest) {
+                return now + content;
+            }
+        });
+
+        return it.eq(kit.readFileSync(dir + '/test0/b') + '', now);
+    });
+
     it('copy', function() {
         var dir = tempPath() + '/fixtures/dir-copy';
         return nofs.copy('test/fixtures/dir', dir).then(function() {

@@ -1113,6 +1113,89 @@ nofs = _.extend({}, {
     },
 
     /**
+     * Map file content from a directory to another recursively with a
+     * callback.
+     * @param  {String}   from The root directory to start with.
+     * @param  {String}   to This directory can be a non-exists path.
+     * @param  {Object}   opts Extends the options of [eachDir](#eachDir-opts). But `cwd` is
+     * fixed with the same as the `from` parameter. Defaults:
+     * ```js
+     * {
+     *     // It will be called with each path. The callback can return
+     *     // a `Promise` to keep the async sequence go on.
+     *     iter: (src, dest, fileInfo) => Promise | Any,
+     * }
+     * ```
+     * @return {Promise} Resolves a tree object.
+     * @example
+     * ```js
+     * // Add license header for each files
+     * // from a folder to another.
+     * nofs.mapFiles('from', 'to', {
+     *     iter: (content, src, dest, fileInfo) =>
+     *         'License MIT\n' + content
+     * });
+     * ```
+     */
+    mapFiles: function(from, to, opts) {
+        var iter, pm;
+        if (opts == null) {
+            opts = {};
+        }
+        opts.isIterFileOnly = true;
+
+        if (pm = nofs.pmatch.isPmatch(from)) {
+            from = nofs.pmatch.getPlainPath(pm);
+            pm = npath.relative(from, pm.pattern);
+            opts.filter = pm;
+        }
+        opts.cwd = from;
+        iter = opts.iter;
+        opts.iter = function(fileInfo) {
+            var src = npath.join(from, fileInfo.path);
+            var dest = npath.join(to, fileInfo.path);
+
+            return fs.readFile(src).then(function (content) {
+                if (iter) {
+                    return Promise.resolve(
+                        iter(content, src, dest, fileInfo)
+                    ).then(function (content) {
+                        return nofs.outputFile(dest, content);
+                    });
+                }
+            });
+        };
+        return nofs.eachDir('', opts);
+    },
+
+    mapFilesSync: function(from, to, opts) {
+        var iter, pm;
+        if (opts == null) {
+            opts = {};
+        }
+        opts.isIterFileOnly = true;
+
+        if (pm = nofs.pmatch.isPmatch(from)) {
+            from = nofs.pmatch.getPlainPath(pm);
+            pm = npath.relative(from, pm.pattern);
+            opts.filter = pm;
+        }
+        opts.cwd = from;
+        iter = opts.iter;
+        opts.iter = function(fileInfo) {
+            var src = npath.join(from, fileInfo.path);
+            var dest = npath.join(to, fileInfo.path);
+
+            var content = fs.readFileSync(src);
+            if (iter) {
+                content = iter(content, src, dest, fileInfo);
+                nofs.outputFileSync(dest, content);
+            }
+        };
+        return nofs.eachDirSync('', opts);
+    },
+
+    /**
      * Recursively create directory path, like `mkdir -p`.
      * @param  {String} path
      * @param  {String} mode Defaults: `0o777 & ~process.umask()`
