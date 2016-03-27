@@ -169,6 +169,7 @@ __No native `fs` funtion will be listed.__
   - [fileExists(path)](#fileexistspath)
   - [glob(pattern, opts)](#globpattern-opts)
   - [mapDir(from, to, opts)](#mapdirfrom-to-opts)
+  - [mapFiles(from, to, opts)](#mapfilesfrom-to-opts)
   - [mkdirs(path, mode)](#mkdirspath-mode)
   - [move(from, to, opts)](#movefrom-to-opts)
   - [outputFile(path, data, opts)](#outputfilepath-data-opts)
@@ -543,7 +544,47 @@ __No native `fs` funtion will be listed.__
         });
         ```
 
-- ### **[mkdirs(path, mode)](src/main.js?source#L1121)**
+- ### **[mapFiles(from, to, opts)](src/main.js?source#L1140)**
+
+    Map file content from a directory to another recursively with a
+    callback.
+
+    - **<u>param</u>**: `from` { _String_ }
+
+        The root directory to start with.
+
+    - **<u>param</u>**: `to` { _String_ }
+
+        This directory can be a non-exists path.
+
+    - **<u>param</u>**: `opts` { _Object_ }
+
+        Extends the options of [eachDir](#eachDir-opts). But `cwd` is
+        fixed with the same as the `from` parameter. Defaults:
+        ```js
+        {
+            // It will be called with each path. The callback can return
+            // a `Promise` to keep the async sequence go on.
+            iter: (src, dest, fileInfo) => Promise | Any,
+        }
+        ```
+
+    - **<u>return</u>**: { _Promise_ }
+
+        Resolves a tree object.
+
+    - **<u>example</u>**:
+
+        ```js
+        // Add license header for each files
+        // from a folder to another.
+        nofs.mapFiles('from', 'to', {
+            iter: (content, src, dest, fileInfo) =>
+                'License MIT\n' + content
+        });
+        ```
+
+- ### **[mkdirs(path, mode)](src/main.js?source#L1204)**
 
     Recursively create directory path, like `mkdir -p`.
 
@@ -555,7 +596,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[move(from, to, opts)](src/main.js?source#L1182)**
+- ### **[move(from, to, opts)](src/main.js?source#L1265)**
 
     Moves a file or directory. Also works between partitions.
     Behaves like the Unix `mv`.
@@ -583,7 +624,7 @@ __No native `fs` funtion will be listed.__
         It will resolve a boolean value which indicates
         whether this action is taken between two partitions.
 
-- ### **[outputFile(path, data, opts)](src/main.js?source#L1274)**
+- ### **[outputFile(path, data, opts)](src/main.js?source#L1357)**
 
     Almost the same as `writeFile`, except that if its parent
     directories do not exist, they will be created.
@@ -599,7 +640,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[outputJson(path, obj, opts)](src/main.js?source#L1319)**
+- ### **[outputJson(path, obj, opts)](src/main.js?source#L1402)**
 
     Write a object to a file, if its parent directory doesn't
     exists, it will be created.
@@ -623,7 +664,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[path](src/main.js?source#L1360)**
+- ### **[path](src/main.js?source#L1443)**
 
     The path module nofs is using.
     It's the native [io.js](iojs.org) path lib.
@@ -632,7 +673,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>type</u>**: { _Object_ }
 
-- ### **[pmatch](src/main.js?source#L1384)**
+- ### **[pmatch](src/main.js?source#L1467)**
 
     The `minimatch` lib. It has two extra methods:
     - `isPmatch(String | Object) -> Pmatch | undefined`
@@ -657,19 +698,19 @@ __No native `fs` funtion will be listed.__
         // output => false
         ```
 
-- ### **[Promise](src/main.js?source#L1390)**
+- ### **[Promise](src/main.js?source#L1473)**
 
     What promise this lib is using.
 
     - **<u>type</u>**: { _Promise_ }
 
-- ### **[PromiseUtils](src/main.js?source#L1396)**
+- ### **[PromiseUtils](src/main.js?source#L1479)**
 
     Same as the [`yaku/lib/utils`](https://github.com/ysmood/yaku#utils).
 
     - **<u>type</u>**: { _Object_ }
 
-- ### **[readJson(path, opts)](src/main.js?source#L1410)**
+- ### **[readJson(path, opts)](src/main.js?source#L1493)**
 
     Read A Json file and parse it to a object.
 
@@ -691,7 +732,7 @@ __No native `fs` funtion will be listed.__
         );
         ```
 
-- ### **[reduceDir(path, opts)](src/main.js?source#L1463)**
+- ### **[reduceDir(path, opts)](src/main.js?source#L1546)**
 
     Walk through directory recursively with a iterator.
 
@@ -731,7 +772,7 @@ __No native `fs` funtion will be listed.__
         );
         ```
 
-- ### **[remove(path, opts)](src/main.js?source#L1512)**
+- ### **[remove(path, opts)](src/main.js?source#L1595)**
 
     Remove a file or directory peacefully, same with the `rm -rf`.
 
@@ -747,7 +788,7 @@ __No native `fs` funtion will be listed.__
 
     - **<u>return</u>**: { _Promise_ }
 
-- ### **[touch(path, opts)](src/main.js?source#L1606)**
+- ### **[touch(path, opts)](src/main.js?source#L1689)**
 
     Change file access and modification times.
     If the file does not exist, it is created.
@@ -769,7 +810,7 @@ __No native `fs` funtion will be listed.__
 
         If new file created, resolves true.
 
-- ### **[watchPath(path, opts)](src/main.js?source#L1681)**
+- ### **[watchPath(path, opts)](src/main.js?source#L1764)**
 
     <a id="writeFile-opts"></a>
     Watch a file. If the file changes, the handler will be invoked.
@@ -821,7 +862,7 @@ __No native `fs` funtion will be listed.__
         );
         ```
 
-- ### **[watchFiles(patterns, opts)](src/main.js?source#L1720)**
+- ### **[watchFiles(patterns, opts)](src/main.js?source#L1803)**
 
     Watch files, when file changes, the handler will be invoked.
     It is build on the top of `nofs.watchPath`.
@@ -847,7 +888,7 @@ __No native `fs` funtion will be listed.__
         );
         ```
 
-- ### **[watchDir(root, opts)](src/main.js?source#L1765)**
+- ### **[watchDir(root, opts)](src/main.js?source#L1848)**
 
     Watch directory and all the files in it.
     It supports three types of change: create, modify, move, delete.
@@ -891,7 +932,7 @@ __No native `fs` funtion will be listed.__
         });
         ```
 
-- ### **[writeFile(path, data, opts)](src/main.js?source#L1881)**
+- ### **[writeFile(path, data, opts)](src/main.js?source#L1964)**
 
     A `writeFile` shim for `< Node v0.10`.
 
