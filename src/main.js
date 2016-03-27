@@ -1123,7 +1123,8 @@ nofs = _.extend({}, {
      * {
      *     // It will be called with each path. The callback can return
      *     // a `Promise` to keep the async sequence go on.
-     *     iter: (src, dest, fileInfo) => Promise | Any,
+     *     // If iter resolves null, the file won't be created.
+     *     iter: (content, src, dest, fileInfo) => Promise | Any,
      * }
      * ```
      * @return {Promise} Resolves a tree object.
@@ -1132,7 +1133,7 @@ nofs = _.extend({}, {
      * // Add license header for each files
      * // from a folder to another.
      * nofs.mapFiles('from', 'to', {
-     *     iter: (content, src, dest, fileInfo) =>
+     *     iter: (content) =>
      *         'License MIT\n' + content
      * });
      * ```
@@ -1160,8 +1161,11 @@ nofs = _.extend({}, {
                     return Promise.resolve(
                         iter(content, src, dest, fileInfo)
                     ).then(function (content) {
+                        if (content == null) return;
                         return nofs.outputFile(dest, content);
                     });
+                } else {
+                    return nofs.outputFile(dest, content);
                 }
             });
         };
@@ -1189,8 +1193,9 @@ nofs = _.extend({}, {
             var content = fs.readFileSync(src);
             if (iter) {
                 content = iter(content, src, dest, fileInfo);
-                nofs.outputFileSync(dest, content);
             }
+            if (content == null) return;
+            nofs.outputFileSync(dest, content);
         };
         return nofs.eachDirSync('', opts);
     },
