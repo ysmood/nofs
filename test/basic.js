@@ -227,11 +227,12 @@ module.exports = function (it) {
         return it.eq(normalizePath(ls), ['test/fixtures/dir/test0/b/test/fixtures/other/test0/b', 'test/fixtures/dir/test0/test1/c/test/fixtures/other/test0/test1/c']);
     });
 
-    it('mapFiles pattern', function() {
+    it('mapDir pattern map content', function() {
         var dir = tempPath() + '/mapFiles';
         var now = Date.now() + '';
-        return nofs.mapFiles('test/fixtures/dir/*0/**', dir, {
-            iter: function(content, src, dest) {
+        return nofs.mapDir('test/fixtures/dir/*0/**', dir, {
+            isMapContent: true,
+            iter: function(content) {
                 return now + content;
             }
         }).then(function() {
@@ -239,11 +240,12 @@ module.exports = function (it) {
         });
     });
 
-    it('mapFilesSync pattern', function() {
+    it('mapDirSync pattern map content', function() {
         var dir = tempPath() + '/mapFilesSync';
         var now = Date.now() + '';
-        nofs.mapFilesSync('test/fixtures/dir/*0/**', dir, {
-            iter: function(content, src, dest) {
+        nofs.mapDirSync('test/fixtures/dir/*0/**', dir, {
+            isMapContent: true,
+            iter: function(content) {
                 return now + content;
             }
         });

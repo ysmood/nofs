@@ -1048,20 +1048,33 @@ nofs = _.extend({}, {
      *     // a `Promise` to keep the async sequence go on.
      *     iter: (src, dest, fileInfo) => Promise | Any,
      *
+     *     // When isMapContent is true, and the current is a file.
+     *     iter: (content, src, dest, fileInfo) => Promise | Any,
+     *
+     *     // When isMapContent is true, and the current is a folder.
+     *     iter: (mode, src, dest, fileInfo) => Promise | Any,
+     *
+     *     isMapContent: false,
+     *
      *     isIterFileOnly: true
      * }
      * ```
      * @return {Promise} Resolves a tree object.
      * @example
      * ```js
+     * nofs.mapDir('from', 'to', {
+     *     iter: (src, dest, info) =>
+     *         console.log(src, dest, info)
+     * });
+     * ```
+     * @example
+     * ```js
      * // Copy and add license header for each files
      * // from a folder to another.
      * nofs.mapDir('from', 'to', {
-     *     iter: (src, dest) =>
-     *         nofs.readFile(src).then((buf) => {
-     *             buf += 'License MIT\n' + buf;
-     *             return nofs.outputFile(dest, buf);
-     *         })
+     *     ismMapContent: true,
+     *     iter: (content) =>
+     *         'License MIT\n' + content
      * });
      * ```
      */
@@ -1070,9 +1083,13 @@ nofs = _.extend({}, {
         if (opts == null) {
             opts = {};
         }
+
         _.defaults(opts, {
-            isIterFileOnly: true
+            iter: _.id,
+            isIterFileOnly: true,
+            isMapContent: false
         });
+
         if (pm = nofs.pmatch.isPmatch(from)) {
             from = nofs.pmatch.getPlainPath(pm);
             pm = npath.relative(from, pm.pattern);
@@ -1084,7 +1101,23 @@ nofs = _.extend({}, {
             var dest, src;
             src = npath.join(from, fileInfo.path);
             dest = npath.join(to, fileInfo.path);
-            return typeof iter === "function" ? iter(src, dest, fileInfo) : void 0;
+
+            if (opts.isMapContent) {
+                if (fileInfo.isDir) {
+                    return iter(fileInfo.stats.mode, src, dest, fileInfo)
+                    .then(function (mode) {
+                        return nofs.mkdirs(dest, mode);
+                    });
+                } else {
+                    return fs.readFile(src).then(function (content) {
+                        return iter(content, src, dest, fileInfo);
+                    }).then(function (content) {
+                        return nofs.outputFile(dest, content, { mode: fileInfo.mode });
+                    });
+                }
+            } else {
+                return iter(src, dest, fileInfo);
+            }
         };
         return nofs.eachDir('', opts);
     },
@@ -1093,9 +1126,13 @@ nofs = _.extend({}, {
         if (opts == null) {
             opts = {};
         }
+
         _.defaults(opts, {
-            isIterFileOnly: true
+            iter: _.id,
+            isIterFileOnly: true,
+            isMapContent: false
         });
+
         if (pm = nofs.pmatch.isPmatch(from)) {
             from = nofs.pmatch.getPlainPath(pm);
             pm = npath.relative(from, pm.pattern);
@@ -1107,95 +1144,19 @@ nofs = _.extend({}, {
             var dest, src;
             src = npath.join(from, fileInfo.path);
             dest = npath.join(to, fileInfo.path);
-            return typeof iter === "function" ? iter(src, dest, fileInfo) : void 0;
-        };
-        return nofs.eachDirSync('', opts);
-    },
 
-    /**
-     * Map file content from a directory to another recursively with a
-     * callback.
-     * @param  {String}   from The root directory to start with.
-     * @param  {String}   to This directory can be a non-exists path.
-     * @param  {Object}   opts Extends the options of [eachDir](#eachDir-opts). But `cwd` is
-     * fixed with the same as the `from` parameter. Defaults:
-     * ```js
-     * {
-     *     // It will be called with each path. The callback can return
-     *     // a `Promise` to keep the async sequence go on.
-     *     // If iter resolves null, the file won't be created.
-     *     iter: (content, src, dest, fileInfo) => Promise | Any,
-     * }
-     * ```
-     * @return {Promise} Resolves a tree object.
-     * @example
-     * ```js
-     * // Add license header for each files
-     * // from a folder to another.
-     * nofs.mapFiles('from', 'to', {
-     *     iter: (content) =>
-     *         'License MIT\n' + content
-     * });
-     * ```
-     */
-    mapFiles: function(from, to, opts) {
-        var iter, pm;
-        if (opts == null) {
-            opts = {};
-        }
-        opts.isIterFileOnly = true;
-
-        if (pm = nofs.pmatch.isPmatch(from)) {
-            from = nofs.pmatch.getPlainPath(pm);
-            pm = npath.relative(from, pm.pattern);
-            opts.filter = pm;
-        }
-        opts.cwd = from;
-        iter = opts.iter;
-        opts.iter = function(fileInfo) {
-            var src = npath.join(from, fileInfo.path);
-            var dest = npath.join(to, fileInfo.path);
-
-            return fs.readFile(src).then(function (content) {
-                if (iter) {
-                    return Promise.resolve(
-                        iter(content, src, dest, fileInfo)
-                    ).then(function (content) {
-                        if (content == null) return;
-                        return nofs.outputFile(dest, content);
-                    });
+            if (opts.isMapContent) {
+                if (fileInfo.isDir) {
+                    var mode = iter(fileInfo.stats.mode, src, dest, fileInfo);
+                    nofs.mkdirsSync(dest, mode);
                 } else {
-                    return nofs.outputFile(dest, content);
+                    var content = fs.readFileSync(src);
+                    content = iter(content, src, dest, fileInfo);
+                    nofs.outputFileSync(dest, content, { mode: fileInfo.mode });
                 }
-            });
-        };
-        return nofs.eachDir('', opts);
-    },
-
-    mapFilesSync: function(from, to, opts) {
-        var iter, pm;
-        if (opts == null) {
-            opts = {};
-        }
-        opts.isIterFileOnly = true;
-
-        if (pm = nofs.pmatch.isPmatch(from)) {
-            from = nofs.pmatch.getPlainPath(pm);
-            pm = npath.relative(from, pm.pattern);
-            opts.filter = pm;
-        }
-        opts.cwd = from;
-        iter = opts.iter;
-        opts.iter = function(fileInfo) {
-            var src = npath.join(from, fileInfo.path);
-            var dest = npath.join(to, fileInfo.path);
-
-            var content = fs.readFileSync(src);
-            if (iter) {
-                content = iter(content, src, dest, fileInfo);
+            } else {
+                return iter(src, dest, fileInfo);
             }
-            if (content == null) return;
-            nofs.outputFileSync(dest, content);
         };
         return nofs.eachDirSync('', opts);
     },
