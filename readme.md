@@ -76,24 +76,21 @@ fs.copySync('dir/a', 'dir/b');
 
 
 /*
- * Promise
+ * Promise & async/await
  */
-fs.mkdirs('deep/dir/path')
-.then(() =>
-    fs.outputFile('a.txt', 'hello world')
-).then(() =>
-    fs.move('dir/path', 'other')
-).then(() =>
-    fs.copy('one/**/*.js', 'two')
-).then(() =>
+(async () => {
+    await fs.mkdirs('deep/dir/path');
+    await fs.outputFile('a.txt', 'hello world');
+    await fs.move('dir/path', 'other');
+    await fs.copy('one/**/*.js', 'two');
+
     // Get all files, except js files.
-    fs.glob(['deep/**', '!**/*.js'])
-).then((list) =>
-    console.log(list)
-).then(() =>
+    let list = await fs.glob(['deep/**', '!**/*.js']);
+    console.log(list);
+
     // Remove only js files.
-    fs.remove('deep/**/*.js')
-);
+    await fs.remove('deep/**/*.js');
+})();
 
 
 /*
