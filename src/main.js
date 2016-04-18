@@ -1822,7 +1822,9 @@ nofs = _.extend({}, {
             pmatch: {},
             all: false,
             error: function(err) {
-                return console.error(err);
+                try {
+                    return console.error(err);
+                } catch (err) {}
             }
         });
 

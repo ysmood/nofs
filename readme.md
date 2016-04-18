@@ -903,7 +903,7 @@ __No native `fs` funtion will be listed.__
         });
         ```
 
-- ### **[writeFile(path, data, opts)](src/main.js?source#L1930)**
+- ### **[writeFile(path, data, opts)](src/main.js?source#L1932)**
 
     A `writeFile` shim for `< Node v0.10`.
 
