@@ -15,7 +15,7 @@ lib of [nokit][].
 - Recursive `glob`, `move`, `copy`, `remove`, etc.
 - **Promise** by default.
 - Unified intuitive API. Supports both **Promise**, **Sync** and **Callback** paradigms.
-- Very light weight. Only depends on `yaku` and `minimath`.
+- Very light weight. Only depends on `yaku` and `minimatch`.
 
 ## Install
 
