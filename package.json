@@ -28,11 +28,11 @@
   },
   "homepage": "https://github.com/ysmood/nofs",
   "devDependencies": {
-    "junit": "1.4.7",
-    "nokit": "0.23.15"
+    "junit": "1.4.9",
+    "nokit": "0.23.24"
   },
   "dependencies": {
     "minimatch": "3.0.3",
-    "yaku": "0.17.7"
+    "yaku": "0.17.9"
   }
 }
