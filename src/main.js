@@ -1663,10 +1663,17 @@ nofs = _.extend({}, {
             mtime: now
         });
         return nofs.fileExists(path).then(function(exists) {
-            return (exists
-              ? fs.utimes(path, opts.atime, opts.mtime)
-              : nofs.outputFile(path, Buffer.from(''), opts)
-            ).then(function() { return !exists; });
+            var p;
+            if (exists) {
+                p = Promise.resolve();
+            } else {
+                p = nofs.outputFile(path, Buffer.from(''), opts);
+            } 
+            return p.then(function () {
+                return fs.utimes(path, opts.atime, opts.mtime);
+            }).then(function () {
+                return !exists;
+            });
         });
     },
     touchSync: function(path, opts) {
@@ -1680,11 +1687,10 @@ nofs = _.extend({}, {
             mtime: now
         });
         exists = nofs.fileExistsSync(path);
-        if (exists) {
-            fs.utimesSync(path, opts.atime, opts.mtime);
-        } else {
+        if (!exists) {
             nofs.outputFileSync(path, Buffer.from(''), opts);
         }
+        fs.utimesSync(path, opts.atime, opts.mtime);
         return !exists;
     },
 

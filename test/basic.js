@@ -519,7 +519,7 @@ module.exports = function (it) {
     });
 
     it('touch time', function() {
-        var t = Math.floor(Date.now() / 1000);
+        var t = Math.floor(new Date("2019-01-01T00:00:00.000Z").getTime() / 1000);
         var path = tempPath();
         return nofs.touch(path, {
             mtime: t
@@ -533,7 +533,7 @@ module.exports = function (it) {
     it('touchSync time', function() {
         var stats, t;
         var path = tempPath();
-        t = Math.floor(Date.now() / 1000);
+        var t = Math.floor(new Date("2019-02-01T00:00:00.000Z").getTime() / 1000);
         nofs.touchSync(path, {
             mtime: t
         });
