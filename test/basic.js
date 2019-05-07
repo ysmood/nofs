@@ -1,19 +1,19 @@
-var Promise, isWin, kit, nofs, npath, regSep;
-
 process.env.pollingWatch = 30;
 
-kit = require('nokit');
+var crypto = require('crypto');
 
-nofs = require('../src/main');
+var kit = require('nokit');
 
-Promise = require('../src/utils').Promise;
+var nofs = require('../src/main');
+
+var Promise = require('../src/utils').Promise;
 Promise.enableLongStackTrace();
 
-npath = require('path');
+var npath = require('path');
 
-isWin = process.platform === 'win32';
+var isWin = process.platform === 'win32';
 
-regSep = RegExp("" + ('\\' + npath.sep), "g");
+var regSep = RegExp("" + ('\\' + npath.sep), "g");
 
 function normalizePath (val) {
     if (val instanceof Array) {
@@ -37,7 +37,7 @@ function wait (time) {
 };
 
 function tempPath () {
-    return 'test/temp/' + Date.now() + (Math.random() + '').slice(2);
+    return 'test/temp/' + crypto.randomBytes(64).toString('hex');
 }
 
 kit.removeSync('test/temp');
@@ -564,6 +564,15 @@ module.exports = function (it) {
             return nofs.readFile(path, 'utf8');
         }).then(function(str) {
             return it.eq(str, 'ok');
+        });
+    });
+
+    it('outputFile number', function() {
+        var path = tempPath() + '/out/out/put/file'
+        return nofs.outputFile(path, 123).then(function() {
+            return nofs.readFile(path, 'utf8');
+        }).then(function(str) {
+            return it.eq(str, '123');
         });
     });
 
