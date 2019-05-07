@@ -781,7 +781,7 @@ __No native `fs` funtion will be listed.__
 
         If new file created, resolves true.
 
-- ### **[watchPath(path, opts)](src/main.js?source#L1731)**
+- ### **[watchPath(path, opts)](src/main.js?source#L1737)**
 
     <a id="writeFile-opts"></a>
     Watch a file. If the file changes, the handler will be invoked.
@@ -833,7 +833,7 @@ __No native `fs` funtion will be listed.__
         );
         ```
 
-- ### **[watchFiles(patterns, opts)](src/main.js?source#L1770)**
+- ### **[watchFiles(patterns, opts)](src/main.js?source#L1776)**
 
     Watch files, when file changes, the handler will be invoked.
     It is build on the top of `nofs.watchPath`.
@@ -859,7 +859,7 @@ __No native `fs` funtion will be listed.__
         );
         ```
 
-- ### **[watchDir(root, opts)](src/main.js?source#L1815)**
+- ### **[watchDir(root, opts)](src/main.js?source#L1821)**
 
     Watch directory and all the files in it.
     It supports three types of change: create, modify, move, delete.
@@ -903,7 +903,7 @@ __No native `fs` funtion will be listed.__
         });
         ```
 
-- ### **[writeFile(path, data, opts)](src/main.js?source#L1933)**
+- ### **[writeFile(path, data, opts)](src/main.js?source#L1939)**
 
     A `writeFile` shim for `< Node v0.10`.
 
