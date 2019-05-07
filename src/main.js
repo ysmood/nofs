@@ -7,11 +7,6 @@ npath = require('./path');
 
 child_process = require('child_process');
 
-function encodeNonBuffer(data, encoding) {
-  if (Buffer.isBuffer(data)) { return data; }
-  return Buffer.from(data, encoding);
-}
-
 /**
  * Here I use [Yaku](https://github.com/ysmood/yaku) only as an ES6 shim for Promise.
  * No APIs other than ES6 spec will be used. In the
@@ -1958,7 +1953,7 @@ nofs = _.extend({}, {
         }
         return fs.open(path, flag, mode).then(function(fd) {
             var buf, pos;
-            buf = encodeNonBuffer(data, encoding);
+            buf = _.encodeNonBuffer(data, encoding);
             pos = flag.indexOf('a') > -1 ? null : 0;
             return fs.write(fd, buf, 0, buf.length, pos).then(function() {
                 return fs.close(fd);
@@ -1987,7 +1982,7 @@ nofs = _.extend({}, {
             mode = 0x1b6;
         }
         fd = fs.openSync(path, flag, mode);
-        buf = encodeNonBuffer(data, encoding);
+        buf = _.encodeNonBuffer(data, encoding);
         pos = flag.indexOf('a') > -1 ? null : 0;
         fs.writeSync(fd, buf, 0, buf.length, pos);
         return fs.closeSync(fd);

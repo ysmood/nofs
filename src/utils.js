@@ -68,5 +68,10 @@ module.exports = _ = {
             }
         }
         return false;
+    },
+
+    encodeNonBuffer: function(data, encoding) {
+      if (Buffer.isBuffer(data)) { return data; }
+      return Buffer.from(data, encoding);
     }
 };
