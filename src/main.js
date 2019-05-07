@@ -7,7 +7,6 @@ npath = require('./path');
 
 child_process = require('child_process');
 
-
 /**
  * Here I use [Yaku](https://github.com/ysmood/yaku) only as an ES6 shim for Promise.
  * No APIs other than ES6 spec will be used. In the
@@ -183,12 +182,13 @@ nofs = _.extend({}, {
         }
     },
     copyFileSync: function(src, dest, opts) {
-        var buf, bufLen, copy, copyFile, mode;
+        var buf, blkSz, copy, copyFile, mode;
         _.defaults(opts, {
+            blockSize: 64 * 1024,
             isForce: false
         });
-        bufLen = 64 * 1024;
-        buf = new Buffer(bufLen);
+        blkSz = opts.blockSize;
+        buf = Buffer.alloc(blkSz);
         copyFile = function() {
             var bytesRead, fdr, fdw, pos;
             fdr = fs.openSync(src, 'r');
@@ -196,7 +196,7 @@ nofs = _.extend({}, {
             bytesRead = 1;
             pos = 0;
             while (bytesRead > 0) {
-                bytesRead = fs.readSync(fdr, buf, 0, bufLen, pos);
+                bytesRead = fs.readSync(fdr, buf, 0, blkSz, pos);
                 fs.writeSync(fdw, buf, 0, bytesRead);
                 pos += bytesRead;
             }
@@ -857,7 +857,7 @@ nofs = _.extend({}, {
             if (exists) {
                 return Promise.resolve();
             } else {
-                return nofs.outputFile(path, new Buffer(0), opts);
+                return nofs.outputFile(path, Buffer.from(''), opts);
             }
         });
     },
@@ -866,7 +866,7 @@ nofs = _.extend({}, {
             opts = {};
         }
         if (!nofs.fileExistsSync(path)) {
-            return nofs.outputFileSync(path, new Buffer(0), opts);
+            return nofs.outputFileSync(path, Buffer.from(''), opts);
         }
     },
 
@@ -1663,9 +1663,10 @@ nofs = _.extend({}, {
             mtime: now
         });
         return nofs.fileExists(path).then(function(exists) {
-            return (exists ? fs.utimes(path, opts.atime, opts.mtime) : nofs.outputFile(path, new Buffer(0), opts)).then(function() {
-                return !exists;
-            });
+            return (exists
+              ? fs.utimes(path, opts.atime, opts.mtime)
+              : nofs.outputFile(path, Buffer.from(''), opts)
+            ).then(function() { return !exists; });
         });
     },
     touchSync: function(path, opts) {
@@ -1682,7 +1683,7 @@ nofs = _.extend({}, {
         if (exists) {
             fs.utimesSync(path, opts.atime, opts.mtime);
         } else {
-            nofs.outputFileSync(path, new Buffer(0), opts);
+            nofs.outputFileSync(path, Buffer.from(''), opts);
         }
         return !exists;
     },
@@ -1952,7 +1953,7 @@ nofs = _.extend({}, {
         }
         return fs.open(path, flag, mode).then(function(fd) {
             var buf, pos;
-            buf = data.constructor.name === 'Buffer' ? data : new Buffer('' + data, encoding);
+            buf = _.encodeNonBuffer(data, encoding);
             pos = flag.indexOf('a') > -1 ? null : 0;
             return fs.write(fd, buf, 0, buf.length, pos).then(function() {
                 return fs.close(fd);
@@ -1981,7 +1982,7 @@ nofs = _.extend({}, {
             mode = 0x1b6;
         }
         fd = fs.openSync(path, flag, mode);
-        buf = data.constructor.name === 'Buffer' ? data : new Buffer('' + data, encoding);
+        buf = _.encodeNonBuffer(data, encoding);
         pos = flag.indexOf('a') > -1 ? null : 0;
         fs.writeSync(fd, buf, 0, buf.length, pos);
         return fs.closeSync(fd);
