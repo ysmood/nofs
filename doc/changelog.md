@@ -1,5 +1,9 @@
 # Changelog
 
+- v0.12
+
+  - drop support for nodejs <= v0.11
+
 - v0.11
 
   - add: watchDir oldStats
